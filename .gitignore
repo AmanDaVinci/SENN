@@ -1,6 +1,6 @@
 # directories that should not be included in repo.
 checkpoints/
-data/
+# data/
 random/
 results/
 
