@@ -13,23 +13,23 @@ def load_mnist(data_path, batch_size, num_workers=4):
         - padding
         - centercropping
         - converting to tensor
-        - normalization so that values are in ()
+        - standard mnist normalization so that values are in (0, 1)
 
     Parameters
     ----------
     data_path: str
-        x
+        Location of mnist data.
     batch_size: int
-        x
+        Batch size.
     num_workers: int
-        x 
+        ?? 
 
     Returns
     -------
     train_loader
-        x
+        Dataloader for training set.
     test_loader
-        x
+        Dataloader for testing set.
     """
     train_trans = transforms.Compose([transforms.Pad(int(np.ceil(28 * 0.05)), padding_mode='edge'),
                                       transforms.CenterCrop(28),  
