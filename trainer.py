@@ -18,12 +18,22 @@ plt.style.use('seaborn-talk')
 
 
 class Trainer():
-    """
-    This base class will contain the base functions to be overloaded by any agent you will implement.
-    """
-
     def __init__(self, config):
-        """ Init config, model, optim & criterion
+        """Base Trainer class containing functions to be overloaded by a specific Trainer agent.
+        
+        A trainer instantiates a model to be trained. It contains logic for training, validating,
+        and checkpointing the model. All the specific parameters that control the program behavior
+        are contained in the config parameter.
+
+        The models we consider here are all Self Explaining Neural Networks (SENNs).
+
+        If `load_checkpoint` is specified in config and the model has a checkpoint, the checkpoint
+        will be loaded.
+        
+        Parameters
+        ----------
+        config : types.SimpleNamespace
+            Contains all (hyper)parameters that define the behavior of the program.
         """
         self.config = config
 
@@ -35,7 +45,7 @@ class Trainer():
         self.summarize(self.vae)
 
         self.trainloader, self.valloader, _ = get_dataloader(config)
-        # TODO: opt in config
+        # TODO: optimizer in config
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
         # trackers
@@ -51,7 +61,9 @@ class Trainer():
             self.load_checkpoint(config.load_checkpoint)
     
     def run(self):
-        """ Runs the train loop until interrupted
+        """Run the training loop.
+        
+        If the loop is interrupted manually, finalization will still be executed.
         """
         try:
             self.train()
@@ -59,20 +71,21 @@ class Trainer():
             print("CTRL+C pressed... Waiting to finalize.")
 
     def train(self):
-        """
-        Main training loop
-        :return:
-        """
+        """Main training loop."""
         for epoch in range(self.current_epoch, self.config.epochs):
             self.current_epoch = epoch
             self.train_one_epoch(self.current_epoch)
+            # TODO: remove next 2 lines?
             # self.validate()
             # self.save_checkpoint()
 
     def train_one_epoch(self, epoch):
-        """
-        One epoch of training
-        :return:
+        """Run one epoch of training.
+
+        Parameters
+        ----------
+        epoch : int
+            Current epoch.
         """
         self.model.train()
 
@@ -85,13 +98,13 @@ class Trainer():
 
             y_pred, (concepts, parameters) = self.model(xb)
 
-            classification_loss = self.
-            concept_loss = 0.
-            robustness_loss = ...
+            # TODO: compute losses
+            classification_loss = 0
+            concept_loss = 0
+            robustness_loss = 0
             loss = classification_loss + \
                    self.config.concept_reg * concept_loss + \
                    self.config.robust_reg * robustness_loss
-            # TODO: fix this shit
             loss.backward()
             self.opt.step()
 
@@ -110,7 +123,11 @@ class Trainer():
             #     print(report)
                         
     def validate(self):
-        """One cycle of model validation"""
+        """Validate model performance.
+
+        Model performance is validated by computing loss and accuracy measures, storing them,
+        and reporting them.
+        """
         self.vae.eval()
         with torch.no_grad():
             xb = next(iter(self.valloader))
@@ -126,6 +143,7 @@ class Trainer():
             self.val_elbo_losses.append(elbo.item())
 
 
+    # TODO: remove?
     def sample(self, epoch, step=0):
         """
         Generate images from fixed noise
@@ -137,23 +155,33 @@ class Trainer():
             grid_imgs = vutils.make_grid(img_samples, nrow=5)
             plt.imshow(np.transpose(grid_imgs, (1,2,0)), cmap='binary')
             plt.axis("off")
-            plt.savefig(self.config.image_dir+f"Epoch{epoch}_Step{step}.png")
+            plt.savefig(self.config.image_dir + f"Epoch{epoch}_Step{step}.png")
 
     def load_checkpoint(self, file_name):
-        """
-        Latest checkpoint loader
-        :param file_name: name of the checkpoint file
-        :return:
+        """Load most recent checkpoint.
+
+        If no checkpoint exists, doesn't do anything.
+
+        Checkpoint contains:
+            - current epoch
+            - current iteration
+            - model state
+            - optimizer state
+
+        Parameters
+        ----------
+        file_name: str
+            Name of the checkpoint file.
         """
         try:
-            file_name = self.config.checkpoint_dir+file_name
+            file_name = self.config.checkpoint_dir + file_name
             print(f"Loading checkpoint...")
             with open(file_name, 'rb') as f:
                 checkpoint = torch.load(f, self.device)
 
             self.current_epoch = checkpoint['epoch']
             self.current_iter = checkpoint['iter']
-            self.vae.load_state_dict(checkpoint['model_state'])
+            self.model.load_state_dict(checkpoint['model_state'])
             self.opt.load_state_dict(checkpoint['optimizer'])
 
             print(f"Checkpoint loaded successfully from '{file_name}'\n")
@@ -164,8 +192,9 @@ class Trainer():
 
 
     def save_checkpoint(self):
-        """
-        Checkpoint saver
+        """Save checkpoint in the checkpoint directory.
+        
+        Checkpoint dir and checkpoint_file need to be specified in the config.
         """
         file_name = self.config.checkpoint_dir+self.config.checkpoint_file
         file_name = file_name+f"_Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
@@ -179,6 +208,7 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
+    # TODO: remove this function?
     def plot_losses(self):
         """Generate a plot of G & D losses"""
         img_dir = self.config.image_dir
@@ -196,15 +226,23 @@ class Trainer():
         print(f"Loss curves plotted @ {imgname}")
 
     def finalize(self):
-        """
-        Finalizes all the operations of the 2 Main classes of the process, the operator and the data loader
-        :return:
+        """Finalize all necessary operations before exiting training.
+        
+        Saves checkpoint.
         """
         print("Please wait while we finalize...")
         self.save_checkpoint()
+        # TODO: remove next line?
         self.plot_losses()
 
     def summarize(self, model):
+        """Print summary of given model.
+
+        Parameters
+        ----------
+        model :
+            A Pytorch model containing parameters.
+        """
         print(model)
         total_params = sum(p.numel() for p in model.parameters())
         train_params = sum(p.numel() for p in model.parameters())
