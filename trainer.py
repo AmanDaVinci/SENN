@@ -37,9 +37,10 @@ class Trainer():
         """
         self.config = config
 
-        conceptizer = globals()[config.conceptizer]
-        parameterizer = globals()[config.parameterizer]
-        aggregator = globals()[config.aggregator]
+        # get appropriate models from global namespace and instantiate them
+        conceptizer = globals()[config.conceptizer](**config.__dict__)
+        parameterizer = globals()[config.parameterizer](**config.__dict__)
+        aggregator = globals()[config.aggregator](**config.__dict__)
         self.model = SENN(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
         self.summarize(self.vae)
