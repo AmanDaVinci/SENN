@@ -1,3 +1,5 @@
+"""Main entry point of program. Here, a config file is parsed and the trainer is instantiated and run."""
+
 import os
 import argparse
 import json
