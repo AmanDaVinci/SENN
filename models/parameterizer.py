@@ -58,7 +58,7 @@ class MNISTParameterizer(nn.Module):
             Indicates the size of the kernel window for the convolutional layers.
         hidden_sizes : iterable of int
             Indicates the size of each fully connected layer in the network. The first element corresponds to
-            the number of input features.
+            the number of input features. The last element must be equal to the number of output classes.
         dropout : float
             Indicates the dropout probability.
         """
@@ -100,7 +100,7 @@ class MNISTParameterizer(nn.Module):
         Returns
         -------
         parameters : torch.Tensor
-            Relevance scores associated with concepts. Of shape (NUM_CONCEPTS, *)
+            Relevance scores associated with concepts. Of shape (BATCH, NUM_CONCEPTS * NUM_CLASSES)
         """
         return self.fc_layers(torch.flatten(self.cl_layers(x)))
 
