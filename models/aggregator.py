@@ -39,5 +39,5 @@ class SumAggregator(nn.Module):
         if num_classes == 1:
             class_predictions = torch.sigmoid(aggregated)
         else:
-            class_predictions = F.log_softmax
+            class_predictions = F.log_softmax(aggregated)
         return class_predictions
