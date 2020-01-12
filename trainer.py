@@ -9,6 +9,7 @@ from functools import partial
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as opt
 import torchvision.utils as vutils
 
@@ -46,6 +47,11 @@ class Trainer():
         self.summarize(self.vae)
 
         self.trainloader, self.valloader, _ = get_dataloader(config)
+        if config.num_classes == 1:
+            self.classification_loss = F.binary_cross_entropy
+        else:
+            self.classification_loss = F.nll_loss
+        self.concept_loss = F.mse_loss
         # TODO: optimizer in config
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
@@ -90,22 +96,21 @@ class Trainer():
         """
         self.model.train()
 
-        for i, xb in enumerate(self.trainloader):
+        for i, (xb, labels) in enumerate(self.trainloader):
             xb = xb.to(self.device)
             self.opt.zero_grad()
 
             # TODO: GET JACOBIAN CORRECTLY
             # concepts = self.model.get_concepts(xb)
 
-            y_pred, (concepts, parameters) = self.model(xb)
+            y_pred, (concepts, parameters), xb_hat = self.model(xb)
 
             # TODO: compute losses
-            classification_loss = 0
-            concept_loss = 0
+            # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
             robustness_loss = 0
-            loss = classification_loss + \
-                   self.config.concept_reg * concept_loss + \
-                   self.config.robust_reg * robustness_loss
+            loss = self.classification_loss(y_pred, labels) + \
+                   self.config.robust_reg * robustness_loss + \
+                   self.config.concept_reg * self.concept_loss(xb, xb_hat)
             loss.backward()
             self.opt.step()
 
