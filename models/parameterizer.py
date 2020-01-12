@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torchvision.utils as vutils
 
@@ -68,7 +69,7 @@ class MNISTParameterizer(nn.Module):
         self.dropout = dropout
 
         cl_layers = []
-        for h, h_next in zip(hidden_sizes, hidden_sizes[1:]):
+        for h, h_next in zip(cl_sizes, cl_sizes[1:]):
             cl_layers.append(nn.Conv2d(h, h_next, kernel_size=self.kernel_size))
             # TODO: maybe adaptable parameters for pool kernel size and stride
             cl_layers.append(nn.MaxPool2d(3, stride=2))
@@ -101,7 +102,7 @@ class MNISTParameterizer(nn.Module):
         parameters : torch.Tensor
             Relevance scores associated with concepts. Of shape (NUM_CONCEPTS, *)
         """
-        return self.fc_layers(self.cl_layers(x).flatten())
+        return self.fc_layers(torch.flatten(self.cl_layers(x)))
 
 
 
