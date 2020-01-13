@@ -3,6 +3,7 @@ from datasets.load_mnist import load_mnist
 from models.conceptizer import *
 from models.parameterizer import *
 from models.aggregator import *
+from losses import *
 
 import os
 from functools import partial
@@ -51,7 +52,7 @@ class Trainer():
             self.classification_loss = F.binary_cross_entropy
         else:
             self.classification_loss = F.nll_loss
-        self.concept_loss = F.mse_loss
+        self.concept_loss = mse_kl_sparsity
         # TODO: optimizer in config
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
@@ -110,7 +111,7 @@ class Trainer():
             robustness_loss = 0
             loss = self.classification_loss(y_pred, labels) + \
                    self.config.robust_reg * robustness_loss + \
-                   self.config.concept_reg * self.concept_loss(xb, xb_hat)
+                   self.config.concept_reg * self.concept_loss(xb, xb_hat, self.config.sparsity, concepts)
             loss.backward()
             self.opt.step()
 
