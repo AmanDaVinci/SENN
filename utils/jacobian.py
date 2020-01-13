@@ -9,23 +9,23 @@ def jacobian(f, x, out_dim):
     ----------
     f : torch.nn.Module
         Function as a pytorch module. Jacobian will be computed against this. 
-    x : torch.Tensor
-        Input data tensor of shape (BATCH, *). Only restriction on the shape is that
-        the first dimension should correspond to the batch size.
+    x : torch.tensor
+        Input data tensor of shape (batch_size x input_dim).
+        This object is not mutated and a clone is used for the forward pass.
     out_dim : int
         outer dimension of the function f 
 
     Returns
     -------
-    jacobian_fx : torch.Tensor
+    jacobian_fx : torch.tensor
         jacobian as a tensor of shape (batch_size x output_dim x input_dim)
     """
-    bsize = x.size()[0]
+    input = torch.tensor(x.clone().detach(), requires_grad=True)
+    bsize = input.size()[0]
     # (bs, in_dim) --repeated--> (bs, out_dim, in_dim)
-    x = x.unsqueeze(1).repeat(1, out_dim, 1)
-    x.requires_grad_(True)
-    y = f(x)
+    input = input.unsqueeze(1).repeat(1, out_dim, 1)
+    out = f(input)
     # for autograd of non-scalar outputs
     grad_matrix = torch.eye(out_dim).reshape(1,out_dim, out_dim).repeat(bsize, 1, 1)
-    y.backward(grad_matrix)
-    return x.grad.data
+    out.backward(grad_matrix)
+    return input.grad.data
