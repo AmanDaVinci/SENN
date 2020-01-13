@@ -1,5 +1,5 @@
 from models.senn import SENN
-from datasets.load_mnist import load_mnist
+from datasets.dataloaders import get_dataloader
 from models.conceptizer import *
 from models.parameterizer import *
 from models.aggregator import *
