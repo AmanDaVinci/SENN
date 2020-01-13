@@ -44,7 +44,7 @@ class Trainer():
         aggregator = globals()[config.aggregator](**config.__dict__)
         self.model = SENN(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
-        self.summarize(self.vae)
+        self.summarize(self.model)
 
         self.trainloader, self.valloader, _ = get_dataloader(config)
         if config.num_classes == 1:
@@ -117,8 +117,8 @@ class Trainer():
             # --- Report Training Progress --- #
             self.current_iter += 1
             self.losses.append(loss.item())
-            self.classification_losses.append(classification_loss.item())
-            self.concept_losses.append(concept_loss.item())
+            self.classification_losses.append(self.classification_loss.item())
+            self.concept_losses.append(self.concept_loss.item())
             self.robustness_losses.append(robustness_loss.item())
 
             # TODO: fix this
@@ -134,12 +134,12 @@ class Trainer():
         Model performance is validated by computing loss and accuracy measures, storing them,
         and reporting them.
         """
-        self.vae.eval()
+        self.model.eval()
         with torch.no_grad():
             xb = next(iter(self.valloader))
             xb = xb.reshape(-1, self.config.x_dim).to(self.device)
-            xb_hat, mean, logvar = self.vae(xb)
-            elbo, l_recon, l_reg = self.vae.elbo(xb_hat, xb, mean, logvar)
+            xb_hat, mean, logvar = self.model(xb)
+            elbo, l_recon, l_reg = self.model.elbo(xb_hat, xb, mean, logvar)
             # --- Report Validation --- #
             report = (f"VALIDATION STEP:\t"
                       f"Recon_Loss:{l_recon.item():.3f} Reg_Loss:{l_reg.item():.3f} \t"
@@ -156,7 +156,7 @@ class Trainer():
         to keep track of training progress
         """
         with torch.no_grad():
-            samples, _ = self.vae.sample(self.config.sample_size)
+            samples, _ = self.model.sample(self.config.sample_size)
             img_samples = samples.view(self.config.sample_size, 1, 28, 28)
             grid_imgs = vutils.make_grid(img_samples, nrow=5)
             plt.imshow(np.transpose(grid_imgs, (1,2,0)), cmap='binary')
