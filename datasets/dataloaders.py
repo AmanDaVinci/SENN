@@ -7,7 +7,8 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, random_split
-import requests
+import urllib.request
+import shutil
 
 
 def get_dataloader(config):
@@ -176,6 +177,7 @@ def download_compas_data(store_path):
     store_path : str
         Data storage location.
     """
+    # Download the file from `url` and save it locally under `file_name`:
     url = 'https://github.com/propublica/compas-analysis/raw/master/compas-scores-two-years.csv'
-    r = requests.get(url, allow_redirects=True)
-    open(store_path, 'wb').write(r.content)
+    with urllib.request.urlopen(url) as response, open(store_path, 'wb') as out_file:
+       shutil.copyfileobj(response, out_file)
