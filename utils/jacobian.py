@@ -5,6 +5,10 @@ def jacobian(f, x, out_dim):
     Computes Jacobian Matrix J: batch_size x output_dim x input_dim
     By passing a gradient matrix to the backward call of the output tensor
 
+    NOTE:
+    This implementation only works for two dimensional f and x
+    If not true, it proceeds with the assumption that the third dimension is 1
+
     Parameters
     ----------
     f : torch.nn.Module
@@ -20,11 +24,13 @@ def jacobian(f, x, out_dim):
     jacobian_fx : torch.tensor
         jacobian as a tensor of shape (batch_size x output_dim x input_dim)
     """
-    input = torch.tensor(x.clone().detach(), requires_grad=True)
+    input = x.clone().detach()
     bsize = input.size()[0]
     # (bs, in_dim) --repeated--> (bs, out_dim, in_dim)
     input = input.unsqueeze(1).repeat(1, out_dim, 1)
-    out = f(input)
+    input.requires_grad_(True)
+    # can only compute Jacobian of inputs and outputs with 2 dimensions
+    out = f(input).reshape(bsize, out_dim, out_dim)
     # for autograd of non-scalar outputs
     grad_matrix = torch.eye(out_dim).reshape(1,out_dim, out_dim).repeat(bsize, 1, 1)
     out.backward(grad_matrix)
