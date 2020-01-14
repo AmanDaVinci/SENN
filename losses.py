@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from utils.jacobian import jacobian
 
-def get_robust_loss(x, relevances, SENN):
+def robustness_loss(x, relevances, SENN):
     """Computes Robustness Loss given by Alvarez-Melis & Jaakkola (2018)
     [https://papers.nips.cc/paper/8003-towards-robust-interpretability-with-self-explaining-neural-networks.pdf]
 
@@ -14,12 +14,12 @@ def get_robust_loss(x, relevances, SENN):
     relevances   : torch.tensor
                  Relevances from Parameterizer as (batch_size x num_concepts x num_classes)
     SENN         : nn.Module
-                 SENN containing a method called .conceptizer.encode() 
+                 SENN containing a method for .conceptizer.encode() 
 
     Returns
     -------
-    robust_loss  : torch.tensor
-        Robustness loss is meaned across (batch_size x num_classes x num_features)
+    robustness_loss  : torch.tensor
+        Robustness loss is averaged across (batch_size x num_classes x num_features)
     """
     num_concepts = relevances.size()[1]
     num_classes = relevances.size()[2]
@@ -30,9 +30,9 @@ def get_robust_loss(x, relevances, SENN):
 
     J_yx = jacobian(y_SENN, x, num_classes)
     J_hx = jacobian(SENN.conceptizer.encode, x, num_concepts)
-    robust_loss = (J_yx - torch.bmm(relevances.permute(0,2,1), J_hx))
+    robustness_loss = (J_yx - torch.bmm(relevances.permute(0,2,1), J_hx))
     
-    return robust_loss.mean()
+    return robustness_loss.mean()
 
 def weighted_mse(x, x_hat, sparsity):
     return sparsity * F.mse_loss(x,x_hat)
