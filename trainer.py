@@ -11,6 +11,7 @@ import torch.nn.functional as F
 import torch.optim as opt
 import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
+from losses import robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -57,6 +58,7 @@ class Trainer():
         else:
             self.classification_loss = F.nll_loss
         self.concept_loss = mse_kl_sparsity
+        self.robustness_loss = robustness_loss
 
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
@@ -112,7 +114,7 @@ class Trainer():
         self.model.train()
 
         for i, (x, labels) in enumerate(self.train_loader):
-            x = x.to(self.device)
+            x = x.float().to(self.config.device)
             self.opt.zero_grad()
 
             # run x through SENN
@@ -120,10 +122,10 @@ class Trainer():
 
             # TODO: compute losses
             # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
-            classification_loss = self.classification_loss(y_pred, labels).item()
+            classification_loss = self.classification_loss(y_pred, labels)
             # TODO: arguments of robustness loss
-            robustness_loss = self.robustness_loss().item()
-            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
+            robustness_loss = self.robustness_loss(x, parameters, self.model)
+            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
             total_loss = classification_loss + \
                            self.config.robust_reg * robustness_loss + \
@@ -131,13 +133,13 @@ class Trainer():
             total_loss.backward()
             self.opt.step()
 
-            accuracy = self.accuracy(x, labels)
+            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
 
             # --- Report Training Progress --- #
             self.current_iter += 1
             self.losses.append(total_loss.item())
-            self.classification_losses.append(self.classification_loss.item())
-            self.concept_losses.append(self.concept_loss.item())
+            self.classification_losses.append(classification_loss.item())
+            self.concept_losses.append(concept_loss.item())
             self.robustness_losses.append(robustness_loss.item())
 
             self.writer.add_scalar('Loss/Train/Classification', classification_loss, self.current_iter)
@@ -164,7 +166,7 @@ class Trainer():
         self.model.eval()
         with torch.no_grad():
             x, labels = next(iter(self.val_loader))
-            x = x.to(self.device)
+            x = x.float().to(self.config.device)
 
             # run x through SENN
             y_pred, (concepts, parameters), x_reconstructed = self.model(x)
@@ -173,14 +175,14 @@ class Trainer():
             # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
             classification_loss = self.classification_loss(y_pred, labels).item()
             # TODO: arguments of robustness loss
-            robustness_loss = self.robustness_loss().item()
+            robustness_loss = self.robustness_loss(x, parameters, self.model)
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
 
             total_loss = classification_loss + \
                            self.config.robust_reg * robustness_loss + \
                            self.config.concept_reg * concept_loss
 
-            accuracy = self.accuracy(x, labels)
+            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
 
             # --- Report Training Progress --- #
             self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
@@ -191,9 +193,9 @@ class Trainer():
             # --- Report Validation --- #
             report = (
                      f"Total Loss:{total_loss:.3f} \t"
-                     f"Classification Loss:{classification_loss.item():.3f} \t"
-                     f"Robustness Loss:{robustness_loss.item():.3f} \t"
-                     f"Concept Loss:{concept_loss.item():.3f} \t"
+                     f"Classification Loss:{classification_loss:.3f} \t"
+                     f"Robustness Loss:{robustness_loss:.3f} \t"
+                     f"Concept Loss:{concept_loss:.3f} \t"
                      f"Accuracy:{accuracy:.3f} \t"
                      )
             print(report)

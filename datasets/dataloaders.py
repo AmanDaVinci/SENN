@@ -124,12 +124,12 @@ class CompasDataset(Dataset):
         return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
 
-def load_compas(compas_path, train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
+def load_compas(data_path="datasets/data/compas.csv", train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
     """Return compas dataloaders.
 
     Parameters
     ----------
-    compas_path : str
+    data_path : str
         Path of compas data.
     train_percent : float
         What percentage of samples should be used as the training set. The rest is used
@@ -146,9 +146,9 @@ def load_compas(compas_path, train_percent=0.8, batch_size=200, num_workers=4, v
     test_loader
         Dataloader for testing set.
     """
-    if not os.path.isfile(compas_path):
-        download_compas_data(compas_path)
-    dataset = CompasDataset(compas_path)
+    if not os.path.isfile(data_path):
+        download_compas_data(data_path)
+    dataset = CompasDataset(data_path)
 
     # Split into training and test
     train_size = int(train_percent * len(dataset))

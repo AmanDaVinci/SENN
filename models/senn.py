@@ -33,6 +33,7 @@ class SENN(nn.Module):
             h_i represents concept i. The aggregator defines the function g, i.e. how each
             concept with its relevance score is combined into a prediction.
         """
+        super().__init__()
         self.conceptizer = conceptizer
         self.parameterizer = parameterizer
         self.aggregator = aggregator

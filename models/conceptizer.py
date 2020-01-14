@@ -51,9 +51,9 @@ class IdentityConceptizer(Conceptizer):
         Returns
         -------
         concepts : torch.Tensor
-            Unchanged input features (identical to x)
+            Unchanged input features (BATCH, INPUT_FEATURES, 1).
         """
-        return x
+        return x.unsqueeze(-1)
 
     def decode(self, z):
         """Decoder of Identity Conceptizer.

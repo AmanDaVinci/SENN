@@ -8,7 +8,7 @@ class SumAggregator(nn.Module):
         """
         super().__init__()
 
-    def forward(self, concepts, relevances, num_concepts, num_classes):
+    def forward(self, concepts, relevances):#, num_concepts, num_classes):
         """Forward pass of Sum Aggregator.
 
         Aggregates concepts and relevances and returns the predictions for each class.
@@ -31,11 +31,11 @@ class SumAggregator(nn.Module):
 
         TODO add assertions for matching dimensions, maybe?
         """
-        relevances = relevances.view(-1, num_classes, num_concepts)
+        # relevances = relevances.view(-1, num_classes, num_concepts)
 
-        aggregated = torch.bmm(relevances, concepts).squeeze(-1)
+        aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
 
-        if num_classes == 1:
+        if relevances.size(1) == 1:
             class_predictions = torch.sigmoid(aggregated)
         else:
             class_predictions = F.log_softmax(aggregated)
