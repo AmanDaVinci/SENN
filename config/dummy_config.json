@@ -1,4 +1,5 @@
 {
+  "exp_name": "Dummy",
   "conceptizer": "MNISTConceptizer",
   "parameterizer": "MNISTParameterizer",
   "cl_sizes": [1, 10, 20],
