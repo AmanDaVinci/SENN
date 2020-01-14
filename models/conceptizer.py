@@ -12,15 +12,15 @@ class IdentityConceptizer(nn.Module):
         """
         super().__init__()
 
-    def forward(self, x):
-        """Forward pass of Identity Conceptizer.
+    def encode(self, x):
+        """Encoder of Identity Conceptizer.
 
-        Returns the unchanged input features as concepts.
+        Returns the unchanged input features as concepts (use of raw features -> no concept computation).
 
         Parameters
         ----------
         x : torch.Tensor
-            Input data tensor of shape (BATCH, *).
+            Input data tensor of shape (BATCH, INPUT_FEATURES).
 
         Returns
         -------
@@ -28,6 +28,23 @@ class IdentityConceptizer(nn.Module):
             Unchanged input features (identical to x)
         """
         return x
+
+    def decode(self, z):
+        """Decoder of Identity Conceptizer.
+
+        Returns the unchanged input features as concepts (use of raw features -> no concept computation).
+
+        Parameters
+        ----------
+        z : torch.Tensor
+            Output of encoder (identical to encoder input x), size: (BATCH, INPUT_FEATURES).
+
+        Returns
+        -------
+        reconst : torch.Tensor
+            Unchanged input features (identical to x)
+        """
+        return z
 
 class MNISTConceptizer(nn.Module):
     def __init__(self, **kwargs):
