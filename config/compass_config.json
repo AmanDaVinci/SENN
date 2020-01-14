@@ -1,4 +1,5 @@
 {
+  "exp_name": "Compass_Debug",
   "conceptizer": "IdentityConceptizer",
   "parameterizer": "CompassParameterizer",
   "hidden_sizes": [10, 5, 5, 10],
