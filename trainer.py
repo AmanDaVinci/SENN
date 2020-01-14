@@ -6,18 +6,22 @@ from models.aggregator import *
 from losses import *
 
 import os
+from os import path
 from functools import partial
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as opt
 import torchvision.utils as vutils
+from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-talk')
 
+RESULTS_DIR = 'results'
+CHECKPOINT_DIR = 'checkpoints' 
+LOG_DIR = 'logs'
 
 class Trainer():
     def __init__(self, config):
@@ -47,13 +51,13 @@ class Trainer():
         self.model.to(config.device)
         self.summarize(self.model)
 
-        self.trainloader, self.valloader, _ = get_dataloader(config)
+        self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
         if config.num_classes == 1:
             self.classification_loss = F.binary_cross_entropy
         else:
             self.classification_loss = F.nll_loss
         self.concept_loss = mse_kl_sparsity
-        # TODO: optimizer in config
+
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
         # trackers
@@ -63,7 +67,17 @@ class Trainer():
         self.robustness_losses = []
         self.current_iter = 0
         self.current_epoch = 0
-        os.makedirs(config.checkpoint_dir, exist_ok=True)
+
+        # directories for saving results
+        self.experiment_dir = path.join(RESULTS_DIR, config.experiment_dir)
+        self.checkpoint_dir = path.join(self.experiment_dir, CHECKPOINT_DIR)
+        self.log_dir = path.join(self.experiment_dir, LOG_DIR)
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+        os.makedirs(self.experiment_dir, exist_ok=True)
+        os.makedirs(self.checkpoint_dir, exist_ok=True)
+        os.makedirs(self.log_dir, exist_ok=True)
+
+        self.writer = SummaryWriter(log_dir=self.log_dir)
 
         if hasattr(config, "load_checkpoint"):
             self.load_checkpoint(config.load_checkpoint)
@@ -84,8 +98,8 @@ class Trainer():
             self.current_epoch = epoch
             self.train_one_epoch(self.current_epoch)
             # TODO: remove next 2 lines?
-            # self.validate()
-            # self.save_checkpoint()
+            self.validate()
+            self.save_checkpoint()
 
     def train_one_epoch(self, epoch):
         """Run one epoch of training.
@@ -97,37 +111,49 @@ class Trainer():
         """
         self.model.train()
 
-        for i, (xb, labels) in enumerate(self.trainloader):
-            xb = xb.to(self.device)
+        for i, (x, labels) in enumerate(self.train_loader):
+            x = x.to(self.device)
             self.opt.zero_grad()
 
-            # TODO: GET JACOBIAN CORRECTLY
-            # concepts = self.model.get_concepts(xb)
-
-            y_pred, (concepts, parameters), xb_hat = self.model(xb)
+            # run x through SENN
+            y_pred, (concepts, parameters), x_reconstructed = self.model(x)
 
             # TODO: compute losses
             # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
-            robustness_loss = 0
-            loss = self.classification_loss(y_pred, labels) + \
-                   self.config.robust_reg * robustness_loss + \
-                   self.config.concept_reg * self.concept_loss(xb, xb_hat, self.config.sparsity, concepts)
-            loss.backward()
+            classification_loss = self.classification_loss(y_pred, labels).item()
+            # TODO: arguments of robustness loss
+            robustness_loss = self.robustness_loss().item()
+            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
+
+            total_loss = classification_loss + \
+                           self.config.robust_reg * robustness_loss + \
+                           self.config.concept_reg * concept_loss
+            total_loss.backward()
             self.opt.step()
+
+            accuracy = self.accuracy(x, labels)
 
             # --- Report Training Progress --- #
             self.current_iter += 1
-            self.losses.append(loss.item())
+            self.losses.append(total_loss.item())
             self.classification_losses.append(self.classification_loss.item())
             self.concept_losses.append(self.concept_loss.item())
             self.robustness_losses.append(robustness_loss.item())
 
-            # TODO: fix this
-            # if i%self.config.print_freq == 0:
-            #     report = (f"EPOCH:{epoch} STEP:{i} \t"
-            #               f"Class_Loss:{l_recon.item():.3f} Reg_Loss:{l_reg.item():.3f} \t"
-            #               f"ELBO: {elbo.item():.3f}\t")
-            #     print(report)
+            self.writer.add_scalar('Loss/Train/Classification', classification_loss, self.current_iter)
+            self.writer.add_scalar('Loss/Train/Robustness', robustness_loss, self.current_iter)
+            self.writer.add_scalar('Loss/Train/Concept', concept_loss, self.current_iter)
+            self.writer.add_scalar('Loss/Train/Total', total_loss, self.current_iter)
+            self.writer.add_scalar('Accuracy/Train', accuracy, self.current_iter)
+
+            if i % self.config.print_freq == 0:
+               report = (f"EPOCH:{epoch} STEP:{i} \t"
+                         f"Total Loss:{total_loss:.3f} \t"
+                         f"Classification Loss:{classification_loss.item():.3f} \t"
+                         f"Robustness Loss:{robustness_loss.item():.3f} \t"
+                         f"Concept Loss Loss:{concept_loss.item():.3f} \t"
+                         )
+               print(report)
                         
     def validate(self):
         """Validate model performance.
@@ -137,32 +163,58 @@ class Trainer():
         """
         self.model.eval()
         with torch.no_grad():
-            xb = next(iter(self.valloader))
-            xb = xb.reshape(-1, self.config.x_dim).to(self.device)
-            xb_hat, mean, logvar = self.model(xb)
-            elbo, l_recon, l_reg = self.model.elbo(xb_hat, xb, mean, logvar)
+            x, labels = next(iter(self.val_loader))
+            x = x.to(self.device)
+
+            # run x through SENN
+            y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+
+            # TODO: compute losses
+            # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
+            classification_loss = self.classification_loss(y_pred, labels).item()
+            # TODO: arguments of robustness loss
+            robustness_loss = self.robustness_loss().item()
+            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
+
+            total_loss = classification_loss + \
+                           self.config.robust_reg * robustness_loss + \
+                           self.config.concept_reg * concept_loss
+
+            accuracy = self.accuracy(x, labels)
+
+            # --- Report Training Progress --- #
+            self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
+            self.writer.add_scalar('Loss/Valid/Robustness', robustness_loss, self.current_iter)
+            self.writer.add_scalar('Loss/Valid/Concept', concept_loss, self.current_iter)
+            self.writer.add_scalar('Loss/Valid/Total', total_loss, self.current_iter)
+            self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
             # --- Report Validation --- #
-            report = (f"VALIDATION STEP:\t"
-                      f"Recon_Loss:{l_recon.item():.3f} Reg_Loss:{l_reg.item():.3f} \t"
-                      f"ELBO: {elbo.item():.3f}\t")
+            report = (
+                     f"Total Loss:{total_loss:.3f} \t"
+                     f"Classification Loss:{classification_loss.item():.3f} \t"
+                     f"Robustness Loss:{robustness_loss.item():.3f} \t"
+                     f"Concept Loss:{concept_loss.item():.3f} \t"
+                     f"Accuracy:{accuracy:.3f} \t"
+                     )
             print(report)
-            self.val_iters.append(self.current_iter)
-            self.val_elbo_losses.append(elbo.item())
 
+    def accuracy(self, y_pred, y):
+        """Return accuracy of predictions with respect to ground truth.
 
-    # TODO: remove?
-    def sample(self, epoch, step=0):
+        Parameters
+        ----------
+        y_pred : torch.Tensor, shape (BATCH,)
+            Predictions of ground truth.
+        y : torch.Tensor, shape (BATCH,)
+            Ground truth.
+
+        Returns
+        -------
+        float:
+            accuracy of predictions
         """
-        Generate images from fixed noise
-        to keep track of training progress
-        """
-        with torch.no_grad():
-            samples, _ = self.model.sample(self.config.sample_size)
-            img_samples = samples.view(self.config.sample_size, 1, 28, 28)
-            grid_imgs = vutils.make_grid(img_samples, nrow=5)
-            plt.imshow(np.transpose(grid_imgs, (1,2,0)), cmap='binary')
-            plt.axis("off")
-            plt.savefig(self.config.image_dir + f"Epoch{epoch}_Step{step}.png")
+        return (y_pred == y).float().mean().item()
+
 
     def load_checkpoint(self, file_name):
         """Load most recent checkpoint.
@@ -181,7 +233,7 @@ class Trainer():
             Name of the checkpoint file.
         """
         try:
-            file_name = self.config.checkpoint_dir + file_name
+            file_name = self.checkpoint_dir + file_name
             print(f"Loading checkpoint...")
             with open(file_name, 'rb') as f:
                 checkpoint = torch.load(f, self.device)
@@ -192,19 +244,19 @@ class Trainer():
             self.opt.load_state_dict(checkpoint['optimizer'])
 
             print(f"Checkpoint loaded successfully from '{file_name}'\n")
-        
+
         except OSError as e:
-            print("No checkpoint exists @ {self.config.checkpoint_dir}")
+            print("No checkpoint exists @ {self.checkpoint_dir}")
             print("**Training for the first time**")
 
 
     def save_checkpoint(self):
         """Save checkpoint in the checkpoint directory.
-        
+
         Checkpoint dir and checkpoint_file need to be specified in the config.
         """
-        file_name = self.config.checkpoint_dir+self.config.checkpoint_file
-        file_name = file_name+f"_Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
+        file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
+        file_name = path.join(self.checkpoint_dir, file_name)
         state = {
             'epoch': self.current_epoch,
             'iter': self.current_iter,
@@ -215,22 +267,6 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
-    # TODO: remove this function?
-    def plot_losses(self):
-        """Generate a plot of G & D losses"""
-        img_dir = self.config.image_dir
-        imgname = img_dir + f"Loss_Epoch[{self.current_epoch}]-Step[{self.current_iter}].png"
-        fig, ax = plt.subplots(figsize=(15,10))
-        ax.scatter(self.val_iters, self.val_elbo_losses, color='red', label="Validation ELBO")
-        ax.plot(self.iters, self.elbo_losses, "g:", alpha=0.7, label="Training ELBO")
-        ax.plot(self.iters, self.recon_losses, alpha=0.3, label="Reconstruction Loss")
-        ax.plot(self.iters, self.reg_losses, alpha=0.3, label="KL Divergence")
-        ax.set_xlabel("Iterations")
-        ax.set_ylabel("Loss")
-        ax.legend()
-        fig.tight_layout()
-        plt.savefig(imgname)
-        print(f"Loss curves plotted @ {imgname}")
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
@@ -239,8 +275,6 @@ class Trainer():
         """
         print("Please wait while we finalize...")
         self.save_checkpoint()
-        # TODO: remove next line?
-        self.plot_losses()
 
     def summarize(self, model):
         """Print summary of given model.
