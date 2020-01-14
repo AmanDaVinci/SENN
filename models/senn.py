@@ -64,7 +64,7 @@ class SENN(nn.Module):
         parameters = self.parameterizer(x)
         predictions = self.aggregator(concepts, parameters)
         explanations = (concepts, parameters)
-        return predictions, explanations 
+        return predictions, explanations, recon_x
 
     # TODO: do we need this function?
     def get_concepts(self, x):
