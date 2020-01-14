@@ -16,7 +16,7 @@ class SumAggregator(nn.Module):
         Parameters
         ----------
         concepts : torch.Tensor
-            Contains the output of the conceptizer with shape (BATCH, NUM_CONCEPTS).
+            Contains the output of the conceptizer with shape (BATCH, NUM_CONCEPTS, DIM_CONCEPT=1).
         relevances : torch.Tensor
             Contains the output of the parameterizer with shape (BATCH, NUM_CONCEPTS * NUM_CLASSES).
         num_concepts : int
@@ -31,7 +31,6 @@ class SumAggregator(nn.Module):
 
         TODO add assertions for matching dimensions, maybe?
         """
-        concepts = concepts.unsqueeze(-1)
         relevances = relevances.view(-1, num_classes, num_concepts)
 
         aggregated = torch.bmm(relevances, concepts).squeeze(-1)
