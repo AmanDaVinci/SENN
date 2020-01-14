@@ -39,9 +39,10 @@ class Conceptizer(nn.Module):
 
 
 class Conceptizer_CNN(Conceptizer):
-    def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=[10],
-                 decoder_channels=[16, 8], kernel_size_conv=5, kernel_size_upsample=[5, 5, 2],
-                 stride_conv=1, stride_pool=2, stride_upsample=[2, 1, 2], padding_conv=0, padding_upsample=[0, 0, 1]):
+    def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=(10,),
+                 decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
+                 stride_conv=1, stride_pool=2, stride_upsample=(2, 1, 2),
+                 padding_conv=0, padding_upsample=(0, 0, 1), **kwargs):
         """
         CNN Autoencoder used to learn the concepts, present in an input image
 
@@ -55,23 +56,23 @@ class Conceptizer_CNN(Conceptizer):
             the dimension of each concept to be learned
         image_channels : int
             the number of channels of the input images
-        encoder_channels : list[int]
+        encoder_channels : tuple[int]
             a list with the number of channels for the hidden convolutional layers
-        decoder_channels : list[int]
+        decoder_channels : tuple[int]
             a list with the number of channels for the hidden upsampling layers
-        kernel_size_conv : int, list[int]
+        kernel_size_conv : int, tuple[int]
             the size of the kernels to be used for convolution
-        kernel_size_upsample : int, list[int]
+        kernel_size_upsample : int, tuple[int]
             the size of the kernels to be used for upsampling
-        stride_conv : int, list[int]
+        stride_conv : int, tuple[int]
             the stride of the convolutional layers
-        stride_pool : int, list[int]
+        stride_pool : int, tuple[int]
             the stride of the pooling layers
-        stride_upsample : int, list[int]
+        stride_upsample : int, tuple[int]
             the stride of the upsampling layers
-        padding_conv : int, list[int]
+        padding_conv : int, tuple[int]
             the padding to be used by the convolutional layers
-        padding_upsample : int, list[int]
+        padding_upsample : int, tuple[int]
             the padding to be used by the upsampling layers
         """
         super(Conceptizer_CNN, self).__init__()
@@ -79,19 +80,19 @@ class Conceptizer_CNN(Conceptizer):
         self.dout = image_size
 
         # Encoder params
-        encoder_channels.insert(0, image_channels)
+        encoder_channels = (image_channels,) + encoder_channels
         kernel_size_conv = handle_integer_input(kernel_size_conv, len(encoder_channels))
         stride_conv = handle_integer_input(stride_conv, len(encoder_channels))
         stride_pool = handle_integer_input(stride_pool, len(encoder_channels))
         padding_conv = handle_integer_input(padding_conv, len(encoder_channels))
-        encoder_channels.append(concept_num)
+        encoder_channels += (concept_num,)
 
         # Decoder params
-        decoder_channels.insert(0, concept_num)
+        decoder_channels = (concept_num,) + decoder_channels
         kernel_size_upsample = handle_integer_input(kernel_size_upsample, len(decoder_channels))
         stride_upsample = handle_integer_input(stride_upsample, len(decoder_channels))
         padding_upsample = handle_integer_input(padding_upsample, len(decoder_channels))
-        decoder_channels.append(image_channels)
+        decoder_channels += (image_channels,)
 
         # Encoder implementation
         self.encoder = nn.ModuleList()
@@ -254,24 +255,27 @@ def handle_integer_input(input, desired_len):
     """
     Checks if the input is an integer or a list.
     If an integer, it is replicated the number of  desired times
-    If a list, the list is returned as it is
+    If a tuple, the tuple is returned as it is
 
     Parameters
     ----------
-    input : int, list
-        The input can be either a list of parameters or a single parameter to be replicated
+    input : int, tuple
+        The input can be either a tuple of parameters or a single parameter to be replicated
     desired_len : int
         The length of the desired list
 
     Returns
     -------
-    input : list[int]
-        a list of parameters which has the proper length.
+    input : tuple[int]
+        a tuple of parameters which has the proper length.
     """
     if type(input) is int:
-        return [input] * desired_len
-    elif len(input) != desired_len:
-        raise AssertionError("The sizes of the parameters for the CNN conceptizer do not match."
-                             f"Expected {desired_len} but got {len(input)}")
+        return (input,) * desired_len
+    elif type(input) is tuple:
+        if len(input) != desired_len:
+            raise AssertionError("The sizes of the parameters for the CNN conceptizer do not match."
+                                 f"Expected '{desired_len}', but got '{len(input)}'")
+        else:
+            return input
     else:
-        return input
+        raise TypeError(f"Wrong type of the parameters. Expected tuple or int but got '{type(input)}'")
