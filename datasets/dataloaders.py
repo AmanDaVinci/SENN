@@ -138,10 +138,12 @@ def load_compas(compas_path, train_percent=0.8, batch_size=200, **kwargs):
 
     Returns
     -------
-    train_loader : pytorch dataloader
-        Returns batches of training set.
-    test_loader : pytorch dataloader
-        Returns batches of test set.
+    train_loader
+        Dataloader for training set.
+    valid_loader
+        Dataloader for validation set.
+    test_loader
+        Dataloader for testing set.
     """
     if not os.path.isfile(compas_path):
         download_compas_data(compas_path)
@@ -152,11 +154,18 @@ def load_compas(compas_path, train_percent=0.8, batch_size=200, **kwargs):
     test_size = len(dataset) - train_size
     trainset, testset = random_split(dataset, [train_size, test_size])
 
-    # Dataloaders
-    train_loader = DataLoader(trainset, batch_size=200, shuffle=True)
-    test_loader = DataLoader(testset, batch_size=200, shuffle=False)
+    indices = list(range(train_size))
+    validation_split = int(valid_size * train_size)
+    train_sampler = SubsetRandomSampler(indices[validation_split:])
+    valid_sampler = SubsetRandomSampler(indices[:validation_split])
 
-    return train_loader, test_loader
+    # Dataloaders
+    dataloader_args = dict(batch_size=batch_size, num_workers=num_workers, drop_last=True)
+    train_loader = DataLoader(train_set, sampler=train_sampler, **dataloader_args)
+    valid_loader = DataLoader(train_set, sampler=valid_sampler, **dataloader_args)
+    test_loader = DataLoader(test_set, shuffle=False, **dataloader_args)
+
+    return train_loader, valid_loader, test_loader
 
 
 def download_compas_data(store_path):
