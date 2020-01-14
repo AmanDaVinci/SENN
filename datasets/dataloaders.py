@@ -120,10 +120,10 @@ class CompasDataset(Dataset):
         if isinstance(idx, torch.Tensor):
             idx = idx.tolist()
 
-        return [self.X.iloc[idx].values.astype(float), self.y[idx]]
+        return torch.Tensor(self.X.iloc[idx].values.astype(float)), torch.Tensor(self.y[idx])
 
 
-def load_compas(compas_path, train_percent=0.8, batch_size=200, **kwargs):
+def load_compas(compas_path, train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
     """Return compas dataloaders.
 
     Parameters
@@ -152,7 +152,7 @@ def load_compas(compas_path, train_percent=0.8, batch_size=200, **kwargs):
     # Split into training and test
     train_size = int(train_percent * len(dataset))
     test_size = len(dataset) - train_size
-    trainset, testset = random_split(dataset, [train_size, test_size])
+    train_set, test_set = random_split(dataset, [train_size, test_size])
 
     indices = list(range(train_size))
     validation_split = int(valid_size * train_size)
