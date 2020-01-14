@@ -5,7 +5,7 @@ import torchvision.utils as vutils
 
 import numpy as np
 
-class IdentityConceptizer(nn.Module):
+class IdentityConceptizer(Conceptizer):
     def __init__(self, **kwargs):
         """
         Basic Identity Conceptizer that returns the unchanged input features.
