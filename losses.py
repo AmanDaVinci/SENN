@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from utils.jacobian import jacobian
 
-def get_robust_loss(x, relevances, num_concepts, num_classes, SENN):
+def get_robust_loss(x, relevances, SENN):
     """Computes Robustness Loss given by Alvarez-Melis & Jaakkola (2018)
     [https://papers.nips.cc/paper/8003-towards-robust-interpretability-with-self-explaining-neural-networks.pdf]
 
@@ -12,11 +12,7 @@ def get_robust_loss(x, relevances, num_concepts, num_classes, SENN):
     x            : torch.tensor
                  Input as (batch_size x num_features)
     relevances   : torch.tensor
-                 Relevances from Parameterizer as (batch_size x num_concepts x concept_dim)
-    num_concepts : int
-                 Number of concepts where we assume the concept dimension is always 1
-    num_classes  : int
-                 Number of classes as the final prediction 
+                 Relevances from Parameterizer as (batch_size x num_concepts x num_classes)
     SENN         : nn.Module
                  SENN containing a method called .conceptizer.encode() 
 
@@ -25,6 +21,9 @@ def get_robust_loss(x, relevances, num_concepts, num_classes, SENN):
     robust_loss  : torch.tensor
         Robustness loss is meaned across (batch_size x num_classes x num_features)
     """
+    num_concepts = relevances.size()[1]
+    num_classes = relevances.size()[2]
+
     def y_SENN(x):
         y, _, _ = SENN(x)
         return y
