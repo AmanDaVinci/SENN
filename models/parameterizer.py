@@ -4,7 +4,7 @@ import torchvision.utils as vutils
 
 
 class CompasParameterizer(nn.Module):
-    def __init__(self, num_concepts, num_classes, hidden_sizes=(10, 5, 5, 10), **kwargs):
+    def __init__(self, num_concepts, num_classes, hidden_sizes=(10, 5, 5, 10), dropout=0.5, **kwargs):
         """Parameterizer for compas dataset.
         
         Solely consists of fully connected modules.
@@ -18,14 +18,18 @@ class CompasParameterizer(nn.Module):
         hidden_sizes : iterable of int
             Indicates the size of each layer in the network. The first element corresponds to
             the number of input features.
+        dropout : float
+            Indicates the dropout probability.
         """
         super().__init__()
         self.num_concepts = num_concepts
         self.num_classes = num_classes
         self.hidden_sizes = hidden_sizes
+        self.dropout = dropout
         layers = []
         for h, h_next in zip(hidden_sizes, hidden_sizes[1:]):
             layers.append(nn.Linear(h, h_next))
+            layers.append(nn.Dropout(self.dropout))
             layers.append(nn.ReLU())
         layers.pop()
         self.layers = nn.Sequential(*layers)

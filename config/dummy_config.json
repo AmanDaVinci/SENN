@@ -7,7 +7,7 @@
   "dropout": 0.5,
   "aggregator": "SumAggregator",
   "device": "cuda:0",
-  "num_classes": "10",
+  "num_classes": 10,
   "lr": "1e-5",
   "checkpoint_dir": "./saved_checkpoints/",
   "load_checkpoint": "delete this line if not loading from checkpoint",
