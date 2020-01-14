@@ -12,9 +12,9 @@ def get_robust_loss(x, relevances, num_concepts, num_classes, SENN):
     x            : torch.tensor
                  Input as (batch_size x num_features)
     relevances   : torch.tensor
-                 Relevances from Parameterizer as (batch_size x num_concepts x )
+                 Relevances from Parameterizer as (batch_size x num_concepts x concept_dim)
     num_concepts : int
-                 Number of concepts where we assume concept dimension is always 1
+                 Number of concepts where we assume the concept dimension is always 1
     num_classes  : int
                  Number of classes as the final prediction 
     SENN         : nn.Module
@@ -28,9 +28,9 @@ def get_robust_loss(x, relevances, num_concepts, num_classes, SENN):
     def y_SENN(x):
         y, _, _ = SENN(x)
         return y
-    
-    J_hx = jacobian(SENN.conceptizer.encode, x, num_concepts)
+
     J_yx = jacobian(y_SENN, x, num_classes)
+    J_hx = jacobian(SENN.conceptizer.encode, x, num_concepts)
     robust_loss = (J_yx - torch.bmm(relevances.permute(0,2,1), J_hx))
     
     return robust_loss.mean()
