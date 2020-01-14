@@ -121,7 +121,7 @@ class CompasDataset(Dataset):
         if isinstance(idx, torch.Tensor):
             idx = idx.tolist()
 
-        return torch.Tensor(self.X.iloc[idx].values.astype(float)), torch.Tensor(self.y[idx])
+        return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
 
 def load_compas(compas_path, train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
