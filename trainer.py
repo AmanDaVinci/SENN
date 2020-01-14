@@ -1,8 +1,5 @@
 from models.senn import SENN
 from datasets.dataloaders import get_dataloader
-from models.conceptizer import *
-from models.parameterizer import *
-from models.aggregator import *
 from losses import *
 
 import os
@@ -17,6 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import matplotlib.pyplot as plt
+import importlib
 plt.style.use('seaborn-talk')
 
 RESULTS_DIR = 'results'
@@ -43,10 +41,12 @@ class Trainer():
         """
         self.config = config
 
+
         # get appropriate models from global namespace and instantiate them
-        conceptizer = globals()[config.conceptizer](**config.__dict__)
-        parameterizer = globals()[config.parameterizer](**config.__dict__)
-        aggregator = globals()[config.aggregator](**config.__dict__)
+        conceptizer = getattr(importlib.import_module("models.conceptizer"), config.conceptizer)(**config.__dict__)
+        parameterizer = getattr(importlib.import_module("models.parameterizer"), config.parameterizer)(**config.__dict__)
+        aggregator = getattr(importlib.import_module("models.aggregator"), config.aggregator)(**config.__dict__)
+
         self.model = SENN(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
         self.summarize(self.model)
