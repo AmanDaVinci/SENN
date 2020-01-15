@@ -35,7 +35,7 @@ class SumAggregator(nn.Module):
 
         aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
 
-        if relevances.size(1) == 1:
+        if relevances.size(-1) == 1:
             class_predictions = torch.sigmoid(aggregated)
         else:
             class_predictions = F.log_softmax(aggregated)
