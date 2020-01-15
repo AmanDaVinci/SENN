@@ -16,13 +16,15 @@ from losses import robustness_loss
 import numpy as np
 import matplotlib.pyplot as plt
 import importlib
+
 plt.style.use('seaborn-talk')
 
 RESULTS_DIR = 'results'
-CHECKPOINT_DIR = 'checkpoints' 
+CHECKPOINT_DIR = 'checkpoints'
 LOG_DIR = 'logs'
 
-class Trainer():
+
+class Trainer:
     def __init__(self, config):
         """Base Trainer class containing functions to be overloaded by a specific Trainer agent.
         
@@ -42,27 +44,32 @@ class Trainer():
         """
         self.config = config
 
-
         # get appropriate models from global namespace and instantiate them
-        conceptizer = getattr(importlib.import_module("models.conceptizer"), config.conceptizer)(**config.__dict__)
-        parameterizer = getattr(importlib.import_module("models.parameterizer"), config.parameterizer)(**config.__dict__)
-        aggregator = getattr(importlib.import_module("models.aggregator"), config.aggregator)(**config.__dict__)
+        try:
+            conceptizer = getattr(importlib.import_module("models.conceptizer"), config.conceptizer)(**config.__dict__)
+            parameterizer = getattr(importlib.import_module("models.parameterizer"), config.parameterizer)(**config.__dict__)
+            aggregator = getattr(importlib.import_module("models.aggregator"), config.aggregator)(**config.__dict__)
+        except:
+            print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
+            exit(-1)
 
+        # Init model
         self.model = SENN(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
         self.summarize(self.model)
 
+        # Init data
         self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
-        if config.num_classes == 1:
-            self.classification_loss = F.binary_cross_entropy
-        else:
-            self.classification_loss = F.nll_loss
+
+        # Init losses
+        self.classification_loss = F.binary_cross_entropy if config.num_classes == 1 else F.nll_loss
         self.concept_loss = mse_kl_sparsity
         self.robustness_loss = robustness_loss
 
+        # Init optimizer
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
-        # trackers
+        # Init trackers
         self.losses = []
         self.classification_losses = []
         self.concept_losses = []
@@ -70,7 +77,7 @@ class Trainer():
         self.current_iter = 0
         self.current_epoch = 0
 
-        # directories for saving results
+        # Init directories for saving results
         self.experiment_dir = path.join(RESULTS_DIR, config.experiment_dir)
         self.checkpoint_dir = path.join(self.experiment_dir, CHECKPOINT_DIR)
         self.log_dir = path.join(self.experiment_dir, LOG_DIR)
@@ -83,7 +90,7 @@ class Trainer():
 
         if hasattr(config, "load_checkpoint"):
             self.load_checkpoint(config.load_checkpoint)
-    
+
     def run(self):
         """Run the training loop.
         
@@ -96,6 +103,7 @@ class Trainer():
 
     def train(self):
         """Main training loop."""
+        # TODO: if loading from a checkpoint, the current epoch might be larger than epochs already?
         for epoch in range(self.current_epoch, self.config.epochs):
             self.current_epoch = epoch
             self.train_one_epoch(self.current_epoch)
@@ -120,16 +128,14 @@ class Trainer():
             # run x through SENN
             y_pred, (concepts, parameters), x_reconstructed = self.model(x)
 
-            # TODO: compute losses
-            # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
+            # TODO: Definition of concept loss in the paper is inconsistent with source code (need for discussion)
             classification_loss = self.classification_loss(y_pred, labels)
-            # TODO: arguments of robustness loss
             robustness_loss = self.robustness_loss(x, parameters, self.model)
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
             total_loss = classification_loss + \
-                           self.config.robust_reg * robustness_loss + \
-                           self.config.concept_reg * concept_loss
+                         self.config.robust_reg * robustness_loss + \
+                         self.config.concept_reg * concept_loss
             total_loss.backward()
             self.opt.step()
 
@@ -149,14 +155,16 @@ class Trainer():
             self.writer.add_scalar('Accuracy/Train', accuracy, self.current_iter)
 
             if i % self.config.print_freq == 0:
-               report = (f"EPOCH:{epoch} STEP:{i} \t"
-                         f"Total Loss:{total_loss:.3f} \t"
-                         f"Classification Loss:{classification_loss.item():.3f} \t"
-                         f"Robustness Loss:{robustness_loss.item():.3f} \t"
-                         f"Concept Loss Loss:{concept_loss.item():.3f} \t"
-                         )
-               print(report)
-                        
+                report = (f"EPOCH:{epoch} STEP:{i} \n"
+                          f"Total Loss:{total_loss:.3f} \t"
+                          f"Classification Loss:{classification_loss.item():.3f} \t"
+                          f"Robustness Loss:{robustness_loss.item():.3f} \t"
+                          f"Concept Loss:{concept_loss.item():.3f} \t"
+                          f"Accuracy:{accuracy:.3f} \t"
+                          "(TRAIN)"
+                          )
+                print(report)
+
     def validate(self):
         """Validate model performance.
 
@@ -179,8 +187,8 @@ class Trainer():
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
 
             total_loss = classification_loss + \
-                           self.config.robust_reg * robustness_loss + \
-                           self.config.concept_reg * concept_loss
+                         self.config.robust_reg * robustness_loss + \
+                         self.config.concept_reg * concept_loss
 
             accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
 
@@ -192,12 +200,13 @@ class Trainer():
             self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
             # --- Report Validation --- #
             report = (
-                     f"Total Loss:{total_loss:.3f} \t"
-                     f"Classification Loss:{classification_loss:.3f} \t"
-                     f"Robustness Loss:{robustness_loss:.3f} \t"
-                     f"Concept Loss:{concept_loss:.3f} \t"
-                     f"Accuracy:{accuracy:.3f} \t"
-                     )
+                f"Total Loss:{total_loss:.3f} \t"
+                f"Classification Loss:{classification_loss:.3f} \t"
+                f"Robustness Loss:{robustness_loss:.3f} \t"
+                f"Concept Loss:{concept_loss:.3f} \t"
+                f"Accuracy:{accuracy:.3f} \t"
+                "(VALIDATION)"
+            )
             print(report)
 
     def accuracy(self, y_pred, y):
@@ -216,7 +225,6 @@ class Trainer():
             accuracy of predictions
         """
         return (y_pred == y).float().mean().item()
-
 
     def load_checkpoint(self, file_name):
         """Load most recent checkpoint.
@@ -248,9 +256,8 @@ class Trainer():
             print(f"Checkpoint loaded successfully from '{file_name}'\n")
 
         except OSError as e:
-            print("No checkpoint exists @ {self.checkpoint_dir}")
+            print(f"No checkpoint exists @ {self.checkpoint_dir}")
             print("**Training for the first time**")
-
 
     def save_checkpoint(self):
         """Save checkpoint in the checkpoint directory.
@@ -268,7 +275,6 @@ class Trainer():
         with open(file_name, 'wb') as f:
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
-
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
@@ -288,6 +294,4 @@ class Trainer():
         """
         print(model)
         total_params = sum(p.numel() for p in model.parameters())
-        train_params = sum(p.numel() for p in model.parameters())
         print(f"Total Parameters: {total_params}")
-        print(f"Trainable Parameters: {train_params}\n")

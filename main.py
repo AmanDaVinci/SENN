@@ -1,12 +1,12 @@
 """Main entry point of program. Here, a config file is parsed and the trainer is instantiated and run."""
 
-import os
 import argparse
 import json
 from pprint import pprint
 from types import SimpleNamespace
 
 from trainer import Trainer
+
 
 def main():
     # get experiment configuration
@@ -27,6 +27,7 @@ def main():
     trainer = Trainer(config)
     trainer.run()
     trainer.finalize()
+
 
 if __name__ == "__main__":
     main()
