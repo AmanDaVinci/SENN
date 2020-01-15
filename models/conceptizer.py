@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+
 class Conceptizer(nn.Module):
     def __init__(self):
         """
@@ -30,6 +31,7 @@ class Conceptizer(nn.Module):
         encoded = self.encode(x)
         decoded = self.decode(encoded)
         return encoded, decoded.view_as(x)
+
 
 class IdentityConceptizer(Conceptizer):
     def __init__(self, **kwargs):
@@ -71,6 +73,7 @@ class IdentityConceptizer(Conceptizer):
             Unchanged input features (identical to x)
         """
         return z
+
 
 class Conceptizer_CNN(Conceptizer):
     def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=(10,),

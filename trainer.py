@@ -74,6 +74,7 @@ class Trainer:
         self.classification_losses = []
         self.concept_losses = []
         self.robustness_losses = []
+        self.accuracies = []
         self.current_iter = 0
         self.current_epoch = 0
 
@@ -109,7 +110,7 @@ class Trainer:
             self.train_one_epoch(self.current_epoch)
             # TODO: remove next 2 lines?
             self.validate()
-            self.save_checkpoint()
+            # self.save_checkpoint()
 
     def train_one_epoch(self, epoch):
         """Run one epoch of training.
@@ -147,6 +148,7 @@ class Trainer:
             self.classification_losses.append(classification_loss.item())
             self.concept_losses.append(concept_loss.item())
             self.robustness_losses.append(robustness_loss.item())
+            self.accuracies.append(accuracy)
 
             self.writer.add_scalar('Loss/Train/Classification', classification_loss, self.current_iter)
             self.writer.add_scalar('Loss/Train/Robustness', robustness_loss, self.current_iter)
@@ -155,15 +157,20 @@ class Trainer:
             self.writer.add_scalar('Accuracy/Train', accuracy, self.current_iter)
 
             if i % self.config.print_freq == 0:
-                report = (f"EPOCH:{epoch} STEP:{i} \n"
-                          f"Total Loss:{total_loss:.3f} \t"
-                          f"Classification Loss:{classification_loss.item():.3f} \t"
-                          f"Robustness Loss:{robustness_loss.item():.3f} \t"
-                          f"Concept Loss:{concept_loss.item():.3f} \t"
-                          f"Accuracy:{accuracy:.3f} \t"
+                report = (f"\nEPOCH:{epoch} STEP:{i} \n"
+                          f"Total Loss:{np.mean(self.losses):.3f} \t"
+                          f"Classification Loss:{np.mean(self.classification_losses):.3f} \t"
+                          f"Robustness Loss:{np.mean(self.robustness_losses):.3f} \t"
+                          f"Concept Loss:{np.mean(self.concept_losses):.3f} \t"
+                          f"Accuracy:{np.mean(self.accuracies):.3f} \t"
                           "(TRAIN)"
                           )
                 print(report)
+                self.losses = []
+                self.classification_losses = []
+                self.concept_losses = []
+                self.robustness_losses = []
+                self.accuracies = []
 
     def validate(self):
         """Validate model performance.
@@ -171,26 +178,42 @@ class Trainer:
         Model performance is validated by computing loss and accuracy measures, storing them,
         and reporting them.
         """
+        losses_val = []
+        classification_losses_val = []
+        concept_losses_val = []
+        robustness_losses_val = []
+        accuracies_val = []
+
         self.model.eval()
         with torch.no_grad():
-            x, labels = next(iter(self.val_loader))
-            x = x.float().to(self.config.device)
+            for i, (x, labels) in enumerate(self.val_loader):
+                x = x.float().to(self.config.device)
 
-            # run x through SENN
-            y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+                # run x through SENN
+                y_pred, (concepts, parameters), x_reconstructed = self.model(x)
 
-            # TODO: compute losses
-            # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
-            classification_loss = self.classification_loss(y_pred, labels).item()
-            # TODO: arguments of robustness loss
-            robustness_loss = self.robustness_loss(x, parameters, self.model)
-            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
+                # TODO: Definition of concept loss in the paper is inconsistent with source code (need for discussion)
+                classification_loss = self.classification_loss(y_pred, labels)
+                robustness_loss = self.robustness_loss(x, parameters, self.model)
+                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
-            total_loss = classification_loss + \
-                         self.config.robust_reg * robustness_loss + \
-                         self.config.concept_reg * concept_loss
+                total_loss = classification_loss + \
+                             self.config.robust_reg * robustness_loss + \
+                             self.config.concept_reg * concept_loss
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+                accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+
+                losses_val.append(total_loss.item())
+                classification_losses_val.append(classification_loss.item())
+                concept_losses_val.append(concept_loss.item())
+                robustness_losses_val.append(robustness_loss.item())
+                accuracies_val.append(accuracy)
+
+            classification_loss = np.mean(classification_losses_val)
+            robustness_loss = np.mean(robustness_losses_val)
+            concept_loss = np.mean(concept_losses_val)
+            total_loss = np.mean(losses_val)
+            accuracy = np.mean(accuracies_val)
 
             # --- Report Training Progress --- #
             self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
