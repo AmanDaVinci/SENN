@@ -2,10 +2,13 @@ import torch
 import torch.nn.functional as F
 from utils.jacobian import jacobian
 
-def robustness_loss(x, relevances, SENN):
-    """Computes Robustness Loss given by Alvarez-Melis & Jaakkola (2018)
+def compas_robustness_loss(x, relevances, SENN):
+    """Computes Robustness Loss for the Compas data
+    
+    Formulated by Alvarez-Melis & Jaakkola (2018)
     [https://papers.nips.cc/paper/8003-towards-robust-interpretability-with-self-explaining-neural-networks.pdf]
-
+    The loss formulation is specific to the data format
+    The concept dimension is always 1 for this project by design
 
     Parameters
     ----------
@@ -24,12 +27,20 @@ def robustness_loss(x, relevances, SENN):
     num_concepts = relevances.size()[1]
     num_classes = relevances.size()[2]
 
-    def y_SENN(x):
-        y, _, _ = SENN(x)
-        return y
+    def SENN_aggregator(x):
+        aggregate, _, _ = SENN(x)
+        # based on the design decision that concept_dim is always 1
+        aggregate.reshape(-1, num_classes)
+        return aggregate
 
-    J_yx = jacobian(y_SENN, x, num_classes)
-    J_hx = jacobian(SENN.conceptizer.encode, x, num_concepts)
+    def compas_conceptizer(x):
+        concepts = SENN.conceptizer.encode(x)
+        # based on the design decision that concept_dim is always 1
+        concepts.reshape(-1, num_concepts)
+        return concepts
+
+    J_yx = jacobian(SENN_aggregator, x, num_classes)
+    J_hx = jacobian(compas_conceptizer, x, num_concepts)
     robustness_loss = (J_yx - torch.bmm(relevances.permute(0,2,1), J_hx))
     
     return robustness_loss.mean()
