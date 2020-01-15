@@ -88,6 +88,7 @@ class Trainer:
         os.makedirs(self.log_dir, exist_ok=True)
 
         self.writer = SummaryWriter(log_dir=self.log_dir)
+        self.writer.flush()
 
         if hasattr(config, "load_checkpoint"):
             self.load_checkpoint(config.load_checkpoint)
@@ -140,7 +141,7 @@ class Trainer:
             total_loss.backward()
             self.opt.step()
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            accuracy = self.accuracy(y_pred, labels)
 
             # --- Report Training Progress --- #
             self.current_iter += 1
@@ -150,22 +151,29 @@ class Trainer:
             self.robustness_losses.append(robustness_loss.item())
             self.accuracies.append(accuracy)
 
-            self.writer.add_scalar('Loss/Train/Classification', classification_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Train/Robustness', robustness_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Train/Concept', concept_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Train/Total', total_loss, self.current_iter)
-            self.writer.add_scalar('Accuracy/Train', accuracy, self.current_iter)
-
             if i % self.config.print_freq == 0:
+                total_loss = np.mean(self.losses)
+                accuracy = np.mean(self.accuracies)
+                concept_loss = np.mean(self.concept_losses)
+                robustness_loss = np.mean(self.robustness_losses)
+                classification_loss = np.mean(self.classification_losses)
+
+                self.writer.add_scalar('Loss/Train/Classification', classification_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Train/Robustness', robustness_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Train/Concept', concept_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Train/Total', total_loss, self.current_iter)
+                self.writer.add_scalar('Accuracy/Train', accuracy, self.current_iter)
+
                 report = (f"\nEPOCH:{epoch} STEP:{i} \n"
-                          f"Total Loss:{np.mean(self.losses):.3f} \t"
-                          f"Classification Loss:{np.mean(self.classification_losses):.3f} \t"
-                          f"Robustness Loss:{np.mean(self.robustness_losses):.3f} \t"
-                          f"Concept Loss:{np.mean(self.concept_losses):.3f} \t"
-                          f"Accuracy:{np.mean(self.accuracies):.3f} \t"
+                          f"Total Loss:{total_loss:.3f} \t"
+                          f"Classification Loss:{classification_loss:.3f} \t"
+                          f"Robustness Loss:{robustness_loss:.3f} \t"
+                          f"Concept Loss:{concept_loss:.3f} \t"
+                          f"Accuracy:{accuracy:.3f} \t"
                           "(TRAIN)"
                           )
                 print(report)
+
                 self.losses = []
                 self.classification_losses = []
                 self.concept_losses = []
@@ -197,11 +205,13 @@ class Trainer:
                 robustness_loss = self.robustness_loss(x, parameters, self.model)
                 concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
-                total_loss = classification_loss + \
-                             self.config.robust_reg * robustness_loss + \
-                             self.config.concept_reg * concept_loss
+                total_loss = classification_loss
 
-                accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+                # total_loss = classification_loss + \
+                             # self.config.robust_reg * robustness_loss + \
+                             # self.config.concept_reg * concept_loss
+
+                accuracy = self.accuracy(y_pred, labels)
 
                 losses_val.append(total_loss.item())
                 classification_losses_val.append(classification_loss.item())
@@ -247,7 +257,10 @@ class Trainer:
         float:
             accuracy of predictions
         """
-        return (y_pred == y).float().mean().item()
+        if len(y_pred.size()) > 1:
+            return ((y_pred > 0.5) == y).float().mean().item() if y_pred.shape[1] == 1 else (
+                        y_pred.argmax(dim=1) == y).float().mean().item()
+        return 0
 
     def load_checkpoint(self, file_name):
         """Load most recent checkpoint.
