@@ -22,7 +22,9 @@ def compas_robustness_loss(x, relevances, SENN):
     Returns
     -------
     robustness_loss  : torch.tensor
-        Robustness loss is averaged across (batch_size x num_classes x num_features)
+        Robustness loss as (batch_size x num_classes x num_features)
+        Frobenius norm across num_classes and num_features
+        Averaged across batch_size
     """
     num_concepts = relevances.size()[1]
     num_classes = relevances.size()[2]
@@ -42,8 +44,8 @@ def compas_robustness_loss(x, relevances, SENN):
     J_yx = jacobian(SENN_aggregator, x, num_classes)
     J_hx = jacobian(compas_conceptizer, x, num_concepts)
     robustness_loss = (J_yx - torch.bmm(relevances.permute(0,2,1), J_hx))
-    
-    return robustness_loss.mean()
+
+    return robustness_loss.norm(dim=(1,2)).mean()
 
 def weighted_mse(x, x_hat, sparsity):
     return sparsity * F.mse_loss(x,x_hat)
