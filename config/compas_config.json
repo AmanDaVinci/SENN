@@ -1,0 +1,18 @@
+{
+  "conceptizer": "IdentityConceptizer",
+  "parameterizer": "CompasParameterizer",
+  "hidden_sizes": [10, 5, 5, 10],
+  "num_concepts": 10,
+  "num_classes": 1,
+  "dropout": 0.0,
+  "aggregator": "SumAggregator",
+  "device": "cuda:0",
+  "lr": "1e-5",
+  "checkpoint_dir": "./saved_checkpoints/",
+  "epochs": 5,
+  "robust_reg": 0.1,
+  "concept_reg": 1e-3,
+  "print_freq": 100,
+  "checkpoint_file": "compass.cpt",
+  "exp_name": "test"
+}
