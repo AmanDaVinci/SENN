@@ -32,7 +32,8 @@ class SumAggregator(nn.Module):
         TODO add assertions for matching dimensions, maybe?
         """
         # relevances = relevances.view(-1, num_classes, num_concepts)
-
+        print(concepts.size())
+        print(relevances.size())
         aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
 
         if relevances.size(-1) == 1:

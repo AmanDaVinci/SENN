@@ -119,6 +119,12 @@ class Trainer():
 
             # run x through SENN
             y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+            print(y_pred.size())
+
+            if not self.config.num_classes == 1:
+                y_pred = y_pred.argmax(axis=1)
+                print(y_pred.size())
+
 
             # TODO: compute losses
             # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
@@ -133,7 +139,7 @@ class Trainer():
             total_loss.backward()
             self.opt.step()
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            accuracy = self.accuracy(y_pred, labels)
 
             # --- Report Training Progress --- #
             self.current_iter += 1

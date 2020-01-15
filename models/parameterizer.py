@@ -119,7 +119,9 @@ class MNISTParameterizer(nn.Module):
         parameters : torch.Tensor
             Relevance scores associated with concepts. Of shape (BATCH, NUM_CONCEPTS, NUM_CLASSES)
         """
-        return self.fc_layers(torch.flatten(self.cl_layers(x))).view(-1, self.num_concepts, self.num_classes)
+        cl_output = self.cl_layers(x)
+        flattened = cl_output.view(x.size(0),-1)
+        return self.fc_layers(flattened).view(-1, self.num_concepts, self.num_classes)
 
 
 
