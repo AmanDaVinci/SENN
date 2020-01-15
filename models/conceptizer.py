@@ -153,6 +153,7 @@ class Conceptizer_CNN(Conceptizer):
                                                kernel_size=kernel_size_upsample[i],
                                                stride_deconv=stride_upsample[i],
                                                padding=padding_upsample[i]))
+            decoder.append(nn.ReLU(inplace=True))
         decoder.pop()
         decoder.append(nn.Tanh())
         self.decoder = nn.ModuleList(decoder)
@@ -263,7 +264,7 @@ class Conceptizer_CNN(Conceptizer):
                                kernel_size=kernel_size,
                                stride=stride_deconv,
                                padding=padding),
-            nn.ReLU(inplace=True)
+            #nn.ReLU(inplace=True)
         )
 
 
