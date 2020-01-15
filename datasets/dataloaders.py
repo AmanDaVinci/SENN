@@ -82,12 +82,14 @@ def load_mnist(data_path, batch_size, num_workers=4, valid_size=0.1, **kwargs):
 #  --------------- Compas Dataset  ---------------
 
 class CompasDataset(Dataset):
-    def __init__(self, compas_path):
+    def __init__(self, compas_path, verbose=True):
         """ProPublica Compas dataset.
 
-        Dataset is read in from `two-years-processed` version of the data. Variables are
-        created as done in https://www.propublica.org/article/how-we-analyzed-the-compas-recidivism-algorithm,
-        under figure `Risk of General Recidivism Logistic Model`.
+        Dataset is read in from preprocessed compas data: `propublica_data_for_fairml.csv`
+        from fairml github repo.
+        Source url: 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
+        
+        Following approach of Alvariz-Melis et al (SENN).
         
         Parameters
         ----------
@@ -95,23 +97,19 @@ class CompasDataset(Dataset):
             Location of Compas data.
         """
         df = pd.read_csv(compas_path)
-
-        # preprocessed df
-        pre_df = pd.DataFrame()
-        pre_df['Two_Year_Recidivism'] = df['two_year_recid']
-        pre_df['Number_of_Priors'] = df['priors_count'] / df['priors_count'].max()
-        pre_df['Age_Above_FourtyFive'] = df.age_cat == 'Greater than 45'
-        pre_df['Age_Below_TwentyFive'] = df.age_cat == 'Less than 25'
-        pre_df['African_American'] = df['race'] == 'African-American'
-        pre_df['Asian'] = df['race'] == 'Asian'
-        pre_df['Hispanic'] = df['race'] == 'Hispanic'
-        pre_df['Native_American'] = df['race'] == 'Native American'
-        pre_df['Other'] = df['race'] == 'Other'
-        pre_df['Female'] = df['sex'] == 'Female'
-        pre_df['Misdemeanor'] = df['c_charge_degree'] == 'M'
         
-        self.X = pre_df
-        self.y = df.is_recid.values.astype(float)
+        # don't know why square root
+        df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)
+        # get target
+        compas_rating = df.score_factor.values # This is the target?? (-_-)
+        df = df.drop('score_factor', axis=1)
+
+        pruned_df, pruned_rating = find_conflicting(df, compas_rating)
+        if verbose:
+            print('Finish preprocessing data..')
+        
+        self.X = pruned_df
+        self.y = pruned_rating.astype(float)
 
     def __len__(self):
         return len(self.X)
@@ -123,9 +121,13 @@ class CompasDataset(Dataset):
 
         return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
-
 def load_compas(data_path="datasets/data/compas.csv", train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
     """Return compas dataloaders.
+    
+    If compas data can not be found, will download preprocessed compas data: `propublica_data_for_fairml.csv`
+    from fairml github repo.
+    
+    Source url: 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
 
     Parameters
     ----------
@@ -146,8 +148,9 @@ def load_compas(data_path="datasets/data/compas.csv", train_percent=0.8, batch_s
     test_loader
         Dataloader for testing set.
     """
+    compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
     if not os.path.isfile(data_path):
-        download_compas_data(data_path)
+        download_file(data_path, compas_url)
     dataset = CompasDataset(data_path)
 
     # Split into training and test
@@ -169,15 +172,65 @@ def load_compas(data_path="datasets/data/compas.csv", train_percent=0.8, batch_s
     return train_loader, valid_loader, test_loader
 
 
-def download_compas_data(store_path):
-    """Download compas data `compas-scores-two-years_processed.csv` from public github repo.
-    
+def find_conflicting(df, labels, consensus_delta=0.2):
+    """
+    Find examples with same exact feature vector but different label.
+
+    Finds pairs of examples in dataframe that differ only in a few feature values.
+
+    From SENN authors' code.
+
+    Parameters
+    ----------
+    df : pd.Dataframe
+        Containing compas data.
+    labels : iterable
+        Containing ground truth labels
+    consensus_delta : float
+        Decision rule parameter.
+
+    Return
+    ------
+    pruned_df:
+        dataframe with `inconsistent samples` removed.
+    pruned_lab:
+        pruned labels
+    """
+    def finder(df, row):
+        for col in df:
+            df = df.loc[(df[col] == row[col]) | (df[col].isnull() & pd.isnull(row[col]))]
+        return df
+
+    groups = []
+    all_seen = set([])
+    full_dups = df.duplicated(keep='first')
+    for i in (range(len(df))):
+        if full_dups[i] and (i not in all_seen):
+            i_dups = finder(df, df.iloc[i])
+            groups.append(i_dups.index)
+            all_seen.update(i_dups.index)
+
+    pruned_df = []
+    pruned_lab = []
+    for group in groups:
+        scores = np.array([labels[i] for i in group])
+        consensus = round(scores.mean())
+        for i in group:
+            if (abs(scores.mean() - 0.5) < consensus_delta) or labels[i] == consensus:
+                # First condition: consensus is close to 50/50, can't consider this "outliers", so keep them all
+                pruned_df.append(df.iloc[i])
+                pruned_lab.append(labels[i])
+    return pd.DataFrame(pruned_df), np.array(pruned_lab)
+
+def download_file(store_path, url):
+    """Download a file from `url` and write it to a file `store_path`.
+
     Parameters
     ----------
     store_path : str
         Data storage location.
     """
-    # Download the file from `url` and save it locally under `file_name`:
-    url = 'https://github.com/propublica/compas-analysis/raw/master/compas-scores-two-years.csv'
+    # Download the file from `url` and save it locally under `file_name`
     with urllib.request.urlopen(url) as response, open(store_path, 'wb') as out_file:
-       shutil.copyfileobj(response, out_file)
+        shutil.copyfileobj(response, out_file)
+
