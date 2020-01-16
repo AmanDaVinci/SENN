@@ -273,7 +273,18 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
-    def visuallize(self, relevances, pred, path):
+    def visuallize(self, relevances, pred, save_path):
+        """Generates some plots to visualize the explanations.
+
+        Parameters
+        ----------
+        relevances : list or tensor (dtype  float)
+            Relevances/Thetas for the prediction of the model.
+        pred : int
+            Class label predicted by the model.
+        save_path : str
+            Path where the figure is saved
+        """
         plt.rcdefaults()
         fig, ax = plt.subplots()
 
@@ -289,7 +300,7 @@ class Trainer():
         ax.set_xlabel('Relevances (thetas)')
         ax.set_title('Explanation for prediction: {}'.format(pred))
 
-        plt.savefig(path)
+        plt.savefig(save_path)
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
