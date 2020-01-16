@@ -273,6 +273,23 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
+    def visuallize(self, relevances, pred, path):
+        plt.rcdefaults()
+        fig, ax = plt.subplots()
+
+        # Example data
+        concept_names = ['Concept {}'.format(i) for i in relevances]
+        y_pos = np.arange(len(concept_names))
+        relevances = float(relevances)
+        colors = ['b' if r > 0 else 'r' for r in relevances]
+
+        ax.barh(y_pos, relevances, align='center', color=colors)
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(concept_names)
+        ax.set_xlabel('Relevances (thetas)')
+        ax.set_title('Explanation for prediction: {}'.format(pred))
+
+        plt.savefig(path)
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
