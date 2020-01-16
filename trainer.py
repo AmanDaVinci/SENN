@@ -133,7 +133,7 @@ class Trainer():
             total_loss.backward()
             self.opt.step()
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            accuracy = self.accuracy(y_pred, labels)
 
             # --- Report Training Progress --- #
             self.current_iter += 1
@@ -182,7 +182,7 @@ class Trainer():
                            self.config.robust_reg * robustness_loss + \
                            self.config.concept_reg * concept_loss
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            accuracy = self.accuracy(y_pred, labels)
 
             # --- Report Training Progress --- #
             self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
@@ -215,7 +215,11 @@ class Trainer():
         float:
             accuracy of predictions
         """
-        return (y_pred == y).float().mean().item()
+        if len(y_pred.size()) == 1:
+            accuracy = (y == torch.round(y_pred)).float().mean().item()
+        else:
+            accuracy = (y_pred.argmax(axis=1) == y).float().mean().item()
+        return accuracy
 
 
     def load_checkpoint(self, file_name):
