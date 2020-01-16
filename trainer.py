@@ -121,7 +121,6 @@ class Trainer():
             y_pred, (concepts, parameters), x_reconstructed = self.model(x)
 
             # TODO: compute losses
-            # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
             classification_loss = self.classification_loss(y_pred, labels)
             # TODO: arguments of robustness loss
             robustness_loss = self.robustness_loss(x, parameters, self.model)
@@ -133,7 +132,8 @@ class Trainer():
             total_loss.backward()
             self.opt.step()
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            #accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            accuracy = self.accuracy(y_pred, labels)
 
             # --- Report Training Progress --- #
             self.current_iter += 1
@@ -182,7 +182,7 @@ class Trainer():
                            self.config.robust_reg * robustness_loss + \
                            self.config.concept_reg * concept_loss
 
-            accuracy = self.accuracy(y_pred.argmax(axis=1), labels)
+            accuracy = self.accuracy(y_pred, labels)
 
             # --- Report Training Progress --- #
             self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
@@ -215,7 +215,7 @@ class Trainer():
         float:
             accuracy of predictions
         """
-        return (y_pred == y).float().mean().item()
+        return (y == torch.round(y_pred)).float().mean().item()
 
 
     def load_checkpoint(self, file_name):
