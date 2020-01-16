@@ -41,7 +41,8 @@ class IdentityConceptizer(Conceptizer):
     def encode(self, x):
         """Encoder of Identity Conceptizer.
 
-        Returns the unchanged input features as concepts (use of raw features -> no concept computation).
+        Leaves the input features unchanged  but reshapes them to three dimensions
+        and returns them as concepts (use of raw features -> no concept computation)
 
         Parameters
         ----------
@@ -51,26 +52,27 @@ class IdentityConceptizer(Conceptizer):
         Returns
         -------
         concepts : torch.Tensor
-            Unchanged input features (BATCH, INPUT_FEATURES, 1).
+            Unchanged input features but with extra dimension (BATCH, INPUT_FEATURES, 1).
         """
         return x.unsqueeze(-1)
 
     def decode(self, z):
         """Decoder of Identity Conceptizer.
 
-        Returns the unchanged input features as concepts (use of raw features -> no concept computation).
+        Simmulates reconstrucron of the original input x by undoing the reshaping of the encoder.
+        The 'reconstruction' is identical to the input of the conceptizer.
 
         Parameters
         ----------
         z : torch.Tensor
-            Output of encoder (identical to encoder input x), size: (BATCH, INPUT_FEATURES).
+            Output of encoder (input x reshaped to three dimensions), size: (BATCH, INPUT_FEATURES, 1).
 
         Returns
         -------
         reconst : torch.Tensor
             Unchanged input features (identical to x)
         """
-        return z
+        return z.squeeze(-1)
 
 class Conceptizer_CNN(Conceptizer):
     def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=(10,),
