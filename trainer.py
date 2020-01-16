@@ -57,7 +57,7 @@ class Trainer():
             self.classification_loss = F.binary_cross_entropy
         else:
             self.classification_loss = F.nll_loss
-        self.concept_loss = mse_kl_sparsity
+        self.concept_loss = mse_l1_sparsity
         self.robustness_loss = robustness_loss
 
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)

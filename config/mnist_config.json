@@ -1,0 +1,28 @@
+{
+  "conceptizer": "Conceptizer_CNN",
+  "image_size": 28,
+  "concept_num": 5,
+  "concept_dim": 1,
+  "parameterizer": "MNISTParameterizer",
+  "cl_sizes": [1, 10, 20],
+  "hidden_sizes": [180, 50],
+  "num_concepts": 5,
+  "num_classes": 10,
+  "dropout": 0.2,
+  "aggregator": "SumAggregator",
+  "device": "cpu",
+  "lr": 1e-5,
+  "checkpoint_dir": "./saved_checkpoints/",
+  "epochs": 10,
+  "robust_reg": 0.1,
+  "concept_reg": 1e-2,
+  "print_freq": 100,
+  "checkpoint_file": "mnist.cpt",
+  "exp_name": "test_mnist",
+  "dataloader": "mnist",
+  "data_path": "dataset/data/mnist_data",
+  "batch_size" : 200,
+  "experiment_dir" : "mnist_test_1",
+  "sparsity" : 1e-3
+}
+
