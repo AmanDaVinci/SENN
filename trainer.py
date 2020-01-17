@@ -1,6 +1,7 @@
 from models.senn import SENN
 from datasets.dataloaders import get_dataloader
 from losses import *
+from utils.concept_representations import *
 
 import os
 from os import path
@@ -91,6 +92,12 @@ class Trainer():
         """
         try:
             self.train()
+            (test_batch, test_labels) = next(iter(self.test_loader))
+            y_pred, (concepts, parameters), _ = self.model(test_batch[0].unsqueeze(0))
+            if len(y_pred.size()) > 1:
+                y_pred = y_pred.argmax(1)
+            self.visuallize(parameters, torch.round(y_pred), "./results/explanation.png")
+            highest_activations(self.model, self.test_loader)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -202,6 +209,8 @@ class Trainer():
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
+
+        The binary and multi-class case are distinguished and calculated appropriately.
 
         Parameters
         ----------
