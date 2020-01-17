@@ -11,7 +11,7 @@ from trainer import Trainer
 def main():
     # get experiment configuration
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default="config/compas_config.json", help='experiment config file')
+    parser.add_argument('--config', default="config/mnist_config.json", help='experiment config file')
     args = parser.parse_args()
     config_file = args.config
 
