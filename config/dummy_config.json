@@ -19,5 +19,6 @@
   "x_dim": "I think this isn't needed if we rewrite validate function",
   "sample_size": "I think this isn't needed if we delete the sample function",
   "image_dir": "can be changed to dir of the concept-images in case of an image dataset",
-  "checkpoint_file": "dummy_mnist.cpt"
+  "checkpoint_file": "dummy_mnist.cpt",
+  "eval_freq" : 30
 }
