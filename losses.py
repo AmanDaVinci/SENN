@@ -2,37 +2,50 @@ import torch
 import torch.nn.functional as F
 from utils.jacobian import jacobian
 
-def robustness_loss(x, relevances, SENN):
-    """Computes Robustness Loss given by Alvarez-Melis & Jaakkola (2018)
+def compas_robustness_loss(x, aggregates, concepts, relevances):
+    """Computes Robustness Loss for the Compas data
+    
+    Formulated by Alvarez-Melis & Jaakkola (2018)
     [https://papers.nips.cc/paper/8003-towards-robust-interpretability-with-self-explaining-neural-networks.pdf]
-
+    The loss formulation is specific to the data format
+    The concept dimension is always 1 for this project by design
 
     Parameters
     ----------
     x            : torch.tensor
                  Input as (batch_size x num_features)
+    aggregates   : torch.tensor
+                 Aggregates from SENN as (batch_size x num_classes x concept_dim)
+    concepts     : torch.tensor
+                 Concepts from Conceptizer as (batch_size x num_concepts x concept_dim)
     relevances   : torch.tensor
                  Relevances from Parameterizer as (batch_size x num_concepts x num_classes)
-    SENN         : nn.Module
-                 SENN containing a method for .conceptizer.encode() 
-
+   
     Returns
     -------
     robustness_loss  : torch.tensor
-        Robustness loss is averaged across (batch_size x num_classes x num_features)
+        Robustness loss as frobenius norm of (batch_size x num_classes x num_features)
     """
-    num_concepts = relevances.size()[1]
-    num_classes = relevances.size()[2]
-
-    def y_SENN(x):
-        y, _, _ = SENN(x)
-        return y
-
-    J_yx = jacobian(y_SENN, x, num_classes)
-    J_hx = jacobian(SENN.conceptizer.encode, x, num_concepts)
-    robustness_loss = (J_yx - torch.bmm(relevances.permute(0,2,1), J_hx))
+    # add class dimension
+    # TODO: this should be fixed upstream, not here
+    aggregates = aggregates.unsqueeze(-1)
     
-    return robustness_loss.mean()
+    x.requires_grad_(True)
+    batch_size = x.size(0)
+    num_features = x.size(1)
+    num_classes = aggregates.size(1)
+
+    grad_tensor = torch.ones(batch_size, num_classes) 
+    grad_tensor.to(x.device)
+    J_yx = torch.autograd.grad(outputs=aggregates, inputs=x, \
+     grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
+    # bs x num_features -> bs x num_features x num_classes
+    J_yx = J_yx.unsqueeze(-1) 
+
+    # J_hx = Identity Matrix; h(x) is identity function
+    robustness_loss = J_yx - relevances
+
+    return robustness_loss.norm(p='fro')
 
 def weighted_mse(x, x_hat, sparsity):
     return sparsity * F.mse_loss(x,x_hat)
