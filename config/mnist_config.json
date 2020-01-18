@@ -12,17 +12,18 @@
   "aggregator": "SumAggregator",
   "device": "cpu",
   "lr": 1e-5,
-  "checkpoint_dir": "./saved_checkpoints/",
-  "epochs": 2,
+  "checkpoint_dir": "checkpoints/",
+  "epochs": 5,
   "robust_reg": 0.1,
   "concept_reg": 0.2,
   "print_freq": 100,
+  "load_checkpoint": "Epoch[4]-Step[10530].pt",
   "checkpoint_file": "mnist.cpt",
   "exp_name": "test_mnist",
   "dataloader": "mnist",
   "data_path": "dataset/data/mnist_data",
   "batch_size" : 200,
-  "experiment_dir" : "mnist_test_1",
+  "experiment_dir" : "mnist_test_v",
   "sparsity" : 1e-3
 }
 

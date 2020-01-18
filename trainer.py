@@ -96,7 +96,7 @@ class Trainer():
             y_pred, (concepts, parameters), _ = self.model(test_batch[0].unsqueeze(0))
             if len(y_pred.size()) > 1:
                 y_pred = y_pred.argmax(1)
-            self.visuallize(parameters, torch.round(y_pred), "./results/explanation.png")
+            self.visuallize(parameters, y_pred, "./results/explanation.png")
             highest_activations(self.model, self.test_loader)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
@@ -248,10 +248,10 @@ class Trainer():
             Name of the checkpoint file.
         """
         try:
-            file_name = self.checkpoint_dir + file_name
+            file_name = path.join(self.checkpoint_dir, file_name)
             print(f"Loading checkpoint...")
             with open(file_name, 'rb') as f:
-                checkpoint = torch.load(f, self.device)
+                checkpoint = torch.load(f, self.config.device)
 
             self.current_epoch = checkpoint['epoch']
             self.current_iter = checkpoint['iter']
@@ -287,7 +287,7 @@ class Trainer():
 
         Parameters
         ----------
-        relevances : list or tensor (dtype  float)
+        relevances : tensor (dtype  float)
             Relevances/Thetas for the prediction of the model.
         pred : int
             Class label predicted by the model.
@@ -298,18 +298,21 @@ class Trainer():
         fig, ax = plt.subplots()
 
         # Example data
-        concept_names = ['Concept {}'.format(i) for i in relevances]
+        pred = pred.item()
+        relevances = relevances[0, :, pred].squeeze()
+        concept_names = ['Concept {}'.format(i+1) for i in range(len(relevances))]
+        concept_names.reverse()
         y_pos = np.arange(len(concept_names))
-        relevances = float(relevances)
         colors = ['b' if r > 0 else 'r' for r in relevances]
 
-        ax.barh(y_pos, relevances, align='center', color=colors)
+        ax.barh(y_pos, relevances.detach().numpy(), align='center', color=colors)
         ax.set_yticks(y_pos)
         ax.set_yticklabels(concept_names)
         ax.set_xlabel('Relevances (thetas)')
         ax.set_title('Explanation for prediction: {}'.format(pred))
 
         plt.savefig(save_path)
+        plt.clf()
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
