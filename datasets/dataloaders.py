@@ -121,7 +121,7 @@ class CompasDataset(Dataset):
 
         return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
-def load_compas(data_path="datasets/data/compas.csv", train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
+def load_compas(data_path="datasets/data/compas.csv", train_percent=0.8, batch_size=200, num_workers=0, valid_size=0.1, **kwargs):
     """Return compas dataloaders.
     
     If compas data can not be found, will download preprocessed compas data: `propublica_data_for_fairml.csv`
