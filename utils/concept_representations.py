@@ -35,6 +35,9 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, sa
     save(make_grid(top_examples, nrow=num_prototypes, pad_value=1),save_path)
     plt.rcdefaults()
 
+def filter_concepts(model, num_concepts=5, num_prototypes=6, save_path="results/concepts.png"):
+    return model.conceptizer.encoder[-2]
+
 def save(img, save_path):
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
