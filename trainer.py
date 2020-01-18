@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import torch.optim as opt
 import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
-from losses import robustness_loss
+from losses import compas_robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -65,7 +65,11 @@ class Trainer():
         # Init losses
         self.classification_loss = F.binary_cross_entropy if config.num_classes == 1 else F.nll_loss
         self.concept_loss = mse_l1_sparsity
-        self.robustness_loss = robustness_loss
+        # TODO: how should this be checked?
+        if config.dataloader == "compas":
+            self.robustness_loss = compas_robustness_loss
+        else:
+            raise Exception("Robustness loss not defined")
 
         # Init optimizer
         self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
@@ -124,14 +128,17 @@ class Trainer():
         for i, (x, labels) in enumerate(self.train_loader):
             x = x.float().to(self.config.device)
             self.opt.zero_grad()
+            # track all operations on x for jacobian calculation
+            x.requires_grad_(True)
 
             # run x through SENN
-            y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+            y_pred, (concepts, relevances), x_reconstructed = self.model(x)
 
-            # TODO: compute losses
-            # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
+            # visualize SENN computation graph
+            self.writer.add_graph(self.model, x) 
+
             classification_loss = self.classification_loss(y_pred, labels)
-            robustness_loss = self.robustness_loss(x, parameters, self.model)
+            robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
             total_loss = classification_loss + \
@@ -187,14 +194,13 @@ class Trainer():
                 x = x.float().to(self.config.device)
 
                 # run x through SENN
-                y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+                y_pred, (concepts, relevances), x_reconstructed = self.model(x)
 
-                # TODO: compute losses
-                # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
-                classification_loss = self.classification_loss(y_pred, labels)
-                robustness_loss = self.robustness_loss(x, parameters, self.model)
-                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
-
+                classification_loss = self.classification_loss(y_pred, labels).item()
+                # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
+                robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
+                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
+                
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
                              self.config.concept_reg * concept_loss
