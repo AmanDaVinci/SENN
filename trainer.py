@@ -118,13 +118,13 @@ class Trainer():
             self.opt.zero_grad()
 
             # run x through SENN
-            y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+            y_pred, (concepts, relevances), x_reconstructed = self.model(x)
 
             # TODO: compute losses
             # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
             classification_loss = self.classification_loss(y_pred, labels)
             # TODO: arguments of robustness loss
-            robustness_loss = self.robustness_loss(x, parameters, self.model)
+            robustness_loss = self.robustness_loss(x, relevances, self.model)
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
             total_loss = classification_loss + \
@@ -169,13 +169,13 @@ class Trainer():
             x = x.float().to(self.config.device)
 
             # run x through SENN
-            y_pred, (concepts, parameters), x_reconstructed = self.model(x)
+            y_pred, (concepts, relevances), x_reconstructed = self.model(x)
 
             # TODO: compute losses
             # Definition of concept loss in the paper is inconsistent with source code (need for discussion)
             classification_loss = self.classification_loss(y_pred, labels).item()
             # TODO: arguments of robustness loss
-            robustness_loss = self.robustness_loss(x, parameters, self.model)
+            robustness_loss = self.robustness_loss(x, relevances, self.model)
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
 
             total_loss = classification_loss + \
