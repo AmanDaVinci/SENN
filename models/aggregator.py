@@ -3,10 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class SumAggregator(nn.Module):
-    def __init__(self, **kwargs):
+    def __init__(self, num_classes, **kwargs):
         """Basic Sum Aggregator that joins the concepts and relevances by summing their products.
         """
         super().__init__()
+        self.num_classes = num_classes
 
     def forward(self, concepts, relevances):#, num_concepts, num_classes):
         """Forward pass of Sum Aggregator.
@@ -35,9 +36,8 @@ class SumAggregator(nn.Module):
 
         aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze()
 
-        # TODO: do not check by converting to boolean
-        if relevances.size(-1) == 1:
+        if self.num_classes == 1:
             class_predictions = torch.sigmoid(aggregated)
         else:
             class_predictions = F.log_softmax(aggregated, dim=1)
-        return class_predictions
+        return class_predictions.unsqueeze(-1) # add concept_dim = 1
