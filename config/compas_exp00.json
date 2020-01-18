@@ -1,0 +1,23 @@
+{
+    "conceptizer": "IdentityConceptizer",
+    "parameterizer": "CompasParameterizer",
+    "hidden_sizes": [11, 5, 5, 11],
+    "num_concepts": 11,
+    "num_classes": 1,
+    "dropout": 0.0,
+    "aggregator": "SumAggregator",
+    "device": "cpu",
+    "lr": 1e-2,
+    "checkpoint_dir": "./saved_checkpoints/",
+    "epochs": 30,
+    "robust_reg": 0.01,
+    "concept_reg": 0,
+    "print_freq": 100,
+    "checkpoint_file": "compass.cpt",
+    "exp_name": "test",
+    "dataloader": "compas",
+    "batch_size" : 200,
+    "experiment_dir" : "compas_exp00",
+    "sparsity" : 1e-3
+  }
+  
