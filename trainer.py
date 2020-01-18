@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import torch.optim as opt
 import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
-from losses import compas_robustness_loss
+from losses import compas_robustness_loss, mnist_robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -60,6 +60,8 @@ class Trainer():
         # TODO: how should this be checked?
         if config.dataloader == "compas":
             self.robustness_loss = compas_robustness_loss
+        if config.dataloader == "mnist":
+            self.robustness_loss = mnist_robustness_loss
         else:
             raise Exception("Robustness loss not defined")
 
