@@ -18,5 +18,6 @@
   "dataloader": "compas",
   "batch_size" : 200,
   "experiment_dir" : "compas_test_1",
-  "sparsity" : 1e-3
+  "sparsity" : 1e-3,
+  "eval_freq" : 30
 }
