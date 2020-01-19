@@ -3,6 +3,17 @@ import matplotlib.pyplot as plt
 
 
 def create_barplot(relevances, y_pred, save_path='results/relevances.png'):
+    """Creates a bar plot of relevances.
+
+    Parameters
+    ----------
+    relevances: torch.tensor
+       The relevances for which the bar plot should be generated. shape: (1, NUM_CONCEPTS, NUM_CLASSES)
+    y_pred: torch.tensor (int)
+       The prediction of the model for the corresponding relevances. shape: scalar value
+    save_path: str
+        Path to the location where the bar plot should be saved.
+    """
     plt.rcdefaults()
     fig, ax = plt.subplots()
 

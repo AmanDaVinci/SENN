@@ -4,6 +4,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, save_path="results/concepts.png"):
+    """Creates concept representation via highest activation.
+
+    The concepts are represented by the most prototypical data samples.
+    (The samples that yield the highest activation for each concept)
+
+    Parameters
+    ----------
+    model: torch.nn.Module
+      The trained model with all its parameters.
+    test_loader: DataLoader object
+       Data loader that iterates over the test set.
+    num_concepts: int
+       Number of concepts of the model.
+    num_prototypes: int
+        Number of prototypical examples that should be displayed for each concept.
+    save_path: str
+        Path to the location where the bar plot should be saved.
+    """
     model.eval()
     activations = []
     for i, (x, labels) in enumerate(test_loader):
@@ -35,6 +53,25 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, sa
     plt.rcdefaults()
 
 def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=6, save_path="results/concepts.png"):
+    """Creates concept representation via highest contrast.
+
+    The concepts are represented by the most data samples that are most specific to a concept.
+    (The sample that yield the highest activation for each concept while at the same time
+    not activating the other concepts)
+
+    Parameters
+    ----------
+    model: torch.nn.Module
+        The trained model with all its parameters.
+    test_loader: DataLoader object
+        Data loader that iterates over the test set.
+    num_concepts: int
+        Number of concepts of the model.
+    num_prototypes: int
+        Number of prototypical examples that should be displayed for each concept.
+    save_path: str
+        Path to the location where the bar plot should be saved.
+    """
     model.eval()
     activations = []
     for i, (x, labels) in enumerate(test_loader):
@@ -70,6 +107,23 @@ def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=6, save_
     plt.rcdefaults()
 
 def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path="results/concepts.png"):
+    """Creates concept representation via filter visualization.
+
+    The concepts are represented by the filters of the last layer of the concept encoder.
+    (This option for visualization requires the concept_visualization field in config to have the value 'filter'.
+    See documentation of Conceptizer_CNN for more details)
+
+    Parameters
+    ----------
+    model: torch.nn.Module
+        The trained model with all its parameters.
+    num_concepts: int
+        Number of concepts of the model.
+    num_prototypes: int
+        Number of channels that each of the filters representing a concept has.
+    save_path: str
+        Path to the location where the bar plot should be saved.
+    """
     model.eval()
     plt.rcdefaults()
     fig, ax = plt.subplots()
@@ -91,6 +145,15 @@ def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path="results
     plt.rcdefaults()
 
 def save(img, save_path):
+    """Saves an image.
+    
+    Parameters
+    ----------
+    img: torch.Tensor
+        Tensor containing the image data that should be saved.
+    save_path: str
+        Path to the location where the bar plot should be saved.
+    """
     img = img.clone().squeeze()
     npimg = img.numpy()
     if len(npimg.shape) == 2:

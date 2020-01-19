@@ -81,7 +81,7 @@ class Conceptizer_CNN(Conceptizer):
     def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
                  stride_conv=1, stride_pool=2, stride_upsample=(2, 1, 2),
-                 padding_conv=0, padding_upsample=(0, 0, 1), filter=False, **kwargs):
+                 padding_conv=0, padding_upsample=(0, 0, 1), concept_visualization='', **kwargs):
         """
         CNN Autoencoder used to learn the concepts, present in an input image
 
@@ -113,9 +113,11 @@ class Conceptizer_CNN(Conceptizer):
             the padding to be used by the convolutional layers
         padding_upsample : int, tuple[int]
             the padding to be used by the upsampling layers
-        filter : bool
-            wheather to map each filter to one concept directly (separate linear layers per filter) or instead
-            flatten all filters to one vector and then compute the concepts from that with one linear layer
+        concept_visualization : str
+            If this value is 'filter' each filter is mapped to one (scalar) concept directly
+            (separate linear layers per filter)
+            Otherwise all filters are flattened to one vector and then the concepts are computed
+            from that with one big linear layer
         """
         super(Conceptizer_CNN, self).__init__()
         self.concept_num = concept_num
