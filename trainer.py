@@ -100,7 +100,10 @@ class Trainer():
             if len(y_pred.size()) > 1:
                 y_pred = y_pred.argmax(1)
             self.visuallize(parameters, y_pred, "./results/explanation.png")
-            if self.config.filter:
+
+            if self.config.concept_visualization == 'contrast':
+                highest_contrast(self.model, self.test_loader)
+            elif self.config.concept_visualization == 'filter':
                 filter_concepts(self.model)
             else:
                 highest_activations(self.model, self.test_loader)

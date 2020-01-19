@@ -3,7 +3,7 @@
   "image_size": 28,
   "concept_num": 5,
   "concept_dim": 1,
-  "filter": true,
+  "concept_visualization": "contrast",
   "parameterizer": "MNISTParameterizer",
   "cl_sizes": [1, 10, 20],
   "hidden_sizes": [180, 50],
@@ -23,7 +23,7 @@
   "dataloader": "mnist",
   "data_path": "dataset/data/mnist_data",
   "batch_size" : 200,
-  "experiment_dir" : "mnist_test_filter",
+  "experiment_dir" : "mnist_test_contrast",
   "sparsity" : 1e-3
 }
 
