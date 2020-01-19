@@ -2,6 +2,7 @@ from models.senn import SENN
 from datasets.dataloaders import get_dataloader
 from losses import *
 from utils.concept_representations import *
+from utils.plot_utils import *
 
 import os
 from os import path
@@ -92,21 +93,7 @@ class Trainer():
         """
         try:
             self.train()
-            self.model.eval()
-            (test_batch, test_labels) = next(iter(self.test_loader))
-            example = test_batch[8]
-            save(example, 'results/example.png')
-            y_pred, (concepts, parameters), _ = self.model(example.unsqueeze(0))
-            if len(y_pred.size()) > 1:
-                y_pred = y_pred.argmax(1)
-            self.visuallize(parameters, y_pred, "./results/explanation.png")
-
-            if self.config.concept_visualization == 'contrast':
-                highest_contrast(self.model, self.test_loader)
-            elif self.config.concept_visualization == 'filter':
-                filter_concepts(self.model)
-            else:
-                highest_activations(self.model, self.test_loader)
+            self.visuallize(save_dir=self.experiment_dir)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -291,38 +278,36 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
-    def visuallize(self, relevances, pred, save_path):
+    def visuallize(self, save_dir):
         """Generates some plots to visualize the explanations.
 
         Parameters
         ----------
-        relevances : tensor (dtype  float)
-            Relevances/Thetas for the prediction of the model.
-        pred : int
-            Class label predicted by the model.
-        save_path : str
-            Path where the figure is saved
+        save_dir : str
+            Directory where the figures are saved
         """
-        plt.rcdefaults()
-        fig, ax = plt.subplots()
+        self.model.eval()
 
-        # Example data
-        pred = pred.item()
-        relevances = relevances[0, :, pred].squeeze()
-        concept_names = ['Concept {}'.format(i+1) for i in range(len(relevances))]
-        concept_names.reverse()
-        y_pos = np.arange(len(concept_names))
-        colors = ['b' if r > 0 else 'r' for r in relevances]
-        colors.reverse()
+        # select test example
+        (test_batch, test_labels) = next(iter(self.test_loader))
+        example = test_batch[8]
+        save(example, path.join(save_dir, 'test_example.png'))
 
-        ax.barh(y_pos, np.flip(relevances.detach().numpy()), align='center', color=colors)
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(concept_names)
-        ax.set_xlabel('Relevances (thetas)')
-        ax.set_title('Explanation for prediction: {}'.format(pred))
+        # feed example to model to obtain explanation
+        y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
+        if len(y_pred.size()) > 1:
+            y_pred = y_pred.argmax(1)
 
-        plt.savefig(save_path)
-        plt.clf()
+        create_barplot(relevances, y_pred, save_path=path.join(save_dir, 'relevances.png'))
+
+        # create visualization of the concepts with method specified in config file
+        save_path = path.join(save_dir, 'concept.png')
+        if self.config.concept_visualization == 'contrast':
+            highest_contrast(self.model, self.test_loader, save_path=save_path)
+        elif self.config.concept_visualization == 'filter':
+            filter_concepts(self.model, save_path=save_path)
+        else:
+            highest_activations(self.model, self.test_loader, save_path=save_path)
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
