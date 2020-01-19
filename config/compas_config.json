@@ -9,7 +9,7 @@
   "device": "cpu",
   "lr": 1e-2,
   "checkpoint_dir": "./saved_checkpoints/",
-  "epochs": 10,
+  "epochs": 30,
   "robust_reg": 0.1,
   "concept_reg": 0,
   "print_freq": 100,
@@ -18,5 +18,6 @@
   "dataloader": "compas",
   "batch_size" : 200,
   "experiment_dir" : "compas_test_1",
-  "sparsity" : 1e-3
+  "sparsity" : 1e-3,
+  "eval_freq" : 30
 }
