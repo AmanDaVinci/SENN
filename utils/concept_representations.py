@@ -22,7 +22,6 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, sa
     plt.rcdefaults()
     fig, ax = plt.subplots()
     concept_names = ['Concept {}'.format(i + 1) for i in range(num_concepts)]
-    concept_names.reverse()
 
     start = 0.0
     end = num_concepts * top_examples[0].size(1)
@@ -39,7 +38,11 @@ def filter_concepts(model, num_concepts=5, num_prototypes=6, save_path="results/
     return model.conceptizer.encoder[-2]
 
 def save(img, save_path):
+    img = img.clone().squeeze()
     npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
-    plt.savefig(save_path)
+    if len(npimg.shape) == 2:
+        plt.imsave(save_path, npimg, cmap='Greys')
+    else:
+        plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
+        plt.savefig(save_path)
     plt.clf()

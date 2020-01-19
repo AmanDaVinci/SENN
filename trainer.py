@@ -92,8 +92,11 @@ class Trainer():
         """
         try:
             self.train()
+            self.model.eval()
             (test_batch, test_labels) = next(iter(self.test_loader))
-            y_pred, (concepts, parameters), _ = self.model(test_batch[0].unsqueeze(0))
+            example = test_batch[8]
+            save(example, 'results/example.png')
+            y_pred, (concepts, parameters), _ = self.model(example.unsqueeze(0))
             if len(y_pred.size()) > 1:
                 y_pred = y_pred.argmax(1)
             self.visuallize(parameters, y_pred, "./results/explanation.png")
@@ -304,8 +307,9 @@ class Trainer():
         concept_names.reverse()
         y_pos = np.arange(len(concept_names))
         colors = ['b' if r > 0 else 'r' for r in relevances]
+        colors.reverse()
 
-        ax.barh(y_pos, relevances.detach().numpy(), align='center', color=colors)
+        ax.barh(y_pos, np.flip(relevances.detach().numpy()), align='center', color=colors)
         ax.set_yticks(y_pos)
         ax.set_yticklabels(concept_names)
         ax.set_xlabel('Relevances (thetas)')
