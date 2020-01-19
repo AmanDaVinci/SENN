@@ -100,7 +100,10 @@ class Trainer():
             if len(y_pred.size()) > 1:
                 y_pred = y_pred.argmax(1)
             self.visuallize(parameters, y_pred, "./results/explanation.png")
-            highest_activations(self.model, self.test_loader)
+            if self.config.filter:
+                filter_concepts(self.model)
+            else:
+                highest_activations(self.model, self.test_loader)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 

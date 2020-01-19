@@ -34,8 +34,25 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, sa
     save(make_grid(top_examples, nrow=num_prototypes, pad_value=1),save_path)
     plt.rcdefaults()
 
-def filter_concepts(model, num_concepts=5, num_prototypes=6, save_path="results/concepts.png"):
-    return model.conceptizer.encoder[-2]
+def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path="results/concepts.png"):
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    concept_names = ['Concept {}'.format(i + 1) for i in range(num_concepts)]
+
+    filters = [f for f in model.conceptizer.encoder[-2][0].weight.data.clone()]
+    imgs = [dim.unsqueeze(0) for f in filters for dim in f]
+
+    start = 0.0
+    end = num_concepts * filters[0].size(-1) + 2
+    stepsize = abs(end - start) / num_concepts
+    ax.yaxis.set_ticks(np.arange(start + 0.5 * stepsize, end - 0.49 * stepsize, stepsize))
+    ax.set_yticklabels(concept_names)
+    plt.xticks([])
+    ax.set_xlabel('{} dimensions of concept filters'.format(num_prototypes))
+    ax.set_title('Basis concepts: ')
+
+    save(make_grid(imgs, nrow=num_prototypes, normalize=True, padding=1, pad_value=1), save_path)
+    plt.rcdefaults()
 
 def save(img, save_path):
     img = img.clone().squeeze()
