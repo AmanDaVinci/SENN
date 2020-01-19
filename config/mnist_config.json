@@ -21,9 +21,10 @@
   "checkpoint_file": "mnist.cpt",
   "exp_name": "test_mnist",
   "dataloader": "mnist",
-  "data_path": "dataset/data/mnist_data",
+  "data_path": "datasets/data/mnist_data",
   "batch_size" : 200,
   "experiment_dir" : "mnist_test_contrast",
   "sparsity" : 1e-3
+  "eval_freq" : 30
 }
 
