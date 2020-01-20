@@ -107,7 +107,7 @@ class Trainer():
         try:
             print("Training begins...")
             self.train()
-            self.visuallize(save_dir=self.experiment_dir)
+            self.visualize(save_dir=self.experiment_dir)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -313,7 +313,7 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
-    def visuallize(self, save_dir):
+    def visualize(self, save_dir):
         """Generates some plots to visualize the explanations.
 
         Parameters

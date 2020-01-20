@@ -1,7 +1,6 @@
 {
     "conceptizer": "Conceptizer_CNN",
     "image_size": 28,
-    "concept_num": 5,
     "concept_dim": 1,
     "parameterizer": "MNISTParameterizer",
     "cl_sizes": [1, 10, 20],

@@ -1,7 +1,6 @@
 {
   "conceptizer": "Conceptizer_CNN",
   "image_size": 28,
-  "concept_num": 5,
   "concept_dim": 1,
   "concept_visualization": "contrast",
   "parameterizer": "MNISTParameterizer",
@@ -9,7 +8,7 @@
   "hidden_sizes": [180, 50],
   "num_concepts": 5,
   "num_classes": 10,
-  "dropout": 0.2,
+  "dropout": 0.5,
   "aggregator": "SumAggregator",
   "device": "cpu",
   "lr": 1e-5,
