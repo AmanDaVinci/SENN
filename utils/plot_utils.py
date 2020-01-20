@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def create_barplot(relevances, y_pred, save_path='results/relevances.png'):
+def create_barplot(relevances, y_pred, save_path='results/relevances.png', concept_names=None):
     """Creates a bar plot of relevances.
 
     Parameters
@@ -23,8 +23,9 @@ def create_barplot(relevances, y_pred, save_path='results/relevances.png'):
     # Example data
     y_pred = y_pred.item()
     relevances = relevances[0, :, y_pred].squeeze()
-    concept_names = ['Concept {}'.format(i + 1) for i in range(len(relevances))]
-    concept_names.reverse()
+    if concept_names is None:
+        concept_names = ['Concept {}'.format(i + 1) for i in range(len(relevances))]
+        concept_names.reverse()
     y_pos = np.arange(len(concept_names))
     colors = ['b' if r > 0 else 'r' for r in relevances]
     colors.reverse()
