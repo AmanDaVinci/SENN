@@ -86,6 +86,7 @@ class Trainer():
         self.accuracies = []
         self.current_iter = 0
         self.current_epoch = 0
+        self.best_accuracy = 0
 
         # directories for saving results
         self.experiment_dir = path.join(RESULTS_DIR, config.experiment_dir)
@@ -238,9 +239,14 @@ class Trainer():
                 f"Robustness Loss:{robustness_loss:.3f} \t"
                 f"Concept Loss:{concept_loss:.3f} \t"
                 f"Accuracy:{accuracy:.3f} \t"
-                "\n-----------\n"
+                "\n----------------------------\n"
             )
             print(report)
+
+            if accuracy > self.best_accuracy:
+                print("Congratulations! Saving a new best model...")
+                self.best_accuracy = accuracy
+                self.save_checkpoint("best_model.pt")
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
@@ -289,6 +295,7 @@ class Trainer():
 
             self.current_epoch = checkpoint['epoch']
             self.current_iter = checkpoint['iter']
+            self.best_accuracy = checkpoint['best_accuracy']
             self.model.load_state_dict(checkpoint['model_state'])
             self.opt.load_state_dict(checkpoint['optimizer'])
 
@@ -298,16 +305,19 @@ class Trainer():
             print(f"No checkpoint exists @ {self.checkpoint_dir}")
             print("**Training for the first time**")
 
-    def save_checkpoint(self):
+    def save_checkpoint(self, file_name=None):
         """Save checkpoint in the checkpoint directory.
 
         Checkpoint dir and checkpoint_file need to be specified in the config.
         """
-        file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
+        if file_name is None:
+            file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
+
         file_name = path.join(self.checkpoint_dir, file_name)
         state = {
             'epoch': self.current_epoch,
             'iter': self.current_iter,
+            'best_accuracy': self.best_accuracy,
             'model_state': self.model.state_dict(),
             'optimizer': self.opt.state_dict(),
         }
