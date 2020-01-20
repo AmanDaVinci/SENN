@@ -357,7 +357,8 @@ class Trainer():
         # select test example
         (test_batch, test_labels) = next(iter(self.test_loader))
         example = test_batch[8]
-        save(example, path.join(save_dir, 'test_example.png'))
+        if self.config.dataloader == 'mnist':
+            save(example, path.join(save_dir, 'test_example.png'))
 
         # feed example to model to obtain explanation
         y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
