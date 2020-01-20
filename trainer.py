@@ -6,6 +6,7 @@ from utils.plot_utils import *
 
 import os
 from os import path
+import csv
 
 import torch
 import torch.nn.functional as F
@@ -154,11 +155,6 @@ class Trainer():
 
             # --- Report Training Progress --- #
             self.current_iter += 1
-            self.losses.append(total_loss.item())
-            self.classification_losses.append(classification_loss.item())
-            self.concept_losses.append(concept_loss.item())
-            self.robustness_losses.append(robustness_loss.item())
-            self.accuracies.append(accuracy)
 
             self.writer.add_scalar('Loss/Train/Classification', classification_loss, self.current_iter)
             self.writer.add_scalar('Loss/Train/Robustness', robustness_loss, self.current_iter)
@@ -167,14 +163,13 @@ class Trainer():
             self.writer.add_scalar('Accuracy/Train', accuracy, self.current_iter)
 
             if i % self.config.print_freq == 0:
-                report = (f"EPOCH:{epoch} STEP:{i} \n"
-                          f"Total Loss:{total_loss:.3f} \t"
-                          f"Classification Loss:{classification_loss.item():.3f} \t"
-                          f"Robustness Loss:{robustness_loss.item():.3f} \t"
-                          f"Concept Loss:{concept_loss.item():.3f} \t"
-                          f"Accuracy:{accuracy:.3f} \t"
-                          )
-                print(report)
+                print(f"EPOCH:{epoch} STEP:{i}")
+                self.print_n_save_metrics(filename="accuracies_losses_train.csv",
+                                          total_loss=total_loss.item(),
+                                          classification_loss=classification_loss.item(),
+                                          robustness_loss=robustness_loss.item(),
+                                          concept_loss=concept_loss.item(),
+                                          accuracy=accuracy)
 
             if self.current_iter % self.config.eval_freq == 0:
                 self.validate()
@@ -228,17 +223,16 @@ class Trainer():
             self.writer.add_scalar('Loss/Valid/Concept', concept_loss, self.current_iter)
             self.writer.add_scalar('Loss/Valid/Total', total_loss, self.current_iter)
             self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
+
             # --- Report Validation --- #
-            report = (
-                "\n-------- Validation --------\n"
-                f"Total Loss:{total_loss:.3f} \t"
-                f"Classification Loss:{classification_loss:.3f} \t"
-                f"Robustness Loss:{robustness_loss:.3f} \t"
-                f"Concept Loss:{concept_loss:.3f} \t"
-                f"Accuracy:{accuracy:.3f} \t"
-                "\n-----------\n"
-            )
-            print(report)
+            print("\n\033[93m-------- Validation --------\033[0m")
+            self.print_n_save_metrics(filename="accuracies_losses_valid.csv",
+                                      total_loss=total_loss,
+                                      classification_loss=classification_loss,
+                                      robustness_loss=robustness_loss,
+                                      concept_loss=concept_loss,
+                                      accuracy=accuracy)
+            print("\033[93m----------------------------\033[0m")
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
@@ -312,6 +306,26 @@ class Trainer():
         with open(file_name, 'wb') as f:
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
+
+    def print_n_save_metrics(self, filename, total_loss, classification_loss, robustness_loss, concept_loss, accuracy):
+        report = (f"Total Loss:{total_loss:.3f} \t"
+                  f"Classification Loss:{classification_loss:.3f} \t"
+                  f"Robustness Loss:{robustness_loss:.3f} \t"
+                  f"Concept Loss:{concept_loss:.3f} \t"
+                  f"Accuracy:{accuracy:.3f} \t")
+        print(report)
+
+        filename = path.join(self.experiment_dir, filename)
+        new_file = not os.path.exists(filename)
+        with open(filename, 'a') as metrics_file:
+            fieldnames = ['Accuracy', 'Loss', 'Classification_Loss', 'Robustness_Loss', 'Concept_Loss', 'Step']
+            csv_writer = csv.DictWriter(metrics_file, fieldnames=fieldnames)
+
+            if new_file: csv_writer.writeheader()
+
+            csv_writer.writerow({'Accuracy': accuracy, 'Classification_Loss': classification_loss,
+                                 'Robustness_Loss': robustness_loss, 'Concept_Loss': concept_loss,
+                                 'Loss': total_loss, 'Step': self.current_iter})
 
     def visualize(self, save_dir):
         """Generates some plots to visualize the explanations.
