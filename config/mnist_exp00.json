@@ -22,7 +22,7 @@
     "data_path": "datasets/data/mnist_data",
     "batch_size" : 32,
     "experiment_dir" : "mnist_exp00",
-    "sparsity" : 1e-3,
+    "sparsity_reg": 1e-3,
     "eval_freq" : 30
   }
   

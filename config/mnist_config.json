@@ -22,7 +22,7 @@
   "dataloader": "mnist",
   "data_path": "datasets/data/mnist_data",
   "batch_size" : 200,
-  "experiment_dir" : "mnist_test_contrast",
+  "experiment_dir" : "mnist_test_new_master",
   "sparsity_reg" : 2e-5,
   "eval_freq" : 30
 }

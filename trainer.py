@@ -142,7 +142,7 @@ class Trainer():
 
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
+            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity_reg, concepts)
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -202,7 +202,7 @@ class Trainer():
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
                 robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
-                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
+                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity_reg, concepts)
                 
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
