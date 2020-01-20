@@ -1,19 +1,17 @@
 from models.senn import SENN
 from datasets.dataloaders import get_dataloader
-from losses import *
+from models.losses import *
 from utils.concept_representations import *
 from utils.plot_utils import *
 
 import os
 from os import path
-from functools import partial
 
 import torch
 import torch.nn.functional as F
 import torch.optim as opt
-import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
-from losses import compas_robustness_loss, mnist_robustness_loss
+from models.losses import compas_robustness_loss, mnist_robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
