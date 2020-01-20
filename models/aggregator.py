@@ -19,7 +19,7 @@ class SumAggregator(nn.Module):
         concepts : torch.Tensor
             Contains the output of the conceptizer with shape (BATCH, NUM_CONCEPTS, DIM_CONCEPT=1).
         relevances : torch.Tensor
-            Contains the output of the parameterizer with shape (BATCH, NUM_CONCEPTS * NUM_CLASSES).
+            Contains the output of the parameterizer with shape (BATCH, NUM_CONCEPTS, NUM_CLASSES).
         num_concepts : int
             Number of concepts encoded by the Conceptizer.
         num_classes : int
@@ -28,16 +28,18 @@ class SumAggregator(nn.Module):
         Returns
         -------
         class_predictions : torch.Tensor
-            Predictions for each class.
-
+            Predictions for each class, DIM_CONCEPT will be reduced
+            In our case, it will be squeezed since DIM_CONCEPT is always 1
+            (BATCH, NUM_CLASSES, DIM_CONCEPT=1)
+            
         TODO add assertions for matching dimensions, maybe?
         """
         # relevances = relevances.view(-1, num_classes, num_concepts)
 
-        aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze()
+        aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
 
         if self.num_classes == 1:
             class_predictions = torch.sigmoid(aggregated)
         else:
             class_predictions = F.log_softmax(aggregated, dim=1)
-        return class_predictions.unsqueeze(-1) # add concept_dim = 1
+        return class_predictions

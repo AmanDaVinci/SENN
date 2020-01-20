@@ -1,6 +1,8 @@
 from models.senn import SENN
 from datasets.dataloaders import get_dataloader
 from losses import *
+from utils.concept_representations import *
+from utils.plot_utils import *
 
 import os
 from os import path
@@ -107,6 +109,7 @@ class Trainer():
         try:
             print("Training begins...")
             self.train()
+            self.visuallize(save_dir=self.experiment_dir)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -242,6 +245,8 @@ class Trainer():
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
 
+        The binary and multi-class case are distinguished and calculated appropriately.
+
         Parameters
         ----------
         y_pred : torch.Tensor, shape (BATCH,)
@@ -277,10 +282,10 @@ class Trainer():
             Name of the checkpoint file.
         """
         try:
-            file_name = self.checkpoint_dir + file_name
+            file_name = path.join(self.checkpoint_dir, file_name)
             print(f"Loading checkpoint...")
             with open(file_name, 'rb') as f:
-                checkpoint = torch.load(f, self.device)
+                checkpoint = torch.load(f, self.config.device)
 
             self.current_epoch = checkpoint['epoch']
             self.current_iter = checkpoint['iter']
@@ -309,6 +314,37 @@ class Trainer():
         with open(file_name, 'wb') as f:
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
+
+    def visuallize(self, save_dir):
+        """Generates some plots to visualize the explanations.
+
+        Parameters
+        ----------
+        save_dir : str
+            Directory where the figures are saved
+        """
+        self.model.eval()
+
+        # select test example
+        (test_batch, test_labels) = next(iter(self.test_loader))
+        example = test_batch[8]
+        save(example, path.join(save_dir, 'test_example.png'))
+
+        # feed example to model to obtain explanation
+        y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
+        if len(y_pred.size()) > 1:
+            y_pred = y_pred.argmax(1)
+
+        create_barplot(relevances, y_pred, save_path=path.join(save_dir, 'relevances.png'))
+
+        # create visualization of the concepts with method specified in config file
+        save_path = path.join(save_dir, 'concept.png')
+        if self.config.concept_visualization == 'contrast':
+            highest_contrast(self.model, self.test_loader, save_path=save_path)
+        elif self.config.concept_visualization == 'filter':
+            filter_concepts(self.model, save_path=save_path)
+        else:
+            highest_activations(self.model, self.test_loader, save_path=save_path)
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
