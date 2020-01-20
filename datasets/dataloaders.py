@@ -29,7 +29,7 @@ def get_dataloader(config):
         return load_compas(**config.__dict__)
 
 
-def load_mnist(data_path, batch_size, num_workers=4, valid_size=0.1, **kwargs):
+def load_mnist(data_path, batch_size, num_workers=0, valid_size=0.1, **kwargs):
     """
     Load mnist data.
 

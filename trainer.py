@@ -13,7 +13,7 @@ import torch.nn.functional as F
 import torch.optim as opt
 import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
-from losses import compas_robustness_loss
+from losses import compas_robustness_loss, mnist_robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -66,10 +66,12 @@ class Trainer():
 
         # Init losses
         self.classification_loss = F.binary_cross_entropy if config.num_classes == 1 else F.nll_loss
+        # TODO: concept loss should return zero for identity conceptizer
         self.concept_loss = mse_l1_sparsity
-        # TODO: how should this be checked?
         if config.dataloader == "compas":
             self.robustness_loss = compas_robustness_loss
+        elif config.dataloader == "mnist":
+            self.robustness_loss = mnist_robustness_loss
         else:
             raise Exception("Robustness loss not defined")
 
@@ -140,7 +142,7 @@ class Trainer():
             # visualize SENN computation graph
             self.writer.add_graph(self.model, x) 
 
-            classification_loss = self.classification_loss(y_pred, labels)
+            classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
             concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
 
@@ -199,10 +201,10 @@ class Trainer():
                 # run x through SENN
                 y_pred, (concepts, relevances), x_reconstructed = self.model(x)
 
-                classification_loss = self.classification_loss(y_pred, labels).item()
+                classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
                 robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
-                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts).item()
+                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
                 
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
