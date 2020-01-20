@@ -53,12 +53,13 @@ def plot_lambda_accuracy(config_list, save_path):
     lambdas = []
     accuracies = []
 
+    path = Path("config/")
     for config_file in config_list:
-        with open(config_file, 'r') as f:
+        with open(path/config_file, 'r') as f:
             config = json.load(f)
             lambdas.append(config["robust_reg"])
-            path = Path(config["checkpoint_dir"])
-            results_csv = path / config["experiment_dir"] / "accuracies_losses_valid.csv"
+            result_dir = Path("results/")
+            results_csv = result_dir / config["experiment_dir"] / "accuracies_losses_valid.csv"
             dataset = config['dataloader']
         max_accuracy = pd.read_csv(results_csv, header=0)['Accuracy'].max()
         accuracies.append(max_accuracy)
