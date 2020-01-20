@@ -2,7 +2,7 @@
 
 import argparse
 
-from trainer import load_trainer
+from trainer import init_trainer
 
 
 def main():
@@ -11,7 +11,7 @@ def main():
     parser.add_argument('--config', default="config/compas_config.json", help='experiment config file')
     args = parser.parse_args()
 
-    trainer = load_trainer(args.config)
+    trainer = init_trainer(args.config)
     trainer.run()
     trainer.finalize()
 
