@@ -29,7 +29,7 @@ LOG_DIR = 'logs'
 BEST_MODEL = "best_model.pt"
 
 
-def load_trainer(config_file, best_model=False):
+def init_trainer(config_file, best_model=False):
     with open(config_file, 'r') as f:
         config = json.load(f)
 
