@@ -6,6 +6,9 @@ from utils.plot_utils import *
 
 import os
 from os import path
+import json
+from pprint import pprint
+from types import SimpleNamespace
 from functools import partial
 
 import torch
@@ -24,6 +27,24 @@ plt.style.use('seaborn-talk')
 RESULTS_DIR = 'results'
 CHECKPOINT_DIR = 'checkpoints'
 LOG_DIR = 'logs'
+BEST_MODEL = "best_model.pt"
+
+
+def load_trainer(config_file, best_model=False):
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+
+    if best_model:
+        config["load_checkpoint"] = BEST_MODEL
+
+    print("==================================================")
+    print(f" EXPERIMENT: {config['exp_name']}")
+    print("==================================================")
+    pprint(config)
+    config = SimpleNamespace(**config)
+    # create the trainer class and init with config
+    trainer = Trainer(config)
+    return trainer
 
 
 class Trainer():
@@ -58,7 +79,7 @@ class Trainer():
         # Init model
         self.model = SENN(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
-        self.summarize(self.model)
+        self.summarize()
 
         # Init data
         print("Loading data ...")
@@ -141,7 +162,7 @@ class Trainer():
             y_pred, (concepts, relevances), x_reconstructed = self.model(x)
 
             # visualize SENN computation graph
-            self.writer.add_graph(self.model, x) 
+            self.writer.add_graph(self.model, x)
 
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
@@ -244,9 +265,9 @@ class Trainer():
             print(report)
 
             if accuracy > self.best_accuracy:
-                print("Congratulations! Saving a new best model...")
+                print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
-                self.save_checkpoint("best_model.pt")
+                self.save_checkpoint(BEST_MODEL)
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
@@ -364,7 +385,7 @@ class Trainer():
         print("Please wait while we finalize...")
         self.save_checkpoint()
 
-    def summarize(self, model):
+    def summarize(self):
         """Print summary of given model.
 
         Parameters
@@ -372,6 +393,6 @@ class Trainer():
         model :
             A Pytorch model containing parameters.
         """
-        print(model)
-        train_params = sum(p.numel() for p in model.parameters())
+        print(self.model)
+        train_params = sum(p.numel() for p in self.model.parameters())
         print(f"Trainable Parameters: {train_params}\n")
