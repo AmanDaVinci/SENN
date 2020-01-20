@@ -4,6 +4,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+RESULTS_DIR = 'results'
+CONFIG_DIR = 'config'
+RESULTS_FILENAME = 'accuracies_losses_valid.csv'
+
 
 def create_barplot(relevances, y_pred, save_path='results/relevances.png', concept_names=None):
     """Creates a bar plot of relevances.
@@ -53,13 +57,13 @@ def plot_lambda_accuracy(config_list, save_path):
     lambdas = []
     accuracies = []
 
-    path = Path("config/")
+    path = Path(CONFIG_DIR)
     for config_file in config_list:
         with open(path/config_file, 'r') as f:
             config = json.load(f)
             lambdas.append(config["robust_reg"])
-            result_dir = Path("results/")
-            results_csv = result_dir / config["experiment_dir"] / "accuracies_losses_valid.csv"
+            result_dir = Path(RESULTS_DIR)
+            results_csv = result_dir / config["experiment_dir"] / RESULTS_FILENAME
             dataset = config['dataloader']
         max_accuracy = pd.read_csv(results_csv, header=0)['Accuracy'].max()
         accuracies.append(max_accuracy)
