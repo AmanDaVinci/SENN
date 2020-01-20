@@ -368,12 +368,12 @@ class Trainer():
 
         # create visualization of the concepts with method specified in config file
         save_path = path.join(save_dir, 'concept.png')
-        if self.config.concept_visualization == 'contrast':
+        if self.config.concept_visualization == 'activation':
+            highest_activations(self.model, self.test_loader, save_path=save_path)
+        elif self.config.concept_visualization == 'contrast':
             highest_contrast(self.model, self.test_loader, save_path=save_path)
         elif self.config.concept_visualization == 'filter':
             filter_concepts(self.model, save_path=save_path)
-        else:
-            highest_activations(self.model, self.test_loader, save_path=save_path)
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
