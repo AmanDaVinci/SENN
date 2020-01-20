@@ -111,12 +111,12 @@ class Trainer():
         self.best_accuracy = 0
 
         # directories for saving results
-        self.experiment_dir = path.join(RESULTS_DIR, config.experiment_dir)
-        self.checkpoint_dir = path.join(self.experiment_dir, CHECKPOINT_DIR)
-        self.log_dir = path.join(self.experiment_dir, LOG_DIR)
+        self.experiment_dir = path.join(RESULTS_DIR, config.exp_name)
+        self.checkpoint_dir = path.join(self.exp_name, CHECKPOINT_DIR)
+        self.log_dir = path.join(self.exp_name, LOG_DIR)
         os.makedirs(RESULTS_DIR, exist_ok=True)
-        os.makedirs(self.experiment_dir, exist_ok=True)
-        os.makedirs(self.checkpoint_dir, exist_ok=True)
+        os.makedirs(self.exp_name, exist_ok=True)
+        os.makedirs(self.exp_name, exist_ok=True)
         os.makedirs(self.log_dir, exist_ok=True)
 
         self.writer = SummaryWriter(log_dir=self.log_dir)
@@ -132,7 +132,7 @@ class Trainer():
         try:
             print("Training begins...")
             self.train()
-            self.visualize(save_dir=self.experiment_dir)
+            self.visualize(save_dir=self.exp_name)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -347,7 +347,7 @@ class Trainer():
                   f"Accuracy:{accuracy:.3f} \t")
         print(report)
 
-        filename = path.join(self.experiment_dir, filename)
+        filename = path.join(self.exp_name, filename)
         new_file = not os.path.exists(filename)
         with open(filename, 'a') as metrics_file:
             fieldnames = ['Accuracy', 'Loss', 'Classification_Loss', 'Robustness_Loss', 'Concept_Loss', 'Step']
