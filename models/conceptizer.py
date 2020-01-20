@@ -78,7 +78,7 @@ class IdentityConceptizer(Conceptizer):
         return z.squeeze(-1)
 
 class Conceptizer_CNN(Conceptizer):
-    def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=(10,),
+    def __init__(self, image_size, num_concepts, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
                  stride_conv=1, stride_pool=2, stride_upsample=(2, 1, 2),
                  padding_conv=0, padding_upsample=(0, 0, 1), concept_visualization='', **kwargs):
@@ -89,7 +89,7 @@ class Conceptizer_CNN(Conceptizer):
         ----------
         image_size : int
             the width of the input image
-        concept_num : int
+        num_concepts : int
             the number of concepts
         concept_dim : int
             the dimension of each concept to be learned
@@ -120,7 +120,7 @@ class Conceptizer_CNN(Conceptizer):
             from that with one big linear layer
         """
         super(Conceptizer_CNN, self).__init__()
-        self.concept_num = concept_num
+        self.num_concepts = num_concepts
         self.filter = filter
         self.dout = image_size
 
@@ -130,10 +130,10 @@ class Conceptizer_CNN(Conceptizer):
         stride_conv = handle_integer_input(stride_conv, len(encoder_channels))
         stride_pool = handle_integer_input(stride_pool, len(encoder_channels))
         padding_conv = handle_integer_input(padding_conv, len(encoder_channels))
-        encoder_channels += (concept_num,)
+        encoder_channels += (num_concepts,)
 
         # Decoder params
-        decoder_channels = (concept_num,) + decoder_channels
+        decoder_channels = (num_concepts,) + decoder_channels
         kernel_size_upsample = handle_integer_input(kernel_size_upsample, len(decoder_channels))
         stride_upsample = handle_integer_input(stride_upsample, len(decoder_channels))
         padding_upsample = handle_integer_input(padding_upsample, len(decoder_channels))
@@ -152,7 +152,7 @@ class Conceptizer_CNN(Conceptizer):
                     stride_conv[i] * stride_pool[i])
 
         if self.filter and concept_dim == 1:
-            self.encoder.append(ScalarMaping((self.concept_num, self.dout, self.dout)))
+            self.encoder.append(ScalarMapping((self.num_concepts, self.dout, self.dout)))
         else:
             self.encoder.append(Flatten())
             self.encoder.append(nn.Linear(self.dout ** 2, concept_dim))
@@ -209,7 +209,7 @@ class Conceptizer_CNN(Conceptizer):
 
         """
         reconst = self.unlinear(z)
-        reconst = reconst.view(-1, self.concept_num, self.dout, self.dout)
+        reconst = reconst.view(-1, self.num_concepts, self.dout, self.dout)
         for module in self.decoder:
             reconst = module(reconst)
         return reconst
@@ -329,7 +329,7 @@ def handle_integer_input(input, desired_len):
     else:
         raise TypeError(f"Wrong type of the parameters. Expected tuple or int but got '{type(input)}'")
 
-class ScalarMaping(nn.Module):
+class ScalarMapping(nn.Module):
     def __init__(self, conv_block_size):
         """
         Module that maps each filter of a convolutional block to a scalar value
