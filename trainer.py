@@ -356,7 +356,7 @@ class Trainer():
 
         # select test example
         (test_batch, test_labels) = next(iter(self.test_loader))
-        example = test_batch[8]
+        example = test_batch[8].float()
         if self.config.dataloader == 'mnist':
             save(example, path.join(save_dir, 'test_example.png'))
 
@@ -367,14 +367,15 @@ class Trainer():
 
         create_barplot(relevances, y_pred, save_path=path.join(save_dir, 'relevances.png'))
 
-        # create visualization of the concepts with method specified in config file
-        save_path = path.join(save_dir, 'concept.png')
-        if self.config.concept_visualization == 'activation':
-            highest_activations(self.model, self.test_loader, save_path=save_path)
-        elif self.config.concept_visualization == 'contrast':
-            highest_contrast(self.model, self.test_loader, save_path=save_path)
-        elif self.config.concept_visualization == 'filter':
-            filter_concepts(self.model, save_path=save_path)
+        if hasattr(self.config, 'concept_visualization'):
+            # create visualization of the concepts with method specified in config file
+            save_path = path.join(save_dir, 'concept.png')
+            if self.config.concept_visualization == 'activation':
+                highest_activations(self.model, self.test_loader, save_path=save_path)
+            elif self.config.concept_visualization == 'contrast':
+                highest_contrast(self.model, self.test_loader, save_path=save_path)
+            elif self.config.concept_visualization == 'filter':
+                filter_concepts(self.model, save_path=save_path)
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
