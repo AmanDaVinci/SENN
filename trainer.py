@@ -1,6 +1,6 @@
 from models.senn import SENN
 from datasets.dataloaders import get_dataloader
-from losses import *
+from models.losses import *
 from utils.concept_representations import *
 from utils.plot_utils import *
 
@@ -14,9 +14,8 @@ from functools import partial
 import torch
 import torch.nn.functional as F
 import torch.optim as opt
-import torchvision.utils as vutils
 from torch.utils.tensorboard import SummaryWriter
-from losses import compas_robustness_loss, mnist_robustness_loss
+from models.losses import compas_robustness_loss, mnist_robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -131,7 +130,7 @@ class Trainer():
         try:
             print("Training begins...")
             self.train()
-            self.visuallize(save_dir=self.experiment_dir)
+            self.visualize(save_dir=self.experiment_dir)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -166,7 +165,7 @@ class Trainer():
 
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
+            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity_reg, concepts)
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -226,7 +225,7 @@ class Trainer():
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
                 robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
-                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity, concepts)
+                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity_reg, concepts)
                 
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
@@ -346,7 +345,7 @@ class Trainer():
             torch.save(state, f)
         print(f"Checkpoint saved @ {file_name}\n")
 
-    def visuallize(self, save_dir):
+    def visualize(self, save_dir):
         """Generates some plots to visualize the explanations.
 
         Parameters
