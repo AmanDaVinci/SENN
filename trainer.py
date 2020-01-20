@@ -282,8 +282,7 @@ class Trainer():
         try:
             file_name = path.join(self.checkpoint_dir, file_name)
             print(f"Loading checkpoint...")
-            with open(file_name, 'rb') as f:
-                checkpoint = torch.load(f, self.config.device)
+            checkpoint = torch.load(file_name, self.config.device)
 
             self.current_epoch = checkpoint['epoch']
             self.current_iter = checkpoint['iter']
@@ -309,8 +308,8 @@ class Trainer():
             'model_state': self.model.state_dict(),
             'optimizer': self.opt.state_dict(),
         }
-        with open(file_name, 'wb') as f:
-            torch.save(state, f)
+        torch.save(state, file_name)
+
         print(f"Checkpoint saved @ {file_name}\n")
 
     def visualize(self, save_dir):
