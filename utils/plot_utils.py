@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -32,5 +35,38 @@ def create_barplot(relevances, y_pred, save_path='results/relevances.png'):
     ax.set_xlabel('Relevances (thetas)')
     ax.set_title('Explanation for prediction: {}'.format(y_pred))
 
+    plt.savefig(save_path)
+    plt.clf()
+
+
+def plot_lambda_accuracy(config_list, save_path):
+    """Plots the lambda (robustness regularizer) vs accuracy of SENN
+
+    Parameters
+    ----------
+    config_list: list
+        List of experiment config files used to vary the lambda 
+    save_path: str
+        Path to the location where the plot should be saved.
+    """
+    lambdas = []
+    accuracies = []
+
+    for config_file in config_list:
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+            lambdas.append(config["robust_reg"])
+            path = Path(config["checkpoint_dir"])
+            results_csv = path / config["experiment_dir"] / "accuracies_losses.csv"
+            dataset = config['dataloader']
+        max_accuracy = pd.read_csv(results_csv, header=0)['Accuracy'].max()
+        accuracies.append(max_accuracy)
+    
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+    ax.plot(lambdas, accuracies, "r.-")
+    ax.set_xlabel('Robustness Regularization Strength')
+    ax.set_ylabel('Prediction Accuracy')
+    
     plt.savefig(save_path)
     plt.clf()
