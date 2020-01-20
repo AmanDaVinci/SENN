@@ -11,11 +11,11 @@
   "dropout": 0.5,
   "aggregator": "SumAggregator",
   "device": "cpu",
-  "lr": 1e-5,
+  "lr": 2e-4,
   "checkpoint_dir": "checkpoints/",
   "epochs": 1,
-  "robust_reg": 0.1,
-  "concept_reg": 0.4,
+  "robust_reg": 1e-4,
+  "concept_reg": 2e-5,
   "print_freq": 100,
   "checkpoint_file": "mnist.cpt",
   "exp_name": "test_mnist",
@@ -23,7 +23,7 @@
   "data_path": "datasets/data/mnist_data",
   "batch_size" : 200,
   "experiment_dir" : "mnist_test_contrast",
-  "sparsity" : 1e-3
+  "sparsity_reg" : 2e-5,
   "eval_freq" : 30
 }
 
