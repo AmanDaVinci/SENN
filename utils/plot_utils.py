@@ -34,7 +34,7 @@ def create_barplot(relevances, y_pred, save_path='results/relevances.png', conce
     colors = ['b' if r > 0 else 'r' for r in relevances]
     colors.reverse()
 
-    ax.barh(y_pos, np.flip(relevances.detach().numpy()), align='center', color=colors)
+    ax.barh(y_pos, np.flip(relevances.detach().cpu().numpy()), align='center', color=colors)
     ax.set_yticks(y_pos)
     ax.set_yticklabels(concept_names)
     ax.set_xlabel('Relevances (thetas)')

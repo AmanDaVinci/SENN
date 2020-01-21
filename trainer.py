@@ -156,6 +156,7 @@ class Trainer():
 
         for i, (x, labels) in enumerate(self.train_loader):
             x = x.float().to(self.config.device)
+            labels = labels.to(self.config.device)
             self.opt.zero_grad()
             # track all operations on x for jacobian calculation
             x.requires_grad_(True)
@@ -215,6 +216,7 @@ class Trainer():
         with torch.no_grad():
             for i, (x, labels) in enumerate(self.val_loader):
                 x = x.float().to(self.config.device)
+                labels = labels.to(self.config.device)
 
                 # run x through SENN
                 y_pred, (concepts, relevances), x_reconstructed = self.model(x)
@@ -372,7 +374,7 @@ class Trainer():
 
         # select test example
         (test_batch, test_labels) = next(iter(self.test_loader))
-        example = test_batch[8].float()
+        example = test_batch[8].float().to(self.config.device)
         if self.config.dataloader == 'mnist':
             save(example, path.join(save_dir, 'test_example.png'))
 

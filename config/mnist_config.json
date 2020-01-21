@@ -11,7 +11,7 @@
   "num_classes": 10,
   "dropout": 0.5,
   "aggregator": "SumAggregator",
-  "device": "cpu",
+  "device": "cuda:0",
   "lr": 2e-4,
   "epochs": 5,
   "robust_reg": 1e-4,

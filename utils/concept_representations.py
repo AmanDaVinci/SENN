@@ -155,7 +155,7 @@ def save(img, save_path):
         Path to the location where the bar plot should be saved.
     """
     img = img.clone().squeeze()
-    npimg = img.numpy()
+    npimg = img.cpu().numpy()
     if len(npimg.shape) == 2:
         plt.imsave(save_path, npimg, cmap='Greys')
     else:
