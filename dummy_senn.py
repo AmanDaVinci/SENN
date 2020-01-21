@@ -14,11 +14,12 @@ from torch.utils.data import Dataset, DataLoader, random_split
 import urllib.request
 import shutil
 
+from pathlib import Path
+
 
 class CompasDataset(Dataset):
-    def __init__(self, compas_path, verbose=True):
+    def __init__(self, data_path, verbose=True):
         """ProPublica Compas dataset.
-
         Dataset is read in from preprocessed compas data: `propublica_data_for_fairml.csv`
         from fairml github repo.
         Source url: 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
@@ -27,10 +28,10 @@ class CompasDataset(Dataset):
 
         Parameters
         ----------
-        compas_path : str
+        data_path : str
             Location of Compas data.
         """
-        df = pd.read_csv(compas_path)
+        df = pd.read_csv(data_path)
 
         # don't know why square root
         df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)
@@ -56,16 +57,14 @@ class CompasDataset(Dataset):
         return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
 
-def load_compas(data_path="datasets/data/compas_new.csv", train_percent=0.8, batch_size=200, num_workers=4,
-                valid_size=0.1,
-                **kwargs):
+def load_compas(data_path='datasets/data/compas/compas.csv', train_percent=0.8, batch_size=200, num_workers=0,
+                valid_size=0.1, **kwargs):
     """Return compas dataloaders.
 
     If compas data can not be found, will download preprocessed compas data: `propublica_data_for_fairml.csv`
     from fairml github repo.
 
     Source url: 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
-
     Parameters
     ----------
     data_path : str
@@ -75,7 +74,6 @@ def load_compas(data_path="datasets/data/compas_new.csv", train_percent=0.8, bat
         for the test set.
     batch_size : int
         Number of samples in minibatches.
-
     Returns
     -------
     train_loader
@@ -85,8 +83,9 @@ def load_compas(data_path="datasets/data/compas_new.csv", train_percent=0.8, bat
     test_loader
         Dataloader for testing set.
     """
-    compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
     if not os.path.isfile(data_path):
+        Path(data_path).parent.mkdir(parents=True, exist_ok=True)
+        compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
         download_file(data_path, compas_url)
     dataset = CompasDataset(data_path)
 
@@ -112,11 +111,8 @@ def load_compas(data_path="datasets/data/compas_new.csv", train_percent=0.8, bat
 def find_conflicting(df, labels, consensus_delta=0.2):
     """
     Find examples with same exact feature vector but different label.
-
     Finds pairs of examples in dataframe that differ only in a few feature values.
-
     From SENN authors' code.
-
     Parameters
     ----------
     df : pd.Dataframe
@@ -125,7 +121,6 @@ def find_conflicting(df, labels, consensus_delta=0.2):
         Containing ground truth labels
     consensus_delta : float
         Decision rule parameter.
-
     Return
     ------
     pruned_df:
@@ -163,7 +158,6 @@ def find_conflicting(df, labels, consensus_delta=0.2):
 
 def download_file(store_path, url):
     """Download a file from `url` and write it to a file `store_path`.
-
     Parameters
     ----------
     store_path : str
@@ -178,12 +172,17 @@ class Net(nn.Module):
 
     def __init__(self):
         super().__init__()
+        # dropout with such few parameters... maybe not
+        dropout = 0.0
         self.parameterizer = nn.Sequential(
             nn.Linear(11, 5),
+            nn.Dropout(p=dropout),
             nn.ReLU(),
             nn.Linear(5, 5),
+            nn.Dropout(p=dropout),
             nn.ReLU(),
-            nn.Linear(5, 11)
+            nn.Linear(5, 11),
+            nn.Dropout(p=dropout)
         )
 
     def forward(self, x):
@@ -193,7 +192,7 @@ class Net(nn.Module):
 
 
 net = Net()
-opt = optim.Adam(net.parameters(), lr=0.001, betas=(0.9, 0.999))
+opt = optim.Adam(net.parameters(), lr=0.001)#, betas=(0.9, 0.999))
 criterion = nn.BCELoss()
 trainloader, _, _ = load_compas()
 
@@ -224,12 +223,13 @@ def accuracy(ys,labels):
     return float(sum(correct_pred))/len(correct_pred)
 """
 def accuracy(ys,labels):
-    correct_pred = labels == torch.round(ys)
-    return float(sum(correct_pred))/len(correct_pred)
+    #correct_pred = labels == torch.round(ys)
+    #return float(sum(correct_pred))/len(correct_pred)
+    return (labels == torch.round(ys)).float().mean().item()
 
 e_losses = []
 e_accuracies = []
-num_epochs = 20
+num_epochs = 30
 for e in range(num_epochs):
     print('Epoch {}:'.format(e))
     losses, accuracies = train_epoch(net, opt, criterion)
