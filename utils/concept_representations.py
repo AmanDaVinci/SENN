@@ -3,7 +3,7 @@ from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 import numpy as np
 
-def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, save_path="results/concepts.png"):
+def highest_activations(model, test_loader, num_concepts=5, num_prototypes=9, save_path="results/concepts.png"):
     """Creates concept representation via highest activation.
 
     The concepts are represented by the most prototypical data samples.
@@ -44,7 +44,7 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=6, sa
     start = 0.0
     end = num_concepts * x.size(-1)
     stepsize = abs(end - start) / num_concepts
-    ax.yaxis.set_ticks(np.arange(start+0.5*stepsize, end-0.5*stepsize, stepsize))
+    ax.yaxis.set_ticks(np.arange(start+0.5*stepsize, end-0.49*stepsize, stepsize))
     ax.set_yticklabels(concept_names)
     plt.xticks([])
     ax.set_xlabel('{} most prototypical data examples per concept'.format(num_prototypes))

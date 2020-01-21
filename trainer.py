@@ -130,8 +130,9 @@ class Trainer():
         If the loop is interrupted manually, finalization will still be executed.
         """
         try:
-            print("Training begins...")
-            self.train()
+            if self.config.train:
+                print("Training begins...")
+                self.train()
             self.visualize(save_dir=self.experiment_dir)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
