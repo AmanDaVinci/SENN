@@ -12,8 +12,6 @@ import shutil
 
 from pathlib import Path
 
-from pdb import set_trace
-
 
 def get_dataloader(config):
     """Dispatcher that calls dataloader function depending on the config.
@@ -66,7 +64,6 @@ def load_mnist(data_path, batch_size, num_workers=0, valid_size=0.1, **kwargs):
         transforms.Normalize((0.1307,), (0.3081,))
     ])
 
-    set_trace()
     train_set = datasets.MNIST(data_path, train=True, download=True, transform=transform)
     test_set = datasets.MNIST(data_path, train=False, download=True, transform=transform)
 
