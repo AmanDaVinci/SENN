@@ -10,6 +10,8 @@ from torch.utils.data import Dataset, DataLoader, random_split
 import urllib.request
 import shutil
 
+from pathlib import Path
+
 
 def get_dataloader(config):
     """Dispatcher that calls dataloader function depending on the config.
@@ -121,7 +123,7 @@ class CompasDataset(Dataset):
 
         return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
-def load_compas(data_path="datasets/data/compas/compas.csv", train_percent=0.8, batch_size=200, num_workers=0, valid_size=0.1, **kwargs):
+def load_compas(data_path='datasets/data/compas/compas.csv', train_percent=0.8, batch_size=200, num_workers=0, valid_size=0.1, **kwargs):
     """Return compas dataloaders.
     
     If compas data can not be found, will download preprocessed compas data: `propublica_data_for_fairml.csv`
@@ -149,6 +151,7 @@ def load_compas(data_path="datasets/data/compas/compas.csv", train_percent=0.8, 
         Dataloader for testing set.
     """
     if not os.path.isfile(data_path):
+        Path(data_path).parent.mkdir(parents=True, exist_ok=True)
         compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
         download_file(data_path, compas_url)
     dataset = CompasDataset(data_path)
