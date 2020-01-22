@@ -6,7 +6,7 @@
   "concept_visualization": "activation",
   "parameterizer": "MNISTParameterizer",
   "cl_sizes": [1, 10, 20],
-  "hidden_sizes": [180, 50],
+  "hidden_sizes": [320, 50],
   "num_concepts": 5,
   "num_classes": 10,
   "dropout": 0.5,
@@ -15,15 +15,14 @@
   "lr": 2e-4,
   "epochs": 5,
   "robust_reg": 1e-4,
-  "concept_reg": 2e-5,
+  "concept_reg": 1,
   "print_freq": 100,
-  "checkpoint_file": "mnist.cpt",
-  "exp_name": "test_mnist",
+  "exp_name": "test_mnist_concept_reg1",
   "dataloader": "mnist",
   "data_path": "datasets/data/mnist_data",
   "batch_size" : 200,
   "sparsity_reg" : 2e-5,
-  "eval_freq" : 269,
+  "eval_freq" : 100,
   "load_checkpoint": "best_model.pt"
 }
 
