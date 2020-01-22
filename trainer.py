@@ -369,16 +369,17 @@ class Trainer():
 
         # select test example
         (test_batch, test_labels) = next(iter(self.test_loader))
-        example = test_batch[8].float().to(self.config.device)
-        if self.config.dataloader == 'mnist':
-            save(example, path.join(save_dir, 'test_example.png'))
+        for i in range(10):
+            example = test_batch[i].float().to(self.config.device)
+            if self.config.dataloader == 'mnist':
+                save(example, path.join(save_dir, 'test_example_{}.png'.format(i)))
 
-        # feed example to model to obtain explanation
-        y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
-        if len(y_pred.size()) > 1:
-            y_pred = y_pred.argmax(1)
+            # feed example to model to obtain explanation
+            y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
+            if len(y_pred.size()) > 1:
+                y_pred = y_pred.argmax(1)
 
-        create_barplot(relevances, y_pred, save_path=path.join(save_dir, 'relevances.png'))
+            create_barplot(relevances, y_pred, save_path=path.join(save_dir, 'relevances_{}.png'.format(i)))
 
         if hasattr(self.config, 'concept_visualization'):
             # create visualization of the concepts with method specified in config file

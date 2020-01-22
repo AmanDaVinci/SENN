@@ -89,9 +89,10 @@ class MNISTParameterizer(nn.Module):
         for h, h_next in zip(cl_sizes, cl_sizes[1:]):
             cl_layers.append(nn.Conv2d(h, h_next, kernel_size=self.kernel_size))
             # TODO: maybe adaptable parameters for pool kernel size and stride
-            cl_layers.append(nn.MaxPool2d(3, stride=2))
+            cl_layers.append(nn.MaxPool2d(2, stride=2))
             cl_layers.append(nn.ReLU())
-        cl_layers.append(nn.Dropout2d(self.dropout))
+        # dropout before maxpool
+        cl_layers.insert(-2, nn.Dropout2d(self.dropout))
         self.cl_layers = nn.Sequential(*cl_layers)
 
         fc_layers = []
