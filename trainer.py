@@ -28,7 +28,7 @@ plt.style.use('seaborn-talk')
 RESULTS_DIR = 'results'
 CHECKPOINT_DIR = 'checkpoints'
 LOG_DIR = 'logs'
-BEST_MODEL = "best_model.pt"
+BEST_MODEL_FILENAME = "best_model.pt"
 
 
 def init_trainer(config_file, best_model=False):
@@ -36,7 +36,7 @@ def init_trainer(config_file, best_model=False):
         config = json.load(f)
 
     if best_model:
-        config["load_checkpoint"] = BEST_MODEL
+        config["load_checkpoint"] = BEST_MODEL_FILENAME
 
     print("==================================================")
     print(f" EXPERIMENT: {config['exp_name']}")
@@ -259,7 +259,7 @@ class Trainer():
             if accuracy > self.best_accuracy:
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
-                self.save_checkpoint(BEST_MODEL)
+                self.save_checkpoint(BEST_MODEL_FILENAME)
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
