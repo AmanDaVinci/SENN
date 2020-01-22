@@ -252,14 +252,14 @@ class Trainer():
             self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
 
             # --- Report Validation --- #
-            print("\n\033[93m-------- Validation --------\033[0m")
+            print("\n\033[93m-------- Validation --------")
             self.print_n_save_metrics(filename="accuracies_losses_valid.csv",
                                       total_loss=total_loss,
                                       classification_loss=classification_loss,
                                       robustness_loss=robustness_loss,
                                       concept_loss=concept_loss,
                                       accuracy=accuracy)
-            print("\033[93m----------------------------\033[0m")
+            print("----------------------------\033[0m")
 
             if accuracy > self.best_accuracy:
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
