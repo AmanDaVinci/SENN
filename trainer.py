@@ -98,14 +98,9 @@ class Trainer():
             raise Exception("Robustness loss not defined")
 
         # Init optimizer
-        self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
+        self.opt = opt.Adam(self.model.parameters())
 
         # Init trackers
-        self.losses = []
-        self.classification_losses = []
-        self.concept_losses = []
-        self.robustness_losses = []
-        self.accuracies = []
         self.current_iter = 0
         self.current_epoch = 0
         self.best_accuracy = 0
