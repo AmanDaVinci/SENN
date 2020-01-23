@@ -1,7 +1,7 @@
 {
   "exp_name": "Dummy",
-  "conceptizer": "MNISTConceptizer",
-  "parameterizer": "MNISTParameterizer",
+  "conceptizer": "ConvConceptizer",
+  "parameterizer": "ConvParameterizer",
   "cl_sizes": [1, 10, 20],
   "kernel_size": 3,
   "hidden_sizes": [40],

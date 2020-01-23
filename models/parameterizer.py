@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchvision.utils as vutils
 
 
-class CompasParameterizer(nn.Module):
+class LinearParameterizer(nn.Module):
     def __init__(self, num_concepts, num_classes, hidden_sizes=(10, 5, 5, 10), dropout=0.5, **kwargs):
         """Parameterizer for compas dataset.
         
@@ -53,7 +53,7 @@ class CompasParameterizer(nn.Module):
         return self.layers(x).view(x.size(0), self.num_concepts, self.num_classes)
 
 
-class MNISTParameterizer(nn.Module):
+class ConvParameterizer(nn.Module):
     def __init__(self, num_concepts, num_classes, cl_sizes=(1, 10, 20), kernel_size=5, hidden_sizes=(10, 5, 5, 10), dropout=0.5, **kwargs):
         """Parameterizer for MNIST dataset.
 
