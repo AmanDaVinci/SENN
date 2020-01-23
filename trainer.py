@@ -262,9 +262,8 @@ class Trainer():
                 self.save_checkpoint(BEST_MODEL_FILENAME)
 
     def accuracy(self, y_pred, y):
-        """Return accuracy of predictions with respect to ground truth.
-
-        The binary and multi-class case are distinguished and calculated appropriately.
+        """
+        Return accuracy of predictions with respect to ground truth.
 
         Parameters
         ----------
@@ -278,11 +277,7 @@ class Trainer():
         float:
             accuracy of predictions
         """
-        if len(y_pred.size()) == 1:
-            accuracy = (y == torch.round(y_pred)).float().mean().item()
-        else:
-            accuracy = (y_pred.argmax(axis=1) == y).float().mean().item()
-        return accuracy
+        return (y_pred.argmax(axis=1) == y).float().mean().item()
 
     def load_checkpoint(self, file_name):
         """Load most recent checkpoint.
