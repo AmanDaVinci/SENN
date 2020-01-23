@@ -50,7 +50,7 @@ class CompasParameterizer(nn.Module):
         parameters : torch.Tensor
             Relevance scores associated with concepts. Of shape (BATCH, NUM_CONCEPTS, NUM_CLASSES)
         """
-        return self.layers(x).view(-1, self.num_concepts, self.num_classes)
+        return self.layers(x).view(x.size(0), self.num_concepts, self.num_classes)
 
 
 class MNISTParameterizer(nn.Module):

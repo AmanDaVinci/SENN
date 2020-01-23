@@ -36,9 +36,4 @@ class SumAggregator(nn.Module):
         TODO add assertions for matching dimensions, maybe?
         """
         aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
-
-        if self.num_classes == 1:
-            class_predictions = torch.sigmoid(aggregated)
-        else:
-            class_predictions = F.log_softmax(aggregated, dim=1)
-        return class_predictions
+        return F.log_softmax(aggregated, dim=1)
