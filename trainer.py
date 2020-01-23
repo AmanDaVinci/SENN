@@ -87,7 +87,7 @@ class Trainer():
         self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
 
         # Init losses
-        self.classification_loss = F.binary_cross_entropy if config.num_classes == 1 else F.nll_loss
+        self.classification_loss = F.nll_loss
         # TODO: concept loss should return zero for identity conceptizer
         self.concept_loss = mse_l1_sparsity
         if config.dataloader == "compas":
@@ -151,7 +151,7 @@ class Trainer():
 
         for i, (x, labels) in enumerate(self.train_loader):
             x = x.float().to(self.config.device)
-            labels = labels.to(self.config.device)
+            labels = labels.long().to(self.config.device)
             self.opt.zero_grad()
             # track all operations on x for jacobian calculation
             x.requires_grad_(True)
@@ -211,7 +211,7 @@ class Trainer():
         with torch.no_grad():
             for i, (x, labels) in enumerate(self.val_loader):
                 x = x.float().to(self.config.device)
-                labels = labels.to(self.config.device)
+                labels = labels.long().to(self.config.device)
 
                 # run x through SENN
                 y_pred, (concepts, relevances), x_reconstructed = self.model(x)
