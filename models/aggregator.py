@@ -29,9 +29,9 @@ class SumAggregator(nn.Module):
         Returns
         -------
         class_predictions : torch.Tensor
-            Predictions for each class, DIM_CONCEPT will be reduced
-            In our case, it will be squeezed since DIM_CONCEPT is always 1
-            (BATCH, NUM_CLASSES, DIM_CONCEPT=1)
+            Predictions for each class
+            shape (if binary): (BATCH)
+            shape (if multi-class): (BATCH, NUM_CLASSES)
             
         TODO add assertions for matching dimensions, maybe?
         """
