@@ -63,14 +63,16 @@ def plot_lambda_accuracy(config_list, save_path):
             config = json.load(f)
             lambdas.append(config["robust_reg"])
             result_dir = Path(RESULTS_DIR)
-            results_csv = result_dir / config["experiment_dir"] / RESULTS_FILENAME
+            results_csv = result_dir / config["exp_name"] / RESULTS_FILENAME
             dataset = config['dataloader']
         max_accuracy = pd.read_csv(results_csv, header=0)['Accuracy'].max()
         accuracies.append(max_accuracy)
     
     plt.rcdefaults()
     fig, ax = plt.subplots()
-    ax.plot(lambdas, accuracies, "r.-")
+    ax.plot(np.arange(len(lambdas)), accuracies, "r.-")
+    ax.set_xticks(np.arange(len(lambdas)))
+    ax.set_xticklabels(lambdas)
     ax.set_xlabel('Robustness Regularization Strength')
     ax.set_ylabel('Prediction Accuracy')
     
