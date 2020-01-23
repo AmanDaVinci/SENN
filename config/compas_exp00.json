@@ -1,6 +1,6 @@
 {
     "conceptizer": "IdentityConceptizer",
-    "parameterizer": "CompasParameterizer",
+    "parameterizer": "LinearParameterizer",
     "hidden_sizes": [11, 5, 5, 11],
     "num_concepts": 11,
     "num_classes": 1,

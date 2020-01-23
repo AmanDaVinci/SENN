@@ -77,7 +77,7 @@ class IdentityConceptizer(Conceptizer):
         """
         return z.squeeze(-1)
 
-class Conceptizer_CNN(Conceptizer):
+class ConvConceptizer(Conceptizer):
     def __init__(self, image_size, num_concepts, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
                  stride_conv=1, stride_pool=2, stride_upsample=(2, 1, 2),
@@ -119,7 +119,7 @@ class Conceptizer_CNN(Conceptizer):
             Otherwise all filters are flattened to one vector and then the concepts are computed
             from that with one big linear layer
         """
-        super(Conceptizer_CNN, self).__init__()
+        super(ConvConceptizer, self).__init__()
         self.num_concepts = num_concepts
         self.filter = filter
         self.dout = image_size

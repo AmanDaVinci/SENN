@@ -1,8 +1,8 @@
 {
-    "conceptizer": "Conceptizer_CNN",
+    "conceptizer": "ConvConceptizer",
     "image_size": 28,
     "concept_dim": 1,
-    "parameterizer": "MNISTParameterizer",
+    "parameterizer": "ConvParameterizer",
     "cl_sizes": [1, 10, 20],
     "hidden_sizes": [180, 50],
     "num_concepts": 5,

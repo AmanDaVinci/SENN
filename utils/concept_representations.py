@@ -111,7 +111,7 @@ def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path="results
 
     The concepts are represented by the filters of the last layer of the concept encoder.
     (This option for visualization requires the concept_visualization field in config to have the value 'filter'.
-    See documentation of Conceptizer_CNN for more details)
+    See documentation of ConvConceptizer for more details)
 
     Parameters
     ----------

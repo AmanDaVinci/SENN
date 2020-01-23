@@ -1,10 +1,10 @@
 {
   "train": true,
-  "conceptizer": "Conceptizer_CNN",
+  "conceptizer": "ConvConceptizer",
   "image_size": 28,
   "concept_dim": 1,
   "concept_visualization": "activation",
-  "parameterizer": "MNISTParameterizer",
+  "parameterizer": "ConvParameterizer",
   "cl_sizes": [1, 10, 20],
   "hidden_sizes": [320, 50],
   "num_concepts": 5,
