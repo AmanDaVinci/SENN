@@ -13,7 +13,9 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
 import urllib.request
 import shutil
-
+from models.conceptizer import IdentityConceptizer
+from models.parameterizer import CompasParameterizer
+from models.aggregator_correct import SumAggregator
 from pathlib import Path
 
 
@@ -174,6 +176,7 @@ class Net(nn.Module):
         super().__init__()
         # dropout with such few parameters... maybe not
         dropout = 0.0
+        """
         self.parameterizer = nn.Sequential(
             nn.Linear(11, 5),
             nn.Dropout(p=dropout),
@@ -184,11 +187,15 @@ class Net(nn.Module):
             nn.Linear(5, 11),
             nn.Dropout(p=dropout)
         )
-
+        """
+        self.conceptizer = IdentityConceptizer()
+        self.parameterizer = CompasParameterizer(11,1,(11,5,5,11),dropout)
+        self.aggregator = SumAggregator(1)
     def forward(self, x):
-        theta = self.parameterizer(x).unsqueeze(-1)
-        aggregated = torch.bmm(theta.transpose(1, 2), x.unsqueeze(-1)).squeeze()
-        return torch.sigmoid(aggregated)
+        concepts, _ = self.conceptizer(x)
+        theta = self.parameterizer(x)#.unsqueeze(-1)
+        #aggregated = torch.bmm(theta.transpose(1, 2), concepts).squeeze()
+        return self.aggregator(concepts, theta)#torch.sigmoid(aggregated)
 
 
 net = Net()
