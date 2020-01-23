@@ -10,6 +10,8 @@ from torch.utils.data import Dataset, DataLoader, random_split
 import urllib.request
 import shutil
 
+from pathlib import Path
+
 
 def get_dataloader(config):
     """Dispatcher that calls dataloader function depending on the config.
@@ -29,7 +31,7 @@ def get_dataloader(config):
         return load_compas(**config.__dict__)
 
 
-def load_mnist(data_path, batch_size, num_workers=4, valid_size=0.1, **kwargs):
+def load_mnist(data_path, batch_size, num_workers=0, valid_size=0.1, **kwargs):
     """
     Load mnist data.
 
@@ -82,7 +84,7 @@ def load_mnist(data_path, batch_size, num_workers=4, valid_size=0.1, **kwargs):
 #  --------------- Compas Dataset  ---------------
 
 class CompasDataset(Dataset):
-    def __init__(self, compas_path, verbose=True):
+    def __init__(self, data_path, verbose=True):
         """ProPublica Compas dataset.
 
         Dataset is read in from preprocessed compas data: `propublica_data_for_fairml.csv`
@@ -93,10 +95,10 @@ class CompasDataset(Dataset):
         
         Parameters
         ----------
-        compas_path : str
+        data_path : str
             Location of Compas data.
         """
-        df = pd.read_csv(compas_path)
+        df = pd.read_csv(data_path)
         
         # don't know why square root
         df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)
@@ -121,7 +123,7 @@ class CompasDataset(Dataset):
 
         return (self.X.iloc[idx].values.astype(float), self.y[idx])
 
-def load_compas(data_path="datasets/data/compas_new.csv", train_percent=0.8, batch_size=200, num_workers=4, valid_size=0.1, **kwargs):
+def load_compas(data_path='datasets/data/compas/compas.csv', train_percent=0.8, batch_size=200, num_workers=0, valid_size=0.1, **kwargs):
     """Return compas dataloaders.
     
     If compas data can not be found, will download preprocessed compas data: `propublica_data_for_fairml.csv`
@@ -148,8 +150,9 @@ def load_compas(data_path="datasets/data/compas_new.csv", train_percent=0.8, bat
     test_loader
         Dataloader for testing set.
     """
-    compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
     if not os.path.isfile(data_path):
+        Path(data_path).parent.mkdir(parents=True, exist_ok=True)
+        compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
         download_file(data_path, compas_url)
     dataset = CompasDataset(data_path)
 

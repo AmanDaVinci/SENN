@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 class Conceptizer(nn.Module):
@@ -7,6 +8,8 @@ class Conceptizer(nn.Module):
         should implement encode() and decode() functions.
         """
         super(Conceptizer, self).__init__()
+        self.encoder = nn.ModuleList()
+        self.decoder = nn.ModuleList()
 
     def forward(self, x):
         """
@@ -41,7 +44,8 @@ class IdentityConceptizer(Conceptizer):
     def encode(self, x):
         """Encoder of Identity Conceptizer.
 
-        Returns the unchanged input features as concepts (use of raw features -> no concept computation).
+        Leaves the input features unchanged  but reshapes them to three dimensions
+        and returns them as concepts (use of raw features -> no concept computation)
 
         Parameters
         ----------
@@ -51,32 +55,33 @@ class IdentityConceptizer(Conceptizer):
         Returns
         -------
         concepts : torch.Tensor
-            Unchanged input features (BATCH, INPUT_FEATURES, 1).
+            Unchanged input features but with extra dimension (BATCH, INPUT_FEATURES, 1).
         """
         return x.unsqueeze(-1)
 
     def decode(self, z):
         """Decoder of Identity Conceptizer.
 
-        Returns the unchanged input features as concepts (use of raw features -> no concept computation).
+        Simmulates reconstrucron of the original input x by undoing the reshaping of the encoder.
+        The 'reconstruction' is identical to the input of the conceptizer.
 
         Parameters
         ----------
         z : torch.Tensor
-            Output of encoder (identical to encoder input x), size: (BATCH, INPUT_FEATURES).
+            Output of encoder (input x reshaped to three dimensions), size: (BATCH, INPUT_FEATURES, 1).
 
         Returns
         -------
         reconst : torch.Tensor
             Unchanged input features (identical to x)
         """
-        return z
+        return z.squeeze(-1)
 
 class Conceptizer_CNN(Conceptizer):
-    def __init__(self, image_size, concept_num, concept_dim, image_channels=1, encoder_channels=(10,),
+    def __init__(self, image_size, num_concepts, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
                  stride_conv=1, stride_pool=2, stride_upsample=(2, 1, 2),
-                 padding_conv=0, padding_upsample=(0, 0, 1), **kwargs):
+                 padding_conv=0, padding_upsample=(0, 0, 1), concept_visualization='', **kwargs):
         """
         CNN Autoencoder used to learn the concepts, present in an input image
 
@@ -84,7 +89,7 @@ class Conceptizer_CNN(Conceptizer):
         ----------
         image_size : int
             the width of the input image
-        concept_num : int
+        num_concepts : int
             the number of concepts
         concept_dim : int
             the dimension of each concept to be learned
@@ -108,9 +113,15 @@ class Conceptizer_CNN(Conceptizer):
             the padding to be used by the convolutional layers
         padding_upsample : int, tuple[int]
             the padding to be used by the upsampling layers
+        concept_visualization : str
+            If this value is 'filter' each filter is mapped to one (scalar) concept directly
+            (separate linear layers per filter)
+            Otherwise all filters are flattened to one vector and then the concepts are computed
+            from that with one big linear layer
         """
         super(Conceptizer_CNN, self).__init__()
-        self.concept_num = concept_num
+        self.num_concepts = num_concepts
+        self.filter = filter
         self.dout = image_size
 
         # Encoder params
@@ -119,10 +130,10 @@ class Conceptizer_CNN(Conceptizer):
         stride_conv = handle_integer_input(stride_conv, len(encoder_channels))
         stride_pool = handle_integer_input(stride_pool, len(encoder_channels))
         padding_conv = handle_integer_input(padding_conv, len(encoder_channels))
-        encoder_channels += (concept_num,)
+        encoder_channels += (num_concepts,)
 
         # Decoder params
-        decoder_channels = (concept_num,) + decoder_channels
+        decoder_channels = (num_concepts,) + decoder_channels
         kernel_size_upsample = handle_integer_input(kernel_size_upsample, len(decoder_channels))
         stride_upsample = handle_integer_input(stride_upsample, len(decoder_channels))
         padding_upsample = handle_integer_input(padding_upsample, len(decoder_channels))
@@ -140,8 +151,11 @@ class Conceptizer_CNN(Conceptizer):
             self.dout = (self.dout - kernel_size_conv[i] + 2 * padding_conv[i] + stride_conv[i] * stride_pool[i]) // (
                     stride_conv[i] * stride_pool[i])
 
-        self.encoder.append(Flatten())
-        self.encoder.append(nn.Linear(self.dout ** 2, concept_dim))
+        if self.filter and concept_dim == 1:
+            self.encoder.append(ScalarMapping((self.num_concepts, self.dout, self.dout)))
+        else:
+            self.encoder.append(Flatten())
+            self.encoder.append(nn.Linear(self.dout ** 2, concept_dim))
 
         # Decoder implementation
         self.unlinear = nn.Linear(concept_dim, self.dout ** 2)
@@ -195,7 +209,7 @@ class Conceptizer_CNN(Conceptizer):
 
         """
         reconst = self.unlinear(z)
-        reconst = reconst.view(-1, self.concept_num, self.dout, self.dout)
+        reconst = reconst.view(-1, self.num_concepts, self.dout, self.dout)
         for module in self.decoder:
             reconst = module(reconst)
         return reconst
@@ -269,7 +283,7 @@ class Conceptizer_CNN(Conceptizer):
 
 
 class Flatten(nn.Module):
-    def forward(self, input):
+    def forward(self, x):
         """
         Flattens the inputs to only 3 dimensions, preserving the sizes of the 1st and 2nd.
 
@@ -283,7 +297,7 @@ class Flatten(nn.Module):
         flattened : torch.Tensor
             Flattened input (dim1, dim2, dim3)
         """
-        return input.view(input.size(0), input.size(1), -1)
+        return x.view(x.size(0), x.size(1), -1)
 
 
 def handle_integer_input(input, desired_len):
@@ -314,3 +328,40 @@ def handle_integer_input(input, desired_len):
             return input
     else:
         raise TypeError(f"Wrong type of the parameters. Expected tuple or int but got '{type(input)}'")
+
+class ScalarMapping(nn.Module):
+    def __init__(self, conv_block_size):
+        """
+        Module that maps each filter of a convolutional block to a scalar value
+
+        Parameters
+        ----------
+        conv_block_size : tuple (int iterable)
+            Specifies the size of the input convolutional block: (NUM_CHANNELS, FILTER_HEIGHT, FILTER_WIDTH)
+        """
+        super().__init__()
+        self.num_filters, self.filter_height, self.filter_width = conv_block_size
+
+        self.layers = nn.ModuleList()
+        for i in range(self.num_filters):
+            self.layers.append(nn.Linear(self.filter_height*self.filter_width, 1))
+
+    def forward(self, x):
+        """
+        Reduces a 3D convolutional block to a 1D vector by mapping each 2D filter to a scalar value.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input data tensor of shape (BATCH, CHANNELS, HEIGHT, WIDTH).
+
+        Returns
+        -------
+        mapped : torch.Tensor
+            Reduced input (BATCH, CHANNELS, 1)
+        """
+        x = x.view(-1, self.num_filters, self.filter_height*self.filter_width)
+        mappings = []
+        for f, layer in enumerate(self.layers):
+            mappings.append(layer(x[:, [f], :]))
+        return torch.cat(mappings, dim=1)
