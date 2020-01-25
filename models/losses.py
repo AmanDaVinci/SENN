@@ -110,6 +110,3 @@ def mse_kl_sparsity(x, x_hat, sparsity_reg, concepts):
 
 def mse_l1_sparsity(x, x_hat, sparsity_reg, concepts):
     return F.mse_loss(x,x_hat) + sparsity_reg * torch.abs(concepts).sum()
-
-def robustness_loss(x, parameters, model):
-    return torch.tensor(0)
