@@ -144,9 +144,12 @@ class VaeConceptizer(nn.Module):
         z : torch.tensor
             sample latent tensor of shape [batch_size x z_dim]
         """
-        std = torch.exp(0.5 * logvar)
-        epsilon = torch.randn_like(std)
-        z = mean + std * epsilon
+        if self.training:
+            std = torch.exp(0.5 * logvar)
+            epsilon = torch.randn_like(std)
+            z = mean + std * epsilon
+        else:
+            z = mean
         return z
 
 
