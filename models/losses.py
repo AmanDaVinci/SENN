@@ -135,7 +135,8 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar, beta):
         [1] Higgins, Irina, et al. "beta-vae: Learning basic visual concepts with
         a constrained variational framework." (2016).
     """
-    recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean")
+    # recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean")
+    recon_loss = F.mse_loss(x_hat, x.detach(), reduction="mean")
     kl_loss = kl_div(z_mean, z_logvar)
     loss = recon_loss + beta * kl_loss
     return loss
