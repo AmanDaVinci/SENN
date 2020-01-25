@@ -1,4 +1,7 @@
 from models.senn import SENN, SENND
+from models.conceptizer import *
+from models.parameterizer import *
+from models.aggregator import *
 from datasets.dataloaders import get_dataloader
 from models.losses import *
 from utils.concept_representations import *
@@ -66,35 +69,35 @@ class Trainer():
             Contains all (hyper)parameters that define the behavior of the program.
         """
         self.config = config
+  
+        # Load data
+        print("Loading data ...")
+        self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
 
         # get appropriate models from global namespace and instantiate them
         try:
-            conceptizer = getattr(importlib.import_module("models.conceptizer"), config.conceptizer)(**config.__dict__)
-            parameterizer = getattr(importlib.import_module("models.parameterizer"), config.parameterizer)(**config.__dict__)
-            aggregator = getattr(importlib.import_module("models.aggregator"), config.aggregator)(**config.__dict__)
+            conceptizer = eval(config.conceptizer)(**config.__dict__)
+            parameterizer = eval(config.parameterizer)(**config.__dict__)
+            aggregator = eval(config.aggregator)(**config.__dict__)
         except:
             print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
             exit(-1)
+
+        # Define losses
+        self.classification_loss = F.nll_loss
+        self.concept_loss = eval(config.concept_loss)
+        self.robustness_loss = eval(config.robustness_loss)
+
+        # Pretrain Conceptizer if required
+        if config.pretrain_epochs > 0:
+            print("Pre-training the Conceptizer... ")
+            conceptizer = self.pretrain(conceptizer)
 
         # Init model
         ModelClass = eval(config.model_class)
         self.model = ModelClass(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
         self.summarize()
-
-        # Init data
-        print("Loading data ...")
-        self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
-
-        # Init losses
-        self.classification_loss = F.nll_loss
-        self.concept_loss = eval(config.concept_loss)
-        if config.dataloader == "compas":
-            self.robustness_loss = compas_robustness_loss
-        elif config.dataloader == "mnist":
-            self.robustness_loss = mnist_robustness_loss
-        else:
-            raise Exception("Robustness loss not defined")
 
         # Init optimizer
         self.opt = opt.Adam(self.model.parameters())
@@ -424,3 +427,26 @@ class Trainer():
         print(self.model)
         train_params = sum(p.numel() for p in self.model.parameters())
         print(f"Trainable Parameters: {train_params}\n")
+
+    def pretrain(self, conceptizer):
+        """Pre-trains conceptizer on the training data to optimize the concept loss"""
+
+        optimizer = opt.Adam(conceptizer.parameters())
+        conceptizer.to(self.config.device)
+        conceptizer.train()
+
+        for epoch in range(self.config.pretrain_epochs):
+            for i, (x, _) in enumerate(self.train_loader):
+                optimizer.zero_grad()
+                x = x.float().to(self.config.device)
+                concept_mean, concept_logvar, x_reconstruct = conceptizer(x)
+                concept_loss = self.concept_loss(x, x_reconstruct,
+                                                 concept_mean, concept_logvar,
+                                                 self.config.beta)
+                concept_loss.backward()
+                optimizer.step()
+                if i % self.config.print_freq == 0:
+                    print(f"EPOCH:{epoch} STEP:{i} \t"
+                          f"Concept Loss: {concept_loss:.3f}")
+
+        return conceptizer
