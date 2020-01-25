@@ -161,13 +161,15 @@ class VaeEncoder(nn.Module):
         self.z_dim = z_dim
         self.FC = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_dim, in_dim//2),
+            nn.Linear(in_dim, 512),
             nn.ReLU(),
-            nn.Linear(in_dim//2, in_dim//10),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 100),
             nn.ReLU()
         )
-        self.mean_layer = nn.Linear(in_dim//10, z_dim)
-        self.logvar_layer = nn.Linear(in_dim//10, z_dim)
+        self.mean_layer = nn.Linear(100, z_dim)
+        self.logvar_layer = nn.Linear(100, z_dim)
     
     def forward(self, x):
         x = self.FC(x)
@@ -183,11 +185,13 @@ class VaeDecoder(nn.Module):
         self.in_dim = in_dim
         self.z_dim = z_dim
         self.FC = nn.Sequential(
-            nn.Linear(z_dim, in_dim//10),
+            nn.Linear(z_dim, 100),
             nn.ReLU(),
-            nn.Linear(in_dim//10, in_dim//2),
+            nn.Linear(100, 256),
             nn.ReLU(),
-            nn.Linear(in_dim//2, in_dim)
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Linear(512, in_dim)
         )
     
     def forward(self, x):
