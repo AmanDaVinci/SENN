@@ -122,7 +122,9 @@ class VaeConceptizer(nn.Module):
         concept_mean, concept_logvar = self.encoder(x)
         concept_sample = self.sample(concept_mean, concept_logvar)
         x_reconstruct = self.decoder(concept_sample)
-        return concept_mean.unsqueeze(-1), x_reconstruct.view_as(x)
+        return (concept_mean.unsqueeze(-1),
+                concept_logvar.unsqueeze(-1),
+                x_reconstruct.view_as(x))
     
     def sample(self, mean, logvar):
         """Samples from the latent distribution using reparameterization trick
