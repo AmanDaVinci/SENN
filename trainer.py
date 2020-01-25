@@ -1,4 +1,4 @@
-from models.senn import SENN
+from models.senn import SENN, SENND
 from datasets.dataloaders import get_dataloader
 from models.losses import *
 from utils.concept_representations import *
@@ -17,7 +17,6 @@ import torch
 import torch.nn.functional as F
 import torch.optim as opt
 from torch.utils.tensorboard import SummaryWriter
-from models.losses import compas_robustness_loss, mnist_robustness_loss
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -78,7 +77,8 @@ class Trainer():
             exit(-1)
 
         # Init model
-        self.model = SENN(conceptizer, parameterizer, aggregator)
+        ModelClass = eval(config.model_class)
+        self.model = ModelClass(conceptizer, parameterizer, aggregator)
         self.model.to(config.device)
         self.summarize()
 
@@ -88,8 +88,7 @@ class Trainer():
 
         # Init losses
         self.classification_loss = F.nll_loss
-        # TODO: concept loss should return zero for identity conceptizer
-        self.concept_loss = mse_l1_sparsity
+        self.concept_loss = eval(config.concept_loss)
         if config.dataloader == "compas":
             self.robustness_loss = compas_robustness_loss
         elif config.dataloader == "mnist":
@@ -157,14 +156,24 @@ class Trainer():
             x.requires_grad_(True)
 
             # run x through SENN
-            y_pred, (concepts, relevances), x_reconstructed = self.model(x)
+            y_pred, explanantions, x_reconstructed = self.model(x)
 
             # visualize SENN computation graph
             self.writer.add_graph(self.model, x)
+            
+            concepts, relevances = explanantions
+            if len(concepts) == 2: # SENND variational inference
+                concept_mean, concept_logvar = concepts
+                concepts = concept_mean
+                concept_loss = self.concept_loss(x, x_reconstructed,
+                                                 concept_mean, concept_logvar,
+                                                 self.config.beta)
+            else: # vanilla SENN
+                concept_loss = self.concept_loss(x, x_reconstructed, concepts,
+                                                 self.config.sparsity_reg)
 
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-            concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity_reg, concepts)
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -214,12 +223,22 @@ class Trainer():
                 labels = labels.long().to(self.config.device)
 
                 # run x through SENN
-                y_pred, (concepts, relevances), x_reconstructed = self.model(x)
+                y_pred, explanantions, x_reconstructed = self.model(x)
+                
+                concepts, relevances = explanantions
+                if len(concepts) == 2: # SENND variational inference
+                    concept_mean, concept_logvar = concepts
+                    concepts = concept_mean
+                    concept_loss = self.concept_loss(x, x_reconstructed,
+                                                        concept_mean, concept_logvar,
+                                                        self.config.beta)
+                else: # vanilla SENN
+                    concept_loss = self.concept_loss(x, x_reconstructed, concepts,
+                                                     self.config.sparsity_reg)
 
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
                 robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
-                concept_loss = self.concept_loss(x, x_reconstructed, self.config.sparsity_reg, concepts)
                 
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
