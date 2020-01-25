@@ -102,11 +102,52 @@ def mnist_robustness_loss(x, aggregates, concepts, relevances):
 
     return robustness_loss.norm(p='fro')
 
+def BVAE_loss(self, x, x_hat, z_mean, z_logvar, beta):
+    """ Calculate Beta-VAE loss as in [1]
+
+    Parameters
+    ----------
+    x : torch.tensor
+        input data to the Beta-VAE
+
+    x_hat : torch.tensor
+        input data reconstructed by the Beta-VAE
+
+    z_mean : torch.tensor
+        mean of the latent distribution of shape
+        (batch_size, latent_dim)
+
+    z_logvar : torch.tensor
+        diagonal log variance of the latent distribution of shape
+        (batch_size, latent_dim)
+
+    beta : float
+        weight on the KL Divergence Loss
+
+    Returns
+    -------
+    loss : torch.tensor
+        loss as a rank-0 tensor calculated as:
+        reconstruction_loss + beta * KL_divergence_loss 
+
+    References
+    ----------
+        [1] Higgins, Irina, et al. "beta-vae: Learning basic visual concepts with
+        a constrained variational framework." (2016).
+    """
+    recon_loss = F.binary_cross_entropy(x_hat, x, reduction="sum")
+    kl_loss = kl_div(z_mean, z_logvar)
+    loss = recon_loss + beta * kl_loss
+    return loss
+
 def weighted_mse(x, x_hat, sparsity_reg):
     return sparsity_reg * F.mse_loss(x,x_hat)
 
-def mse_kl_sparsity(x, x_hat, sparsity_reg, concepts):
+def mse_kl_sparsity(x, x_hat, concepts, sparsity_reg):
     return F.mse_loss(x,x_hat) + F.kl_div(sparsity_reg*torch.ones_like(concepts), concepts)
 
-def mse_l1_sparsity(x, x_hat, sparsity_reg, concepts):
+def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     return F.mse_loss(x,x_hat) + sparsity_reg * torch.abs(concepts).sum()
+
+def kl_div(mean, logvar):
+    return torch.tensor(0.0)
