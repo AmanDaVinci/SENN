@@ -150,4 +150,22 @@ def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()
 
 def kl_div(mean, logvar):
-    return torch.tensor(0.0)
+    """Computes KL Divergence between a given normal distribution
+    and a standard normal distribution
+
+    Parameters
+    ----------
+    mean : torch.tensor
+        mean of the normal distribution of shape (batch_size x latent_dim)
+
+    logvar : torch.tensor
+        diagonal log variance of the normal distribution of shape (batch_size x latent_dim)
+
+    Returns
+    -------
+    loss : float
+        KL Divergence loss computed in a closed form solution
+    """
+    batch_loss = 0.5 * (mean.pow(2) + logvar.exp() - logvar - 1).mean(dim=0)
+    loss = batch_loss.sum()
+    return loss
