@@ -105,12 +105,43 @@ class VaeConceptizer(nn.Module):
         self.decoder = VaeDecoder(self.in_dim, self.z_dim)
 
     def forward(self, x):
+        """Forward pass through the encoding, sampling and decoding step
+
+        Parameters
+        ----------
+        x : torch.tensor 
+            input of shape [batch_size x ... ], which will be flattened
+
+        Returns
+        -------
+        concept_mean : torch.tensor
+            mean of the latent distribution induced by the posterior input x
+        x_reconstruct : torch.tensor
+            reconstruction of the input in the same shape
+        """
         concept_mean, concept_logvar = self.encoder(x)
         concept_sample = self.sample(concept_mean, concept_logvar)
         x_reconstruct = self.decoder(concept_sample)
         return concept_mean, x_reconstruct.view_as(x)
     
     def sample(self, mean, logvar):
+        """Samples from the latent distribution using reparameterization trick
+
+        Reparameterization trick: z = mu + sigma * epsilon
+        where epsilon is drawn from a standard normal distribution
+        
+        Parameters
+        ----------
+        mean : torch.tensor
+            mean of the latent distribution of shape [batch_size x z_dim]
+        log_var : torch.tensor
+            diagonal log variance of the latent distribution of shape [batch_size x z_dim]
+        
+        Returns
+        -------
+        z : torch.tensor
+            sample latent tensor of shape [batch_size x z_dim]
+        """
         std = torch.exp(0.5 * logvar)
         epsilon = torch.randn_like(std)
         z = mean + std * epsilon
