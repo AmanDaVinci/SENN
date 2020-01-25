@@ -77,6 +77,27 @@ class IdentityConceptizer(Conceptizer):
         """
         return z.squeeze(-1)
 
+
+class VaeConceptizer(Conceptizer):
+    """Variational Auto Encoder to generate basis concepts
+
+    Concepts should be independently sensitive to single generative factors,
+    which will lead to better interpretability and fulfill the "diversity" 
+    desiderata for basis concepts in a Self-Explaining Neural Network.
+    VAE can be used to learn disentangled representations of the basis concepts 
+    by emphasizing the discovery of latent factors which are disentangled. 
+    """
+
+    def __init__(self):
+        super().__init__()
+    
+    def encode(self, x):
+        pass
+    
+    def decode(self, x):
+        pass
+
+
 class ConvConceptizer(Conceptizer):
     def __init__(self, image_size, num_concepts, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
