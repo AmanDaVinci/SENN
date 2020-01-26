@@ -158,5 +158,74 @@ class DiSENN(nn.Module):
         explanations = ((concept_mean, concept_logvar), relevances)
         return predictions, explanations, x_reconstruct
     
-    def explain(self, x, num_prototypes=10, traversal_range=2, save=True, show=False):
-        pass
+    def explain(self, x, num_prototypes=20, traversal_range=2, show=False, save=False, save_as=None):
+        """Explains the model predictions of input x"""
+
+        assert len(x.shape) == 4, \
+        "input x must be a rank 4 tensor of shape batch_size x channel x width x height"
+        
+        y_pred, explanations, x_reconstruct = model(x)
+        (x_posterior_mean, x_posterior_logvar), relevances = explanations
+        x_posterior_mean = x_posterior_mean.squeeze(-1)
+        x_posterior_logvar = x_posterior_logvar.squeeze(-1)
+        
+        concepts = x_posterior_mean.detach().numpy()
+        num_concepts = concepts.shape[1]
+        concepts_sample = model.vae_conceptizer.sample(x_posterior_mean,
+                                                    x_posterior_logvar).detach()
+        # generate new concept vector for each prototype
+        # by traversing independently in each dimension
+        concepts_sample = concepts_sample.repeat(num_prototypes, 1)
+        concepts_traversals = [independent_traversal(concepts_sample, dim,\
+                                                    traversal_range, num_prototypes) 
+                            for dim in range(num_concepts)]
+        concepts_traversals = torch.cat(concepts_traversals, dim=0)
+        prototypes = model.vae_conceptizer.decoder(concepts_traversals)
+        prototype_imgs = prototypes.view(-1, x.shape[1], x.shape[2], x.shape[3])
+        
+        # nrow is number of images in a row which must be the number of prototypes
+        prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).detach().numpy()
+        
+        # prepare to plot
+        relevances = relevances.squeeze(0).detach().numpy()
+        relevances = relevances[:,y_pred.argmax(1)]
+        concepts = concepts.squeeze(0)
+        relevances_colors = ['g' if r > 0 else 'r' for r in relevances]
+        concepts_colors = ['g' if c > 0 else 'r' for c in concepts]
+        
+        # plot input image, relevances, concepts, prototypes side by side
+        plt.style.use('seaborn-paper')
+        gridsize = (1, 6)
+        fig = plt.figure(figsize=(18,3))
+        ax1 = plt.subplot2grid(gridsize, (0,0))
+        ax2 = plt.subplot2grid(gridsize, (0,1))
+        ax3 = plt.subplot2grid(gridsize, (0,2))
+        ax4 = plt.subplot2grid(gridsize, (0,3), colspan=3)
+
+        ax1.imshow(x.numpy().squeeze(), cmap='gray')
+        ax1.set_axis_off()
+        ax1.set_title(f'Input Prediction: {y_pred.argmax(1).item()}', fontsize=18)
+
+        ax2.barh(range(num_concepts), relevances, color=relevances_colors)
+        ax2.set_xlabel('Relevance Scores', fontsize=18)
+        ax2.xaxis.set_label_position('top')
+        ax2.tick_params(axis='x', which='major', labelsize=12)
+        ax2.set_yticks([])
+
+        ax3.barh(range(num_concepts), concepts, color=concepts_colors)
+        ax3.set_xlabel('Concepts', fontsize=18)
+        ax3.xaxis.set_label_position('top')
+        ax3.tick_params(axis='x', which='major', labelsize=12)
+        ax3.set_yticks([])
+
+        ax4.imshow(prototype_grid_img.transpose(1,2,0))
+        ax4.set_title('Prototypes', fontsize=18)
+        ax4.set_axis_off()
+
+        fig.tight_layout()
+
+        if show:
+            fig.show()
+        if save:
+            plt.savefig(save_as)
+            plt.clf()        
