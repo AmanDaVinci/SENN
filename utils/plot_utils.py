@@ -47,7 +47,7 @@ def create_barplot(relevances, y_pred, save_path='results/relevances.png', conce
     plt.clf()
 
 
-def plot_lambda_accuracy(config_list, save_path, num_seeds=1):
+def plot_lambda_accuracy(config_list, save_path, num_seeds=1, **kwargs):
     """Plots the lambda (robustness regularizer) vs accuracy of SENN
 
     Parameters
@@ -69,13 +69,14 @@ def plot_lambda_accuracy(config_list, save_path, num_seeds=1):
     for config_file in config_list:
         seed_accuracies = []
         for seed in range(num_seeds):
-            with open(path/config_file, 'r') as f:
+            config_path = path/config_file if num_seeds == 1 else path/config_file[seed]
+            with open(config_path, 'r') as f:
                 config = json.load(f)
-                lambdas.append(config["robust_reg"])
                 result_dir = Path(RESULTS_DIR)
                 results_csv = result_dir / config["exp_name"] / RESULTS_FILENAME
                 dataset = config['dataloader']
             seed_accuracies.append(pd.read_csv(results_csv, header=0)['Accuracy'].max())
+        lambdas.append(config["robust_reg"])
         accuracies.append(sum(seed_accuracies)/num_seeds)
 
     plt.style.use('seaborn')

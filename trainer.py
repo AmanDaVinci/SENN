@@ -392,7 +392,7 @@ class Trainer():
 
         if hasattr(self.config, 'accuracy_vs_lambda'):
             save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
-            plot_lambda_accuracy(self.config.accuracy_vs_lambda,save_path)
+            plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
     def finalize(self):
         """Finalize all necessary operations before exiting training.
         
