@@ -147,7 +147,7 @@ class SENND(nn.Module):
             concept_log_varance : torch.Tensor
                 Log Variance of the disentangled concept distribution of shape
                 [batch_size, num_concepts, concept_dim]
-                
+
             relevance_score : torch.Tensor
                 Relevance scores (for each concept and class) of shape 
                 [batch_size, num_concepts, num_classes]
@@ -157,3 +157,6 @@ class SENND(nn.Module):
         predictions = self.aggregator(concept_mean, relevances)
         explanations = ((concept_mean, concept_logvar), relevances)
         return predictions, explanations, x_reconstruct
+    
+    def explain(self, x, num_prototypes=10, traversal_range=2, save=True, show=False):
+        pass
