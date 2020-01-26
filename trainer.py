@@ -1,4 +1,4 @@
-from models.senn import SENN, SENND
+from models.senn import SENN, DiSENN
 from models.conceptizer import *
 from models.parameterizer import *
 from models.aggregator import *
@@ -69,7 +69,8 @@ class Trainer():
             Contains all (hyper)parameters that define the behavior of the program.
         """
         self.config = config
-  
+        print(f"Using device {config.device}")
+        
         # Load data
         print("Loading data ...")
         self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
@@ -442,7 +443,7 @@ class Trainer():
                 concept_mean, concept_logvar, x_reconstruct = conceptizer(x)
                 concept_loss = self.concept_loss(x, x_reconstruct,
                                                  concept_mean, concept_logvar,
-                                                 self.config.beta)
+                                                 beta=1)
                 concept_loss.backward()
                 optimizer.step()
                 if i % self.config.print_freq == 0:
