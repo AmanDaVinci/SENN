@@ -73,7 +73,7 @@ class SENN(nn.Module):
         return predictions, explanations, recon_x
 
 
-class SENND(nn.Module):
+class DiSENN(nn.Module):
     """Self-Explaining Neural Network with Disentanglement 
 
     SENND is an extension of the Self-Explaining Neural Network proposed by [1]
