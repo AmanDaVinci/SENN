@@ -52,7 +52,7 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=9, sa
     save(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
     plt.rcdefaults()
 
-def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=6, save_path="results/concepts.png"):
+def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=9, save_path="results/concepts.png"):
     """Creates concept representation via highest contrast.
 
     The concepts are represented by the most data samples that are most specific to a concept.
@@ -83,7 +83,7 @@ def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=6, save_
 
     contrast_scores = torch.empty_like(activations)
     for c in range(num_concepts):
-        contrast_scores[:, c] = activations[:, c] - (activations[:, :c].sum() + activations[:, c:].sum())
+        contrast_scores[:, c] = activations[:, c] - (activations[:, :c].sum(dim=1) + activations[:, c:].sum(dim=1))
 
     top_test, top_test_idx = torch.topk(contrast_scores, num_prototypes, 0)
 
