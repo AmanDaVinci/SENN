@@ -1,5 +1,5 @@
 {
-  "model_class": "SENND",
+  "model_class": "DiSENN",
   "conceptizer": "VaeConceptizer",
   "pretrain_epochs": 1,
   "beta": 1.0,

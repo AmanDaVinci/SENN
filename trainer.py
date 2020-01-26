@@ -166,7 +166,7 @@ class Trainer():
             self.writer.add_graph(self.model, x)
             
             concepts, relevances = explanantions
-            if len(concepts) == 2: # SENND variational inference
+            if len(concepts) == 2: # DiSENN variational inference
                 concept_mean, concept_logvar = concepts
                 concepts = concept_mean
                 concept_loss = self.concept_loss(x, x_reconstructed,
@@ -230,7 +230,7 @@ class Trainer():
                 y_pred, explanantions, x_reconstructed = self.model(x)
                 
                 concepts, relevances = explanantions
-                if len(concepts) == 2: # SENND variational inference
+                if len(concepts) == 2: # DiSENN variational inference
                     concept_mean, concept_logvar = concepts
                     concepts = concept_mean
                     concept_loss = self.concept_loss(x, x_reconstructed,
