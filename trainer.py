@@ -68,6 +68,9 @@ class Trainer():
         """
         self.config = config
 
+        if hasattr(config, "manual_seed"):
+            torch.manual_seed(config.manual_seed)
+
         # get appropriate models from global namespace and instantiate them
         try:
             conceptizer = getattr(importlib.import_module("models.conceptizer"), config.conceptizer)(**config.__dict__)
@@ -374,7 +377,8 @@ class Trainer():
             if len(y_pred.size()) > 1:
                 y_pred = y_pred.argmax(1)
 
-            create_barplot(relevances, y_pred, save_path=path.join(save_dir, 'relevances_{}.png'.format(i)))
+            save_path = path.join(save_dir, 'relevances_{}.png'.format(i))
+            create_barplot(relevances, y_pred, save_path=save_path, **self.config.__dict__)
 
         if hasattr(self.config, 'concept_visualization'):
             # create visualization of the concepts with method specified in config file
@@ -386,6 +390,9 @@ class Trainer():
             elif self.config.concept_visualization == 'filter':
                 filter_concepts(self.model, save_path=save_path)
 
+        if hasattr(self.config, 'accuracy_vs_lambda'):
+            save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
+            plot_lambda_accuracy(self.config.accuracy_vs_lambda,save_path)
     def finalize(self):
         """Finalize all necessary operations before exiting training.
         
