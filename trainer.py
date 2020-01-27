@@ -359,6 +359,23 @@ class Trainer():
         print(f"Checkpoint saved @ {file_name}\n")
 
     def print_n_save_metrics(self, filename, total_loss, classification_loss, robustness_loss, concept_loss, accuracy):
+        """Prints the losses to the console and saves them in a csv file
+
+        Parameters
+        ----------
+        filename: str
+            Name of the csv file.
+        classification_loss: float
+            The value of the classification loss
+        robustness_loss: float
+            The value of the robustness loss
+        total_loss: float
+            The value of the total loss
+        concept_loss: float
+            The value of the concept loss
+        accuracy: float
+            The value of the accuracy
+        """
         report = (f"Total Loss:{total_loss:.3f} \t"
                   f"Classification Loss:{classification_loss:.3f} \t"
                   f"Robustness Loss:{robustness_loss:.3f} \t"
