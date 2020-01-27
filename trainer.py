@@ -282,6 +282,9 @@ class Trainer():
                 self.best_accuracy = accuracy
                 self.save_checkpoint(BEST_MODEL_FILENAME)
 
+        return accuracy
+
+
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
 
