@@ -82,8 +82,9 @@ def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=9, save_
     activations = torch.cat(activations)
 
     contrast_scores = torch.empty_like(activations)
-    for c in range(num_concepts):
-        contrast_scores[:, c] = activations[:, c] - (activations[:, :c].sum(dim=1) + activations[:, c:].sum(dim=1))
+    for c in range(num_concepts-1):
+        contrast_scores[:, c] = activations[:, c] - (activations[:, :c].sum(dim=1) + activations[:, c+1:].sum(dim=1))
+    contrast_scores[:, num_concepts-1] = activations[:, num_concepts-1] - activations[:, :num_concepts-1].sum(dim=1)
 
     top_test, top_test_idx = torch.topk(contrast_scores, num_prototypes, 0)
 
