@@ -161,7 +161,7 @@ class DiSENN(nn.Module):
         return predictions, explanations, x_reconstruct
     
     def explain(self, x, num_prototypes=20, traversal_range=1,
-                save_as=None, gridsize=(1,6), col_span=3, figure_size=(18,3)):
+                show=False, save_as=None, gridsize=(1,6), col_span=3, figure_size=(18,3)):
         """Explains the DiSENN predictions for input x
         
         DiSENN explanations consists of the Concepts, the corresponding Relevance 
@@ -187,6 +187,9 @@ class DiSENN(nn.Module):
 
         traversal_range : int
             Range of traversal in each concept dimension from -traversal_range to +traversal_range
+
+        show: bool
+            whether to show the figure or not
 
         save_as : string
             file name of the explanation to be saved as, not saved by default
@@ -267,7 +270,7 @@ class DiSENN(nn.Module):
         fig.tight_layout()
 
         if save_as is not None: fig.savefig(save_as)
-        plt.show()
+        if show: plt.show()
     
     def traverse(self, matrix, dim, traversal_range, steps):
         """Linearly traverses through one dimension of a matrix independently"""
