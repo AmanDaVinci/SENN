@@ -158,13 +158,55 @@ class DiSENN(nn.Module):
         explanations = ((concept_mean, concept_logvar), relevances)
         return predictions, explanations, x_reconstruct
     
-    def explain(self, x, num_prototypes=20, traversal_range=2, show=False, save=False, save_as=None):
-        """Explains the model predictions of input x"""
-
-        assert len(x.shape) == 4, \
-        "input x must be a rank 4 tensor of shape batch_size x channel x width x height"
+    def explain(self, x, num_prototypes=20, traversal_range=1,
+                save_as=None, gridsize=(1,6), col_span=3, figure_size=(18,3)):
+        """Explains the DiSENN predictions for input x
         
-        y_pred, explanations, x_reconstruct = model(x)
+        DiSENN explanations consists of the Concepts, the corresponding Relevance 
+        Scores, and the Prototypes associated with variations in every single Concept.
+        The VAE Conceptizer generates the Prototypes by inducing the prior distribution 
+        on the latent space given the input posterior. The mean of this latent 
+        prior distribution serves as the Basis Concept vector to be shown. 
+        The latent distribution so induced is then sampled from. The sampled 
+        Concept vector is traversed independently for each dimension and passed 
+        through the decoder of the VAE Conceptizer.Each independent traversal 
+        of a single dimension produces one prototype. Finally, we end up with an 
+        array of changing prototypes for each Concept dimension. The Parameterizer 
+        on the other hand produces the corresponding Relevance Scores. 
+        The Relevance Scores and Concepts are shown as bar plots side by side.
+
+        Parameters
+        ----------
+        x : torch.tensor
+            input data of shape (channel x width x height)
+
+        num_prototypes : int
+            number of prototypes to generate for each concept dimension
+
+        traversal_range : int
+            Range of traversal in each concept dimension from -traversal_range to +traversal_range
+
+        save_as : string
+            file name of the explanation to be saved as, not saved by default
+
+        gridsize : (int, int)
+            shape of the figure in terms of rows and columns
+
+        col_span : int
+            number of columns for the Prototypes 
+
+        figure_size : (float, float)
+            size of the figure
+        
+        Returns
+        -------
+            None
+        """
+
+        assert len(x.shape) == 3, \
+        "input x must be a rank 3 tensor of shape channel x width x height"
+        
+        y_pred, explanations, x_reconstruct = model(x.unsqueeze(0))
         (x_posterior_mean, x_posterior_logvar), relevances = explanations
         x_posterior_mean = x_posterior_mean.squeeze(-1)
         x_posterior_logvar = x_posterior_logvar.squeeze(-1)
@@ -176,9 +218,8 @@ class DiSENN(nn.Module):
         # generate new concept vector for each prototype
         # by traversing independently in each dimension
         concepts_sample = concepts_sample.repeat(num_prototypes, 1)
-        concepts_traversals = [independent_traversal(concepts_sample, dim,\
-                                                    traversal_range, num_prototypes) 
-                            for dim in range(num_concepts)]
+        concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range, num_prototypes) 
+                               for dim in range(num_concepts)]
         concepts_traversals = torch.cat(concepts_traversals, dim=0)
         prototypes = model.vae_conceptizer.decoder(concepts_traversals)
         prototype_imgs = prototypes.view(-1, x.shape[1], x.shape[2], x.shape[3])
@@ -195,12 +236,11 @@ class DiSENN(nn.Module):
         
         # plot input image, relevances, concepts, prototypes side by side
         plt.style.use('seaborn-paper')
-        gridsize = (1, 6)
-        fig = plt.figure(figsize=(18,3))
+        fig = plt.figure(figsize=figure_size)
         ax1 = plt.subplot2grid(gridsize, (0,0))
         ax2 = plt.subplot2grid(gridsize, (0,1))
         ax3 = plt.subplot2grid(gridsize, (0,2))
-        ax4 = plt.subplot2grid(gridsize, (0,3), colspan=3)
+        ax4 = plt.subplot2grid(gridsize, (0,3), colspan=col_span)
 
         ax1.imshow(x.numpy().squeeze(), cmap='gray')
         ax1.set_axis_off()
@@ -224,8 +264,12 @@ class DiSENN(nn.Module):
 
         fig.tight_layout()
 
-        if show:
-            fig.show()
-        if save:
-            plt.savefig(save_as)
-            plt.clf()        
+        if save_as is not None: fig.savefig(save_as)
+        plt.show()
+    
+    def traverse(self, matrix, dim, traversal_range, steps):
+        """Linearly traverses through one dimension of a matrix independently"""
+        traversal = torch.linspace(-1 * traversal_range, traversal_range, steps)
+        matrix_traversal = matrix.clone() # to avoid changing the matrix
+        matrix_traversal[:, dim] = traversal
+        return matrix_traversal        
