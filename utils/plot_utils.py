@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+from trainer import init_trainer
+
 RESULTS_DIR = 'results'
 CONFIG_DIR = 'config'
 RESULTS_FILENAME = 'accuracies_losses_valid.csv'
@@ -44,7 +46,7 @@ def create_barplot(relevances, y_pred, save_path='results/relevances.png', conce
     plt.clf()
 
 
-def plot_lambda_accuracy(config_list, save_path):
+def plot_lambda_accuracy(config_list, save_path=None):
     """Plots the lambda (robustness regularizer) vs accuracy of SENN
 
     Parameters
@@ -59,20 +61,19 @@ def plot_lambda_accuracy(config_list, save_path):
 
     path = Path(CONFIG_DIR)
     for config_file in config_list:
-        with open(path/config_file, 'r') as f:
+        trainer = init_trainer(path/config_file, best_model=True)
+        accuracies.append(trainer.test())
+        with open(path / config_file, 'r') as f:
             config = json.load(f)
             lambdas.append(config["robust_reg"])
-            result_dir = Path(RESULTS_DIR)
-            results_csv = result_dir / config["experiment_dir"] / RESULTS_FILENAME
-            dataset = config['dataloader']
-        max_accuracy = pd.read_csv(results_csv, header=0)['Accuracy'].max()
-        accuracies.append(max_accuracy)
-    
+
     plt.rcdefaults()
     fig, ax = plt.subplots()
     ax.plot(lambdas, accuracies, "r.-")
     ax.set_xlabel('Robustness Regularization Strength')
     ax.set_ylabel('Prediction Accuracy')
     
-    plt.savefig(save_path)
-    plt.clf()
+    if save_path is not None:
+        plt.savefig(save_path)
+
+    return fig
