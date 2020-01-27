@@ -30,8 +30,7 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
     num_features = x.size(1)
     num_classes = aggregates.size(1)
 
-    grad_tensor = torch.ones(batch_size, num_classes) 
-    grad_tensor.to(x.device)
+    grad_tensor = torch.ones(batch_size, num_classes).to(x.device)
     J_yx = torch.autograd.grad(outputs=aggregates, inputs=x, \
      grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
     # bs x num_features -> bs x num_features x num_classes
@@ -104,13 +103,13 @@ def mnist_robustness_loss(x, aggregates, concepts, relevances):
     return robustness_loss.norm(p='fro')
 
 def weighted_mse(x, x_hat, sparsity_reg):
-    return sparsity_reg * F.mse_loss(x,x_hat)
+    return sparsity_reg * F.mse_loss(x_hat,x)
 
 def mse_kl_sparsity(x, x_hat, sparsity_reg, concepts):
-    return F.mse_loss(x,x_hat) + F.kl_div(sparsity_reg*torch.ones_like(concepts), concepts)
+    return F.mse_loss(x_hat,x) + F.kl_div(sparsity_reg*torch.ones_like(concepts), concepts)
 
 def mse_l1_sparsity(x, x_hat, sparsity_reg, concepts):
-    return F.mse_loss(x,x_hat) + sparsity_reg * torch.abs(concepts).sum()
+    return F.mse_loss(x_hat,x) + sparsity_reg * torch.abs(concepts).sum()
 
 def robustness_loss(x, parameters, model):
     return torch.tensor(0)
