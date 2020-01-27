@@ -10,25 +10,27 @@ RESULTS_FILENAME = 'accuracies_losses_valid.csv'
 
 plt.style.use('seaborn-paper')
 
-def create_barplot(relevances, y_pred, save_path='results/relevances.png', concept_names=None, **kwargs):
+def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='',save_path='results/relevances.png', concept_names=None, **kwargs):
     """Creates a bar plot of relevances.
 
     Parameters
     ----------
+    ax : pyplot axes object
+        The axes on which the bar plot should be created.
     relevances: torch.tensor
-       The relevances for which the bar plot should be generated. shape: (1, NUM_CONCEPTS, NUM_CLASSES)
+        The relevances for which the bar plot should be generated. shape: (1, NUM_CONCEPTS, NUM_CLASSES)
     y_pred: torch.tensor (int)
-       The prediction of the model for the corresponding relevances. shape: scalar value
+        The prediction of the model for the corresponding relevances. shape: scalar value
     save_path: str
         Path to the location where the bar plot should be saved.
     """
-    fig, ax = plt.subplots()
-
     # Example data
     y_pred = y_pred.item()
-    relevances = relevances[0, :, y_pred].squeeze()
+    if len(relevances.squeeze().size()) == 2:
+        relevances = relevances[:, y_pred]
+    relevances = relevances.squeeze()
     if concept_names is None:
-        concept_names = ['Concept {}'.format(i + 1) for i in range(len(relevances))]
+        concept_names = ['C. {}'.format(i + 1) for i in range(len(relevances))]
     else:
         concept_names = concept_names.copy()
     concept_names.reverse()
@@ -39,12 +41,14 @@ def create_barplot(relevances, y_pred, save_path='results/relevances.png', conce
     ax.barh(y_pos, np.flip(relevances.detach().cpu().numpy()), align='center', color=colors)
     ax.set_yticks(y_pos)
     ax.set_yticklabels(concept_names)
-    ax.set_xlim(-1.1, 1.1)
-    ax.set_xlabel('Relevances (thetas)')
-    ax.set_title('Explanation for prediction: {}'.format(y_pred))
-    plt.tight_layout()
-    plt.savefig(save_path)
-    plt.clf()
+    ax.set_xlim(-x_lim, x_lim)
+    ax.set_xlabel(x_label, fontsize=18)
+    ax.set_title(title, fontsize=18)
+    #ax.set_xlabel('Relevances (thetas)')
+    #ax.set_title('Explanation for prediction: {}'.format(y_pred))
+    #plt.tight_layout()
+    #plt.savefig(save_path)
+    #plt.clf()
 
 
 def plot_lambda_accuracy(config_list, save_path, num_seeds=1, **kwargs):

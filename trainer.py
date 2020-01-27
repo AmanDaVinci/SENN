@@ -367,18 +367,51 @@ class Trainer():
 
         # select test example
         (test_batch, test_labels) = next(iter(self.test_loader))
+        test_batch = test_batch.float().to(self.config.device)
+
+        # feed test batch to model to obtain explanation
+        y_pred, (concepts, relevances), _ = self.model(test_batch)
+        if len(y_pred.size()) > 1:
+            y_pred = y_pred.argmax(1)
+
+        concepts_min = concepts.min().item()
+        concepts_max = concepts.max().item()
+        concept_lim = abs(concepts_min) if abs(concepts_min) > abs(concepts_max) else abs(concepts_max)
+        plt.style.use('seaborn-paper')
         for i in range(10):
-            example = test_batch[i].float().to(self.config.device)
+            gridsize = (1, 3)
+            fig = plt.figure(figsize=(9, 3))
+            ax1 = plt.subplot2grid(gridsize, (0, 0))
+            ax2 = plt.subplot2grid(gridsize, (0, 1))
+            ax3 = plt.subplot2grid(gridsize, (0, 2))
+            #fig, axes = plt.subplots(ncols=3)
+            # figure of example image
             if self.config.dataloader == 'mnist':
-                save(example, path.join(save_dir, 'test_example_{}.png'.format(i)))
+                #save(example, path.join(save_dir, 'test_example_{}.png'.format(i)))
+                ax1.imshow(test_batch[i].squeeze().cpu(), cmap='gray')
+                ax1.set_axis_off()
+                ax1.set_title(f'Input Prediction: {y_pred[i].item()}', fontsize=18)
 
             # feed example to model to obtain explanation
-            y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
-            if len(y_pred.size()) > 1:
-                y_pred = y_pred.argmax(1)
+            #y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
+            #if len(y_pred.size()) > 1:
+            #    y_pred = y_pred.argmax(1)
 
-            save_path = path.join(save_dir, 'relevances_{}.png'.format(i))
-            create_barplot(relevances, y_pred, save_path=save_path, **self.config.__dict__)
+            #save_path = path.join(save_dir, 'relevances_{}.png'.format(i))
+            create_barplot(ax2, relevances[i], y_pred[i], x_label='Relevances (theta)', **self.config.__dict__)
+            ax2.xaxis.set_label_position('top')
+            ax2.tick_params(which='major', labelsize=12)
+
+            create_barplot(ax3, concepts[i], y_pred[i], x_lim=concept_lim,
+                           x_label='Concept activations (h)', **self.config.__dict__)
+            ax3.xaxis.set_label_position('top')
+            ax3.tick_params(which='major', labelsize=12)
+
+            plt.tight_layout()
+
+            save_path = path.join(save_dir, 'explanation_{}.png'.format(i))
+            plt.savefig(save_path)
+            plt.close(fig)
 
         if hasattr(self.config, 'concept_visualization'):
             # create visualization of the concepts with method specified in config file
