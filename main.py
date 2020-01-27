@@ -1,7 +1,7 @@
 """Main entry point of program. Here, a config file is parsed and the trainer is instantiated and run."""
 
 import argparse
-
+from utils.accuracy_vs_lambda import plot_lambda_accuracy
 from trainer import init_trainer
 
 
@@ -12,8 +12,9 @@ def main():
     args = parser.parse_args()
 
     trainer = init_trainer(args.config)
-    trainer.run()
+    plot_config, save_path, num_seed = trainer.run()
     trainer.finalize()
+    _=plot_lambda_accuracy(plot_config, save_path, num_seed)
 
 
 if __name__ == "__main__":

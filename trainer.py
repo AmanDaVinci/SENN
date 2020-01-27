@@ -2,7 +2,7 @@ from models.senn import SENN
 from datasets.dataloaders import get_dataloader
 from models.losses import *
 from utils.concept_representations import *
-from utils.plot_utils import *
+from utils.plot_utils import create_barplot
 
 import os
 from os import path
@@ -131,7 +131,7 @@ class Trainer():
             if self.config.train:
                 print("Training begins...")
                 self.train()
-            self.visualize(save_dir=self.experiment_dir)
+            return self.visualize(save_dir=self.experiment_dir)
         except KeyboardInterrupt:
             print("CTRL+C pressed... Waiting to finalize.")
 
@@ -199,10 +199,28 @@ class Trainer():
                 self.validate()
 
     def validate(self):
-        """Validate model performance.
+        """Get the metrics for the validation set
+        """
+        return self.get_metrics(validate=True)
+
+    def test(self):
+        """Get the metrics for the test set
+        """
+        return self.get_metrics(validate=False)
+
+    def get_metrics(self, validate=True):
+        """Get the metrics for a validation/test set
+
+        If the validation flag is on, the function tests the model
+        with the validation dataset  instead of the testing one.
 
         Model performance is validated by computing loss and accuracy measures, storing them,
         and reporting them.
+
+        Parameters
+        ----------
+        validate : bool
+            Indicates whether to use the validation or test dataset
         """
         losses_val = []
         classification_losses_val = []
@@ -210,9 +228,11 @@ class Trainer():
         robustness_losses_val = []
         accuracies_val = []
 
+        dl = self.val_loader if validate else self.test_loader
+
         self.model.eval()
         with torch.no_grad():
-            for i, (x, labels) in enumerate(self.val_loader):
+            for i, (x, labels) in enumerate(dl):
                 x = x.float().to(self.config.device)
                 labels = labels.long().to(self.config.device)
 
@@ -242,16 +262,17 @@ class Trainer():
             total_loss = np.mean(losses_val)
             accuracy = np.mean(accuracies_val)
 
-            # --- Report Training Progress --- #
-            self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Valid/Robustness', robustness_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Valid/Concept', concept_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Valid/Total', total_loss, self.current_iter)
-            self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
+            if validate:
+                # --- Report Training Progress --- #
+                self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Valid/Robustness', robustness_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Valid/Concept', concept_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Valid/Total', total_loss, self.current_iter)
+                self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
 
-            # --- Report Validation --- #
-            print("\n\033[93m-------- Validation --------")
-            self.print_n_save_metrics(filename="accuracies_losses_valid.csv",
+            # --- Report statistics --- #
+            print(f"\n\033[93m-------- {'Validation' if validate else 'Test'} --------")
+            self.print_n_save_metrics(filename=f"accuracies_losses_{'valid' if validate else 'test'}.csv",
                                       total_loss=total_loss,
                                       classification_loss=classification_loss,
                                       robustness_loss=robustness_loss,
@@ -259,14 +280,16 @@ class Trainer():
                                       accuracy=accuracy)
             print("----------------------------\033[0m")
 
-            if accuracy > self.best_accuracy:
+            if accuracy > self.best_accuracy and validate:
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
                 self.save_checkpoint(BEST_MODEL_FILENAME)
 
+        return accuracy
+
+
     def accuracy(self, y_pred, y):
-        """
-        Return accuracy of predictions with respect to ground truth.
+        """Return accuracy of predictions with respect to ground truth.
 
         Parameters
         ----------
@@ -336,6 +359,23 @@ class Trainer():
         print(f"Checkpoint saved @ {file_name}\n")
 
     def print_n_save_metrics(self, filename, total_loss, classification_loss, robustness_loss, concept_loss, accuracy):
+        """Prints the losses to the console and saves them in a csv file
+
+        Parameters
+        ----------
+        filename: str
+            Name of the csv file.
+        classification_loss: float
+            The value of the classification loss
+        robustness_loss: float
+            The value of the robustness loss
+        total_loss: float
+            The value of the total loss
+        concept_loss: float
+            The value of the concept loss
+        accuracy: float
+            The value of the accuracy
+        """
         report = (f"Total Loss:{total_loss:.3f} \t"
                   f"Classification Loss:{classification_loss:.3f} \t"
                   f"Robustness Loss:{robustness_loss:.3f} \t"
@@ -423,9 +463,12 @@ class Trainer():
             elif self.config.concept_visualization == 'filter':
                 filter_concepts(self.model, save_path=save_path)
 
-        if hasattr(self.config, 'accuracy_vs_lambda'):
-            save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
-            plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
+        #if hasattr(self.config, 'accuracy_vs_lambda'):
+        #    save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
+        #    plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
+        plot_config = self.config.accuracy_vs_lambda
+        save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
+        return plot_config, save_path, self.config.num_seeds
     def finalize(self):
         """Finalize all necessary operations before exiting training.
         
