@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.utils import make_grid
+import matplotlib.pyplot as plt
 
 
 class SENN(nn.Module):
@@ -206,14 +208,14 @@ class DiSENN(nn.Module):
         assert len(x.shape) == 3, \
         "input x must be a rank 3 tensor of shape channel x width x height"
         
-        y_pred, explanations, x_reconstruct = model(x.unsqueeze(0))
+        y_pred, explanations, x_reconstruct = self.forward(x.unsqueeze(0))
         (x_posterior_mean, x_posterior_logvar), relevances = explanations
         x_posterior_mean = x_posterior_mean.squeeze(-1)
         x_posterior_logvar = x_posterior_logvar.squeeze(-1)
         
         concepts = x_posterior_mean.detach().numpy()
         num_concepts = concepts.shape[1]
-        concepts_sample = model.vae_conceptizer.sample(x_posterior_mean,
+        concepts_sample = self.vae_conceptizer.sample(x_posterior_mean,
                                                     x_posterior_logvar).detach()
         # generate new concept vector for each prototype
         # by traversing independently in each dimension
@@ -221,8 +223,8 @@ class DiSENN(nn.Module):
         concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range, num_prototypes) 
                                for dim in range(num_concepts)]
         concepts_traversals = torch.cat(concepts_traversals, dim=0)
-        prototypes = model.vae_conceptizer.decoder(concepts_traversals)
-        prototype_imgs = prototypes.view(-1, x.shape[1], x.shape[2], x.shape[3])
+        prototypes = self.vae_conceptizer.decoder(concepts_traversals)
+        prototype_imgs = prototypes.view(-1, x.shape[0], x.shape[1], x.shape[2])
         
         # nrow is number of images in a row which must be the number of prototypes
         prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).detach().numpy()
