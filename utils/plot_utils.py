@@ -46,11 +46,6 @@ def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='',save_
     ax.set_xlim(-x_lim, x_lim)
     ax.set_xlabel(x_label, fontsize=18)
     ax.set_title(title, fontsize=18)
-    #ax.set_xlabel('Relevances (thetas)')
-    #ax.set_title('Explanation for prediction: {}'.format(y_pred))
-    #plt.tight_layout()
-    #plt.savefig(save_path)
-    #plt.clf()
 
 
 def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, **kwargs):
