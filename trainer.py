@@ -445,21 +445,19 @@ class Trainer():
 
             save_path = path.join(save_dir, 'explanation_{}.png'.format(i))
             plt.savefig(save_path)
-            plt.close(fig)
+            plt.close('all')
 
-        if hasattr(self.config, 'concept_visualization'):
-            # create visualization of the concepts with method specified in config file
-            save_path = path.join(save_dir, 'concept.png')
-            if self.config.concept_visualization == 'activation':
+            if self.config.dataloader == 'mnist':
+                save_path = path.join(save_dir, 'concept_activation.png')
                 highest_activations(self.model, self.test_loader, save_path=save_path)
-            elif self.config.concept_visualization == 'contrast':
+                save_path = path.join(save_dir, 'concept_contrast.png')
                 highest_contrast(self.model, self.test_loader, save_path=save_path)
-            elif self.config.concept_visualization == 'filter':
+                save_path = path.join(save_dir, 'concept_filter.png')
                 filter_concepts(self.model, save_path=save_path)
 
         if hasattr(self.config, 'accuracy_vs_lambda'):
             save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
-            plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, valid=True,**self.config.__dict__)
+            plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
 
 
     def finalize(self):
