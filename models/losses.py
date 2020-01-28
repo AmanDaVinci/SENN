@@ -102,7 +102,7 @@ def mnist_robustness_loss(x, aggregates, concepts, relevances):
 
     return robustness_loss.norm(p='fro')
 
-def BVAE_loss(x, x_hat, z_mean, z_logvar, beta):
+def BVAE_loss(x, x_hat, z_mean, z_logvar):
     """ Calculate Beta-VAE loss as in [1]
 
     Parameters
@@ -121,9 +121,6 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar, beta):
         diagonal log variance of the latent distribution of shape
         (batch_size, latent_dim)
 
-    beta : float
-        weight on the KL Divergence Loss
-
     Returns
     -------
     loss : torch.tensor
@@ -138,8 +135,7 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar, beta):
     # recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean")
     recon_loss = F.mse_loss(x_hat, x.detach(), reduction="mean")
     kl_loss = kl_div(z_mean, z_logvar)
-    loss = recon_loss + beta * kl_loss
-    return loss
+    return recon_loss, kl_loss
 
 def weighted_mse(x, x_hat, sparsity_reg):
     return sparsity_reg * F.mse_loss(x,x_hat)
