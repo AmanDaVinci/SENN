@@ -1,3 +1,4 @@
+from scipy import stats
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -160,7 +161,7 @@ class DiSENN(nn.Module):
         explanations = ((concept_mean, concept_logvar), relevances)
         return predictions, explanations, x_reconstruct
     
-    def explain(self, x, num_prototypes=20, traversal_range=1,
+    def explain(self, x, num_prototypes=20, traversal_range=0.45, use_cdf=True, 
                 show=False, save_as=None, gridsize=(1,6), col_span=3, figure_size=(18,3)):
         """Explains the DiSENN predictions for input x
         
@@ -207,10 +208,10 @@ class DiSENN(nn.Module):
         -------
             None
         """
-
         assert len(x.shape) == 3, \
         "input x must be a rank 3 tensor of shape channel x width x height"
-        
+
+        self.eval()        
         y_pred, explanations, x_reconstruct = self.forward(x.unsqueeze(0))
         (x_posterior_mean, x_posterior_logvar), relevances = explanations
         x_posterior_mean = x_posterior_mean.squeeze(-1)
@@ -223,7 +224,10 @@ class DiSENN(nn.Module):
         # generate new concept vector for each prototype
         # by traversing independently in each dimension
         concepts_sample = concepts_sample.repeat(num_prototypes, 1)
-        concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range, num_prototypes) 
+        mean = x_posterior_mean.detach().numpy()
+        std = torch.exp(x_posterior_logvar.detach() / 2).numpy()
+        concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range,
+                               num_prototypes, mean[:, dim], std[:, dim], use_cdf) 
                                for dim in range(num_concepts)]
         concepts_traversals = torch.cat(concepts_traversals, dim=0)
         prototypes = self.vae_conceptizer.decoder(concepts_traversals)
@@ -272,14 +276,20 @@ class DiSENN(nn.Module):
         if save_as is not None: fig.savefig(save_as)
         if show: plt.show()
     
-    def traverse(self, matrix, dim, traversal_range, steps, use_cdf=True):
+    def traverse(self, matrix, dim, traversal_range, steps,
+                 mean=None, std=None, use_cdf=True):
         """Linearly traverses through one dimension of a matrix independently"""
 
         if use_cdf:
             assert traversal_range < 0.5, \
                 "If CDF is to be used, the traversal range must represent probability range of -0.5 < p < +0.5"
-            prob_traversal = (1 - 2 * max_traversal) / 2  # from 0.45 to 0.05
-            matrix_traversal = stats.norm.ppf(max_traversal, loc=mean, scale=std)  # from 0.05 to -1.645
+            assert mean is not None and std is not None, \
+                "If CDF is to be used, mean and std has to be defined"
+            prob_traversal = (1 - 2 * traversal_range) / 2  # from 0.45 to 0.05
+            prob_traversal = stats.norm.ppf(prob_traversal, loc=mean, scale=std)[0]  # from 0.05 to -1.645
+            traversal = torch.linspace(-1 * prob_traversal, prob_traversal, steps)
+            matrix_traversal = matrix.clone() # to avoid changing the matrix
+            matrix_traversal[:, dim] = traversal
         else:
             traversal = torch.linspace(-1 * traversal_range, traversal_range, steps)
             matrix_traversal = matrix.clone() # to avoid changing the matrix
