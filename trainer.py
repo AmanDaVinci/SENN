@@ -437,9 +437,9 @@ class DiSENNTrainer(Trainer):
         # Pretrain Conceptizer if required
         if self.config.pretrain_epochs > 0:
             print("Pre-training the Conceptizer... ")
-            self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer)
+            self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer, self.config.beta)
 
-    def pretrain(self, conceptizer):
+    def pretrain(self, conceptizer, beta=0.):
         """Pre-trains conceptizer on the training data to optimize the concept loss"""
 
         optimizer = opt.Adam(conceptizer.parameters())
@@ -451,14 +451,15 @@ class DiSENNTrainer(Trainer):
                 optimizer.zero_grad()
                 x = x.float().to(self.config.device)
                 concept_mean, concept_logvar, x_reconstruct = conceptizer(x)
-                concept_loss = self.concept_loss(x, x_reconstruct,
-                                                 concept_mean, concept_logvar,
-                                                 beta=1)
-                concept_loss.backward()
+                recon_loss, kl_div = self.concept_loss(x, x_reconstruct, concept_mean, concept_logvar)
+                loss = recon_loss + beta * kl_div
+                loss.backward()
                 optimizer.step()
                 if i % self.config.print_freq == 0:
                     print(f"EPOCH:{epoch} STEP:{i} \t"
-                          f"Concept Loss: {concept_loss:.3f}")
+                          f"Concept Loss: {loss:.3f} "
+                          f"Recon Loss: {recon_loss:.3f} "
+                          f"KL Div: {kl_div:.3f}")
 
         return conceptizer
 
@@ -486,9 +487,9 @@ class DiSENNTrainer(Trainer):
 
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-            concept_loss = self.concept_loss(x, x_reconstructed,
-                                             concept_mean, concept_logvar,
-                                             self.config.beta)
+            recon_loss, kl_div = self.concept_loss(x, x_reconstructed,
+                                                   concept_mean, concept_logvar)
+            concept_loss = recon_loss + self.config.beta * kl_div 
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -514,6 +515,8 @@ class DiSENNTrainer(Trainer):
                                           classification_loss=classification_loss.item(),
                                           robustness_loss=robustness_loss.item(),
                                           concept_loss=concept_loss.item(),
+                                          recon_loss = recon_loss.item(),
+                                          kl_div = kl_div.item(),
                                           accuracy=accuracy)
 
             if self.current_iter % self.config.eval_freq == 0:
@@ -544,9 +547,9 @@ class DiSENNTrainer(Trainer):
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
                 robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
-                concept_loss = self.concept_loss(x, x_reconstructed,
-                                                concept_mean, concept_logvar,
-                                                self.config.beta)
+                recon_loss, kl_div = self.concept_loss(x, x_reconstructed,
+                                                       concept_mean, concept_logvar)
+                concept_loss = recon_loss + self.config.beta * kl_div
 
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
@@ -580,6 +583,8 @@ class DiSENNTrainer(Trainer):
                                       classification_loss=classification_loss,
                                       robustness_loss=robustness_loss,
                                       concept_loss=concept_loss,
+                                      recon_loss = recon_loss.item(),
+                                      kl_div = kl_div.item(),
                                       accuracy=accuracy)
             print("----------------------------\033[0m")
             
@@ -587,10 +592,13 @@ class DiSENNTrainer(Trainer):
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
                 self.save_checkpoint(BEST_MODEL_FILENAME)
-            else:
-                print("Saving model ...")
-                self.save_checkpoint()
-
+            
+            # TODO: organize this block
+            self.visualize("dummy.png")
+            print("Saving model ...")
+            self.save_checkpoint()
+    
+    # TODO: fix this
     def visualize(self, fname, num=3):
         """Generates some plots to visualize the explanations.
 
@@ -605,5 +613,30 @@ class DiSENNTrainer(Trainer):
         (test_batch, test_labels) = next(iter(self.test_loader))
         for i in range(num):
             file_path = Path("results")
-            file_name = file_path / self.config.exp / "explanations.png"
-            model.explain(test_batch[i], save_as=file_name)
+            file_name = file_path / self.config.exp_name / "explanations.png"
+            self.model.explain(test_batch[i], save_as=file_name)
+
+    def print_n_save_metrics(self, filename, total_loss,
+                             classification_loss, robustness_loss,
+                             concept_loss, recon_loss, kl_div, accuracy):
+        
+        report = (f"Total Loss:{total_loss:.3f} "
+                  f"Accuracy:{accuracy:.3f} "
+                  f"Classification Loss:{classification_loss:.3f} "
+                  f"Robustness Loss:{robustness_loss:.3f} "
+                  f"Concept Loss:{concept_loss:.3f} "
+                  f"Recon Loss: {recon_loss:.3f} "
+                  f"KL Div: {kl_div:.3f} ")
+        print(report)
+
+        filename = path.join(self.experiment_dir, filename)
+        new_file = not os.path.exists(filename)
+        with open(filename, 'a') as metrics_file:
+            fieldnames = ['Accuracy', 'Loss', 'Classification_Loss', 'Robustness_Loss', 'Concept_Loss', 'Step']
+            csv_writer = csv.DictWriter(metrics_file, fieldnames=fieldnames)
+
+            if new_file: csv_writer.writeheader()
+
+            csv_writer.writerow({'Accuracy': accuracy, 'Classification_Loss': classification_loss,
+                                 'Robustness_Loss': robustness_loss, 'Concept_Loss': concept_loss,
+                                 'Loss': total_loss, 'Step': self.current_iter})
