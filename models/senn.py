@@ -272,9 +272,16 @@ class DiSENN(nn.Module):
         if save_as is not None: fig.savefig(save_as)
         if show: plt.show()
     
-    def traverse(self, matrix, dim, traversal_range, steps):
+    def traverse(self, matrix, dim, traversal_range, steps, use_cdf=True):
         """Linearly traverses through one dimension of a matrix independently"""
-        traversal = torch.linspace(-1 * traversal_range, traversal_range, steps)
-        matrix_traversal = matrix.clone() # to avoid changing the matrix
-        matrix_traversal[:, dim] = traversal
+
+        if use_cdf:
+            assert traversal_range < 0.5, \
+                "If CDF is to be used, the traversal range must represent probability range of -0.5 < p < +0.5"
+            prob_traversal = (1 - 2 * max_traversal) / 2  # from 0.45 to 0.05
+            matrix_traversal = stats.norm.ppf(max_traversal, loc=mean, scale=std)  # from 0.05 to -1.645
+        else:
+            traversal = torch.linspace(-1 * traversal_range, traversal_range, steps)
+            matrix_traversal = matrix.clone() # to avoid changing the matrix
+            matrix_traversal[:, dim] = traversal
         return matrix_traversal        
