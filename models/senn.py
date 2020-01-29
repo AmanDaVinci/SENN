@@ -211,21 +211,21 @@ class DiSENN(nn.Module):
         assert len(x.shape) == 3, \
         "input x must be a rank 3 tensor of shape channel x width x height"
 
-        self.eval()        
+        self.eval()
         y_pred, explanations, x_reconstruct = self.forward(x.unsqueeze(0))
         (x_posterior_mean, x_posterior_logvar), relevances = explanations
         x_posterior_mean = x_posterior_mean.squeeze(-1)
         x_posterior_logvar = x_posterior_logvar.squeeze(-1)
         
-        concepts = x_posterior_mean.detach().numpy()
+        concepts = x_posterior_mean.cpu().detach().numpy()
         num_concepts = concepts.shape[1]
         concepts_sample = self.vae_conceptizer.sample(x_posterior_mean,
                                                     x_posterior_logvar).detach()
         # generate new concept vector for each prototype
         # by traversing independently in each dimension
         concepts_sample = concepts_sample.repeat(num_prototypes, 1)
-        mean = x_posterior_mean.detach().numpy()
-        std = torch.exp(x_posterior_logvar.detach() / 2).numpy()
+        mean = x_posterior_mean.cpu().detach().numpy()
+        std = torch.exp(x_posterior_logvar.detach() / 2).cpu().numpy()
         concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range,
                                num_prototypes, mean[:, dim], std[:, dim], use_cdf) 
                                for dim in range(num_concepts)]
@@ -234,10 +234,10 @@ class DiSENN(nn.Module):
         prototype_imgs = prototypes.view(-1, x.shape[0], x.shape[1], x.shape[2])
         
         # nrow is number of images in a row which must be the number of prototypes
-        prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).detach().numpy()
+        prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).cpu().detach().numpy()
         
         # prepare to plot
-        relevances = relevances.squeeze(0).detach().numpy()
+        relevances = relevances.squeeze(0).cpu().detach().numpy()
         relevances = relevances[:,y_pred.argmax(1)]
         concepts = concepts.squeeze(0)
         relevances_colors = ['g' if r > 0 else 'r' for r in relevances]
@@ -251,7 +251,7 @@ class DiSENN(nn.Module):
         ax3 = plt.subplot2grid(gridsize, (0,2))
         ax4 = plt.subplot2grid(gridsize, (0,3), colspan=col_span)
 
-        ax1.imshow(x.numpy().squeeze(), cmap='gray')
+        ax1.imshow(x.cpu().numpy().squeeze(), cmap='gray')
         ax1.set_axis_off()
         ax1.set_title(f'Input Prediction: {y_pred.argmax(1).item()}', fontsize=18)
 
@@ -275,6 +275,7 @@ class DiSENN(nn.Module):
 
         if save_as is not None: fig.savefig(save_as)
         if show: plt.show()
+        plt.close()
     
     def traverse(self, matrix, dim, traversal_range, steps,
                  mean=None, std=None, use_cdf=True):
