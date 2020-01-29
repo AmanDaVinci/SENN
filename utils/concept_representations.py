@@ -154,6 +154,7 @@ def save_or_show(img, save_path):
     save_path: str
         Path to the location where the bar plot should be saved. If None is passed image is showed instead.
     """
+    # TODO: redesign me
     img = img.clone().squeeze()
     npimg = img.cpu().numpy()
     if len(npimg.shape) == 2:
