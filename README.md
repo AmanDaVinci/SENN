@@ -1,8 +1,14 @@
-# FACT
-Project: Fairness, Accountability, Confidentiality and Transparency in AI
+# Self-Explaining Neural Networks: A review with extensions
 
-## Contents
+TODO: Description
+
+## Table of Contents
 ---
+
+## Project Structure
+---
+
+TODO: Diagram
 The project is organized as follows:
 1. **models**: classes defining model architecture
 2. **configs**: experiment configurations
@@ -12,9 +18,23 @@ The project is organized as follows:
 6. **checkpoints**: saved model weights
 7. *report.ipynb*: notebook reporting final results
 
+
+## Results
+---
+
+
 ## How to run?
 ---
-```
-$ conda env create -f environment.yml
-$ conda activate fact
-```
+
+## Data
+---
+
+## Documentation
+---
+
+## References
+---
+[1] Alvarez Melis, et al.  
+"Towards Robust Interpretability with Self-Explaining Neural Networks" NIPS 2018
+[2] Irina Higgins, et al.  
+”β-VAE: Learning basic visual concepts with a constrained variational framework.” ICLR 2017. 
