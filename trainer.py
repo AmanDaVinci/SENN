@@ -199,10 +199,28 @@ class Trainer():
                 self.validate()
 
     def validate(self):
-        """Validate model performance.
+        """Get the metrics for the validation set
+        """
+        return self.get_metrics(validate=True)
+
+    def test(self):
+        """Get the metrics for the test set
+        """
+        return self.get_metrics(validate=False)
+
+    def get_metrics(self, validate=True):
+        """Get the metrics for a validation/test set
+
+        If the validation flag is on, the function tests the model
+        with the validation dataset  instead of the testing one.
 
         Model performance is validated by computing loss and accuracy measures, storing them,
         and reporting them.
+
+        Parameters
+        ----------
+        validate : bool
+            Indicates whether to use the validation or test dataset
         """
         losses_val = []
         classification_losses_val = []
@@ -210,9 +228,11 @@ class Trainer():
         robustness_losses_val = []
         accuracies_val = []
 
+        dl = self.val_loader if validate else self.test_loader
+
         self.model.eval()
         with torch.no_grad():
-            for i, (x, labels) in enumerate(self.val_loader):
+            for i, (x, labels) in enumerate(dl):
                 x = x.float().to(self.config.device)
                 labels = labels.long().to(self.config.device)
 
@@ -242,16 +262,17 @@ class Trainer():
             total_loss = np.mean(losses_val)
             accuracy = np.mean(accuracies_val)
 
-            # --- Report Training Progress --- #
-            self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Valid/Robustness', robustness_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Valid/Concept', concept_loss, self.current_iter)
-            self.writer.add_scalar('Loss/Valid/Total', total_loss, self.current_iter)
-            self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
+            if validate:
+                # --- Report Training Progress --- #
+                self.writer.add_scalar('Loss/Valid/Classification', classification_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Valid/Robustness', robustness_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Valid/Concept', concept_loss, self.current_iter)
+                self.writer.add_scalar('Loss/Valid/Total', total_loss, self.current_iter)
+                self.writer.add_scalar('Accuracy/Valid', accuracy, self.current_iter)
 
-            # --- Report Validation --- #
-            print("\n\033[93m-------- Validation --------")
-            self.print_n_save_metrics(filename="accuracies_losses_valid.csv",
+            # --- Report statistics --- #
+            print(f"\n\033[93m-------- {'Validation' if validate else 'Test'} --------")
+            self.print_n_save_metrics(filename=f"accuracies_losses_{'valid' if validate else 'test'}.csv",
                                       total_loss=total_loss,
                                       classification_loss=classification_loss,
                                       robustness_loss=robustness_loss,
@@ -259,14 +280,16 @@ class Trainer():
                                       accuracy=accuracy)
             print("----------------------------\033[0m")
 
-            if accuracy > self.best_accuracy:
+            if accuracy > self.best_accuracy and validate:
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
                 self.save_checkpoint(BEST_MODEL_FILENAME)
 
+        return accuracy
+
+
     def accuracy(self, y_pred, y):
-        """
-        Return accuracy of predictions with respect to ground truth.
+        """Return accuracy of predictions with respect to ground truth.
 
         Parameters
         ----------
@@ -336,6 +359,23 @@ class Trainer():
         print(f"Checkpoint saved @ {file_name}\n")
 
     def print_n_save_metrics(self, filename, total_loss, classification_loss, robustness_loss, concept_loss, accuracy):
+        """Prints the losses to the console and saves them in a csv file
+
+        Parameters
+        ----------
+        filename: str
+            Name of the csv file.
+        classification_loss: float
+            The value of the classification loss
+        robustness_loss: float
+            The value of the robustness loss
+        total_loss: float
+            The value of the total loss
+        concept_loss: float
+            The value of the concept loss
+        accuracy: float
+            The value of the accuracy
+        """
         report = (f"Total Loss:{total_loss:.3f} \t"
                   f"Classification Loss:{classification_loss:.3f} \t"
                   f"Robustness Loss:{robustness_loss:.3f} \t"
@@ -367,32 +407,59 @@ class Trainer():
 
         # select test example
         (test_batch, test_labels) = next(iter(self.test_loader))
+        test_batch = test_batch.float().to(self.config.device)
+
+        # feed test batch to model to obtain explanation
+        y_pred, (concepts, relevances), _ = self.model(test_batch)
+        if len(y_pred.size()) > 1:
+            y_pred = y_pred.argmax(1)
+
+        concepts_min = concepts.min().item()
+        concepts_max = concepts.max().item()
+        concept_lim = abs(concepts_min) if abs(concepts_min) > abs(concepts_max) else abs(concepts_max)
+
+        plt.style.use('seaborn-paper')
         for i in range(10):
-            example = test_batch[i].float().to(self.config.device)
+            gridsize = (1, 3)
+            fig = plt.figure(figsize=(9, 3))
+            ax1 = plt.subplot2grid(gridsize, (0, 0))
+            ax2 = plt.subplot2grid(gridsize, (0, 1))
+            ax3 = plt.subplot2grid(gridsize, (0, 2))
+
+            # figure of example image
             if self.config.dataloader == 'mnist':
-                save(example, path.join(save_dir, 'test_example_{}.png'.format(i)))
+                ax1.imshow(test_batch[i].squeeze().cpu(), cmap='gray')
+                ax1.set_axis_off()
+                ax1.set_title(f'Input Prediction: {y_pred[i].item()}', fontsize=18)
 
-            # feed example to model to obtain explanation
-            y_pred, (concepts, relevances), _ = self.model(example.unsqueeze(0))
-            if len(y_pred.size()) > 1:
-                y_pred = y_pred.argmax(1)
+            create_barplot(ax2, relevances[i], y_pred[i], x_label='Relevances (theta)', **self.config.__dict__)
+            ax2.xaxis.set_label_position('top')
+            ax2.tick_params(which='major', labelsize=12)
 
-            save_path = path.join(save_dir, 'relevances_{}.png'.format(i))
-            create_barplot(relevances, y_pred, save_path=save_path, **self.config.__dict__)
+            create_barplot(ax3, concepts[i], y_pred[i], x_lim=concept_lim,
+                           x_label='Concept activations (h)', **self.config.__dict__)
+            ax3.xaxis.set_label_position('top')
+            ax3.tick_params(which='major', labelsize=12)
 
-        if hasattr(self.config, 'concept_visualization'):
-            # create visualization of the concepts with method specified in config file
-            save_path = path.join(save_dir, 'concept.png')
-            if self.config.concept_visualization == 'activation':
+            plt.tight_layout()
+
+            save_path = path.join(save_dir, 'explanation_{}.png'.format(i))
+            plt.savefig(save_path)
+            plt.close('all')
+
+            if self.config.dataloader == 'mnist':
+                save_path = path.join(save_dir, 'concept_activation.png')
                 highest_activations(self.model, self.test_loader, save_path=save_path)
-            elif self.config.concept_visualization == 'contrast':
+                save_path = path.join(save_dir, 'concept_contrast.png')
                 highest_contrast(self.model, self.test_loader, save_path=save_path)
-            elif self.config.concept_visualization == 'filter':
+                save_path = path.join(save_dir, 'concept_filter.png')
                 filter_concepts(self.model, save_path=save_path)
 
         if hasattr(self.config, 'accuracy_vs_lambda'):
             save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
             plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
+
+
     def finalize(self):
         """Finalize all necessary operations before exiting training.
         
