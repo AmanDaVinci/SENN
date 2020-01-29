@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torchvision.utils as vutils
 
 
 class LinearParameterizer(nn.Module):
@@ -54,7 +53,8 @@ class LinearParameterizer(nn.Module):
 
 
 class ConvParameterizer(nn.Module):
-    def __init__(self, num_concepts, num_classes, cl_sizes=(1, 10, 20), kernel_size=5, hidden_sizes=(10, 5, 5, 10), dropout=0.5, **kwargs):
+    def __init__(self, num_concepts, num_classes, cl_sizes=(1, 10, 20), kernel_size=5, hidden_sizes=(10, 5, 5, 10), dropout=0.5,
+                 **kwargs):
         """Parameterizer for MNIST dataset.
 
         Consists of convolutional as well as fully connected modules.
@@ -123,6 +123,3 @@ class ConvParameterizer(nn.Module):
         cl_output = self.cl_layers(x)
         flattened = cl_output.view(x.size(0), -1)
         return self.fc_layers(flattened).view(-1, self.num_concepts, self.num_classes)
-
-
-

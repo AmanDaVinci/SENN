@@ -1,3 +1,6 @@
+import torch
+
+
 def jacobian(f, x, out_dim):
     """Computes Jacobian of a vector-valued function.
 
@@ -12,26 +15,26 @@ def jacobian(f, x, out_dim):
     Parameters
     ----------
     f : torch.nn.Module
-        Function as a pytorch module. Jacobian will be computed against this. 
+        Function as a pytorch module. Jacobian will be computed against this.
     x : torch.tensor
         Input data tensor of shape (batch_size x input_dim).
         This object is not mutated and a clone is used for the forward pass.
     out_dim : int
-        outer dimension of the function f 
+        outer dimension of the function f
 
     Returns
     -------
     jacobian_fx : torch.tensor
         jacobian as a tensor of shape (batch_size x output_dim x input_dim)
     """
-    input = x.clone().detach()
-    bsize = input.size()[0]
+    model_input = x.clone().detach()
+    bsize = model_input.size()[0]
     # (bs, in_dim) --repeated--> (bs, out_dim, in_dim)
-    input = input.unsqueeze(1).repeat(1, out_dim, 1)
-    input.requires_grad_(True)
+    model_input = model_input.unsqueeze(1).repeat(1, out_dim, 1)
+    model_input.requires_grad_(True)
     # can only compute Jacobian of inputs and outputs with 2 dimensions
-    out = f(input).reshape(bsize, out_dim, out_dim)
+    out = f(model_input).reshape(bsize, out_dim, out_dim)
     # for autograd of non-scalar outputs
-    grad_matrix = torch.eye(out_dim).reshape(1,out_dim, out_dim).repeat(bsize, 1, 1)
+    grad_matrix = torch.eye(out_dim).reshape(1, out_dim, out_dim).repeat(bsize, 1, 1)
     out.backward(grad_matrix)
-    return input.grad.data
+    return model_input.grad.data

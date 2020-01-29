@@ -1,8 +1,9 @@
-from models.senn import SENN
+from models.senn import SENN, DiSENN
+from models.losses import *
 from models.aggregators import *
 from models.parameterizers import *
 from models.conceptizers import *
-from models.losses import *
+
 from datasets.dataloaders import get_dataloader
 from utils.concept_representations import *
 from utils.plot_utils import *
@@ -14,7 +15,6 @@ import csv
 import json
 from pprint import pprint
 from types import SimpleNamespace
-from functools import partial
 
 import torch
 import torch.nn.functional as F
@@ -23,7 +23,6 @@ from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import matplotlib.pyplot as plt
-import importlib
 
 plt.style.use('seaborn-talk')
 
@@ -88,7 +87,7 @@ class Trainer():
         """
         self.config = config
         print(f"Using device {config.device}")
-        
+
         # Load data
         print("Loading data ...")
         self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
@@ -176,11 +175,10 @@ class Trainer():
 
             # run x through SENN
             y_pred, (concepts, relevances), x_reconstructed = self.model(x)
-            
+
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
             concept_loss = self.concept_loss(x, x_reconstructed, concepts, self.config.sparsity_reg)
-
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -250,13 +248,13 @@ class Trainer():
                 labels = labels.long().to(self.config.device)
 
                 # run x through SENN
-                y_pred, (concepts, relevances), x_reconstructed = self.model(x)
+                y_pred, (concepts, _), x_reconstructed = self.model(x)
 
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-                robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
+                robustness_loss = torch.tensor(0.0)  # jacobian cannot be computed with no_grad enabled
                 concept_loss = self.concept_loss(x, x_reconstructed, concepts, self.config.sparsity_reg)
-                
+
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
                              self.config.concept_reg * concept_loss
@@ -299,7 +297,6 @@ class Trainer():
                 self.save_checkpoint(BEST_MODEL_FILENAME)
 
         return accuracy
-
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
@@ -419,7 +416,7 @@ class Trainer():
         self.model.eval()
 
         # select test example
-        (test_batch, test_labels) = next(iter(self.test_loader))
+        (test_batch, _) = next(iter(self.test_loader))
         test_batch = test_batch.float().to(self.config.device)
 
         # feed test batch to model to obtain explanation
@@ -472,7 +469,6 @@ class Trainer():
             save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
             plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
 
-
     def finalize(self):
         """Finalize all necessary operations before exiting training.
         
@@ -512,7 +508,7 @@ class DiSENNTrainer(Trainer):
             conceptizer = eval(config.conceptizer)(**config.__dict__)
             parameterizer = eval(config.parameterizer)(**config.__dict__)
             aggregator = eval(config.aggregator)(**config.__dict__)
-        except:
+        except Exception:
             print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
             exit(-1)
 
@@ -585,7 +581,7 @@ class DiSENNTrainer(Trainer):
             # track all operations on x for jacobian calculation
             x.requires_grad_(True)
             y_pred, (concepts_dist, relevances), x_reconstructed = self.model(x)
-            
+
             concept_mean, concept_logvar = concepts_dist
             concepts = concept_mean
 
@@ -593,7 +589,7 @@ class DiSENNTrainer(Trainer):
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
             recon_loss, kl_div = self.concept_loss(x, x_reconstructed,
                                                    concept_mean, concept_logvar)
-            concept_loss = recon_loss + self.config.beta * kl_div 
+            concept_loss = recon_loss + self.config.beta * kl_div
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -619,8 +615,8 @@ class DiSENNTrainer(Trainer):
                                           classification_loss=classification_loss.item(),
                                           robustness_loss=robustness_loss.item(),
                                           concept_loss=concept_loss.item(),
-                                          recon_loss = recon_loss.item(),
-                                          kl_div = kl_div.item(),
+                                          recon_loss=recon_loss.item(),
+                                          kl_div=kl_div.item(),
                                           accuracy=accuracy)
 
             if self.current_iter % self.config.eval_freq == 0:
@@ -640,17 +636,15 @@ class DiSENNTrainer(Trainer):
 
         self.model.eval()
         with torch.no_grad():
-            for i, (x, labels) in enumerate(self.val_loader):
+            for x, labels in self.val_loader:
                 x = x.float().to(self.config.device)
                 labels = labels.long().to(self.config.device)
 
-                y_pred, (concepts_dist, relevances), x_reconstructed = self.model(x)                
+                y_pred, (concepts_dist, _), x_reconstructed = self.model(x)
                 concept_mean, concept_logvar = concepts_dist
-                concepts = concept_mean
 
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
-                # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-                robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
+                robustness_loss = torch.tensor(0.0)  # jacobian cannot be computed with no_grad enabled
                 recon_loss, kl_div = self.concept_loss(x, x_reconstructed,
                                                        concept_mean, concept_logvar)
                 concept_loss = recon_loss + self.config.beta * kl_div
@@ -687,21 +681,21 @@ class DiSENNTrainer(Trainer):
                                       classification_loss=classification_loss,
                                       robustness_loss=robustness_loss,
                                       concept_loss=concept_loss,
-                                      recon_loss = recon_loss.item(),
-                                      kl_div = kl_div.item(),
+                                      recon_loss=recon_loss.item(),
+                                      kl_div=kl_div.item(),
                                       accuracy=accuracy)
             print("----------------------------\033[0m")
-            
+
             if accuracy > self.best_accuracy:
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
                 self.save_checkpoint(BEST_MODEL_FILENAME)
-            
+
             # TODO: organize this block
             self.visualize("dummy.png")
             print("Saving model ...")
             self.save_checkpoint()
-    
+
     def visualize(self, save_dir, num=3):
         """Generates some plots to visualize the explanations.
 
@@ -710,11 +704,13 @@ class DiSENNTrainer(Trainer):
         save_dir : str
             A placeholder to work with the Base Trainer class which calls visualize.
             Needs refactoring.
+        num: int
+            Number of examples
         """
         self.model.eval()
 
         # select test example
-        (test_batch, test_labels) = next(iter(self.test_loader))
+        (test_batch, _) = next(iter(self.test_loader))
         for i in range(num):
             file_path = Path("results")
             file_name = file_path / self.config.exp_name / "explanations.png"
@@ -752,7 +748,7 @@ class DiSENNTrainer(Trainer):
         accuracy: float
             The value of the accuracy
         """
-        
+
         report = (f"Total Loss:{total_loss:.3f} "
                   f"Accuracy:{accuracy:.3f} "
                   f"Classification Loss:{classification_loss:.3f} "

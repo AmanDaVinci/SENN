@@ -5,7 +5,8 @@ from sklearn.neighbors import NearestNeighbors
 
 MODEL_FILENAME = "../pretrained/autoencoder.pt"
 
-#TODO: Needs Docstrings
+
+# TODO: Needs Docstrings
 class AutoEncoder(nn.Module):
     def __init__(self):
         super().__init__()
@@ -46,6 +47,11 @@ class Deflatten(nn.Module):
         return x.view(x.size(0), 8, 2, 2)
 
 
+def get_most_similar(latents, query, number):
+    knn = NearestNeighbors(n_neighbors=number).fit(latents)
+    return knn.kneighbors(query.reshape(1, -1) if len(query.shape) == 1 else query)
+
+
 class AETrainer:
     def __init__(self, dataloader, batch_size, **kwargs):
         self.dataloader = dataloader
@@ -56,8 +62,8 @@ class AETrainer:
 
     def train(self, epochs):
         for epoch in range(epochs):
-            for x, y in self.dataloader:
-                encoded, decoded = self.model(x)
+            for x, _ in self.dataloader:
+                _, decoded = self.model(x)
                 loss = self.criterion(decoded, x)
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -78,11 +84,7 @@ class AETrainer:
 
     def get_latent_reps(self, dataloader):
         latents = []
-        for x, y in dataloader:
+        for x, _ in dataloader:
             encoded, _ = self.model(x)
             latents.extend(encoded.view(self.batch_size, -1).detach().numpy())
         return np.array(latents)
-
-    def get_most_similar(self, latents, query, number):
-        knn = NearestNeighbors(n_neighbors=number).fit(latents)
-        return knn.kneighbors(query.reshape(1, -1) if len(query.shape) == 1 else query)

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class Conceptizer(nn.Module):
     def __init__(self):
         """
@@ -33,6 +34,7 @@ class Conceptizer(nn.Module):
         encoded = self.encode(x)
         decoded = self.decode(encoded)
         return encoded, decoded.view_as(x)
+
 
 class IdentityConceptizer(Conceptizer):
     def __init__(self, **kwargs):
@@ -99,7 +101,7 @@ class VaeConceptizer(nn.Module):
             number of basis concepts to learn in the latent distribution space
         """
         super().__init__()
-        self.in_dim = image_size*image_size
+        self.in_dim = image_size * image_size
         self.z_dim = num_concepts
         self.encoder = VaeEncoder(self.in_dim, self.z_dim)
         self.decoder = VaeDecoder(self.in_dim, self.z_dim)
@@ -125,7 +127,7 @@ class VaeConceptizer(nn.Module):
         return (concept_mean.unsqueeze(-1),
                 concept_logvar.unsqueeze(-1),
                 x_reconstruct.view_as(x))
-    
+
     def sample(self, mean, logvar):
         """Samples from the latent distribution using reparameterization trick
 
@@ -180,7 +182,7 @@ class VaeEncoder(nn.Module):
         )
         self.mean_layer = nn.Linear(100, z_dim)
         self.logvar_layer = nn.Linear(100, z_dim)
-    
+
     def forward(self, x):
         """Forward pass of the encoder
         """
@@ -215,7 +217,7 @@ class VaeDecoder(nn.Module):
             nn.ReLU(),
             nn.Linear(512, in_dim)
         )
-    
+
     def forward(self, x):
         """Forward pass of a decoder"""
         x_reconstruct = torch.sigmoid(self.FC(x))
@@ -423,7 +425,7 @@ class ConvConceptizer(Conceptizer):
                                kernel_size=kernel_size,
                                stride=stride_deconv,
                                padding=padding),
-            #nn.ReLU(inplace=True)
+            # nn.ReLU(inplace=True)
         )
 
 
@@ -474,6 +476,7 @@ def handle_integer_input(input, desired_len):
     else:
         raise TypeError(f"Wrong type of the parameters. Expected tuple or int but got '{type(input)}'")
 
+
 class ScalarMapping(nn.Module):
     def __init__(self, conv_block_size):
         """
@@ -489,7 +492,7 @@ class ScalarMapping(nn.Module):
 
         self.layers = nn.ModuleList()
         for _ in range(self.num_filters):
-            self.layers.append(nn.Linear(self.filter_height*self.filter_width, 1))
+            self.layers.append(nn.Linear(self.filter_height * self.filter_width, 1))
 
     def forward(self, x):
         """
@@ -505,7 +508,7 @@ class ScalarMapping(nn.Module):
         mapped : torch.Tensor
             Reduced input (BATCH, CHANNELS, 1)
         """
-        x = x.view(-1, self.num_filters, self.filter_height*self.filter_width)
+        x = x.view(-1, self.num_filters, self.filter_height * self.filter_width)
         mappings = []
         for f, layer in enumerate(self.layers):
             mappings.append(layer(x[:, [f], :]))

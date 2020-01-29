@@ -13,6 +13,7 @@ RESULTS_FILENAME = 'accuracies_losses_valid.csv'
 
 plt.style.use('seaborn-paper')
 
+
 def get_comparison_plot(images, model):
     """Creates a plot that shows similar prototypes with their relevance scores and concept values.
 
@@ -51,7 +52,7 @@ def get_comparison_plot(images, model):
 
     for i in range(len(images)):
         prediction_index = y_pred[i].item()
-        concept_names = [f'C{i+1}' for i in range(concepts.shape[1] - 1, -1, -1)]
+        concept_names = [f'C{i + 1}' for i in range(concepts.shape[1] - 1, -1, -1)]
 
         # plot the input image
         axes[PROTOTYPE_ROW, i].imshow(images[i].permute(1, 2, 0).squeeze(), cmap='gray')
@@ -88,7 +89,7 @@ def get_comparison_plot(images, model):
     return fig
 
 
-def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='',save_path='results/relevances.png', concept_names=None, **kwargs):
+def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='', concept_names=None, **kwargs):
     """Creates a bar plot of relevances.
 
     Parameters
@@ -99,8 +100,14 @@ def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='',save_
         The relevances for which the bar plot should be generated. shape: (1, NUM_CONCEPTS, NUM_CLASSES)
     y_pred: torch.tensor (int)
         The prediction of the model for the corresponding relevances. shape: scalar value
-    save_path: str
-        Path to the location where the bar plot should be saved.
+    x_lim: float
+        the limits of the plot
+    title: str
+        the title of the plot
+    x_label: str
+        the label of the X-axis of the plot
+    concept_names: list[str]
+        the names of each feature on the plot
     """
     # Example data
     y_pred = y_pred.item()
@@ -151,7 +158,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     for config_file in config_list:
         seed_accuracies = []
         for seed in range(num_seeds):
-            config_path = path/config_file if num_seeds == 1 else path/config_file[seed]
+            config_path = path / config_file if num_seeds == 1 else path / config_file[seed]
             # if test mode: instanciate trainer that evaluates model on the test set
             if not valid:
                 t = trainer.init_trainer(config_path, best_model=True)
@@ -164,7 +171,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
                     results_csv = result_dir / config["exp_name"] / RESULTS_FILENAME
                     seed_accuracies.append(pd.read_csv(results_csv, header=0)['Accuracy'].max())
         lambdas.append(config["robust_reg"])
-        accuracies.append(sum(seed_accuracies)/num_seeds)
+        accuracies.append(sum(seed_accuracies) / num_seeds)
 
     plt.style.use('seaborn')
     fig, ax = plt.subplots()
@@ -173,7 +180,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     ax.set_xticklabels(lambdas)
     ax.set_xlabel('Robustness Regularization Strength')
     ax.set_ylabel('Prediction Accuracy')
-    
+
     if save_path is not None:
         plt.savefig(save_path)
 

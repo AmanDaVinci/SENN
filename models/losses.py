@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from utils.jacobian import jacobian
+
 
 def compas_robustness_loss(x, aggregates, concepts, relevances):
     """Computes Robustness Loss for the Compas data
@@ -31,14 +31,15 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
 
     grad_tensor = torch.ones(batch_size, num_classes).to(x.device)
     J_yx = torch.autograd.grad(outputs=aggregates, inputs=x, \
-     grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
+                               grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
     # bs x num_features -> bs x num_features x num_classes
-    J_yx = J_yx.unsqueeze(-1) 
+    J_yx = J_yx.unsqueeze(-1)
 
     # J_hx = Identity Matrix; h(x) is identity function
     robustness_loss = J_yx - relevances
 
     return robustness_loss.norm(p='fro')
+
 
 def mnist_robustness_loss(x, aggregates, concepts, relevances):
     """Computes Robustness Loss for MNIST data
@@ -74,25 +75,25 @@ def mnist_robustness_loss(x, aggregates, concepts, relevances):
 
     # Jacobian of aggregates wrt x
     jacobians = []
-    for i in range(num_classes):    
+    for i in range(num_classes):
         grad_tensor = torch.zeros(batch_size, num_classes).to(x.device)
-        grad_tensor[:,i] = 1.
+        grad_tensor[:, i] = 1.
         j_yx = torch.autograd.grad(outputs=aggregates, inputs=x, \
-        grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
+                                   grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
         # bs x 1 x 28 x 28 -> bs x 784 x 1
-        jacobians.append(j_yx.view(batch_size,-1).unsqueeze(-1))
+        jacobians.append(j_yx.view(batch_size, -1).unsqueeze(-1))
     # bs x num_features x num_classes (bs x 784 x 10)
     J_yx = torch.cat(jacobians, dim=2)
 
     # Jacobian of concepts wrt x
     jacobians = []
-    for i in range(num_concepts):    
+    for i in range(num_concepts):
         grad_tensor = torch.zeros(batch_size, num_concepts).to(x.device)
-        grad_tensor[:,i] = 1.
+        grad_tensor[:, i] = 1.
         j_hx = torch.autograd.grad(outputs=concepts, inputs=x, \
-        grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
+                                   grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
         # bs x 1 x 28 x 28 -> bs x 784 x 1
-        jacobians.append(j_hx.view(batch_size,-1).unsqueeze(-1))
+        jacobians.append(j_hx.view(batch_size, -1).unsqueeze(-1))
     # bs x num_features x num_concepts
     J_hx = torch.cat(jacobians, dim=2)
 
@@ -100,6 +101,7 @@ def mnist_robustness_loss(x, aggregates, concepts, relevances):
     robustness_loss = J_yx - torch.bmm(J_hx, relevances)
 
     return robustness_loss.norm(p='fro')
+
 
 def BVAE_loss(x, x_hat, z_mean, z_logvar):
     """ Calculate Beta-VAE loss as in [1]
@@ -136,17 +138,21 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
     kl_loss = kl_div(z_mean, z_logvar)
     return recon_loss, kl_loss
 
+
 def weighted_mse(x, x_hat, sparsity_reg):
     """Mean Squared Error weighted by sparsity regularization parameter"""
-    return sparsity_reg * F.mse_loss(x_hat,x)
+    return sparsity_reg * F.mse_loss(x_hat, x)
+
 
 def mse_kl_sparsity(x, x_hat, concepts, sparsity_reg):
     """Sum of Mean Squared Error and KL Divergence loss weighted by sparsity regularization parameter"""
-    return F.mse_loss(x_hat, x.detach()) + F.kl_div(sparsity_reg*torch.ones_like(concepts), concepts)
+    return F.mse_loss(x_hat, x.detach()) + F.kl_div(sparsity_reg * torch.ones_like(concepts), concepts)
+
 
 def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     """Mean Squared Error weighted and L1 norm by sparsity regularization parameter"""
     return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()
+
 
 def kl_div(mean, logvar):
     """Computes KL Divergence between a given normal distribution
