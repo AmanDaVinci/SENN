@@ -10,7 +10,7 @@ import torch
 import trainer
 
 RESULTS_DIR = 'results'
-CONFIG_DIR = 'config'
+CONFIG_DIR = 'configs'
 RESULTS_FILENAME = 'accuracies_losses_valid.csv'
 
 plt.style.use('seaborn-paper')
@@ -91,8 +91,7 @@ def get_comparison_plot(images, model):
     return fig
 
 
-def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='', save_path='results/relevances.png',
-                   concept_names=None, **kwargs):
+def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='', concept_names=None, **kwargs):
     """Creates a bar plot of relevances.
 
     Parameters
@@ -103,8 +102,14 @@ def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='', save
         The relevances for which the bar plot should be generated. shape: (1, NUM_CONCEPTS, NUM_CLASSES)
     y_pred: torch.tensor (int)
         The prediction of the model for the corresponding relevances. shape: scalar value
-    save_path: str
-        Path to the location where the bar plot should be saved.
+    x_lim: float
+        the limits of the plot
+    title: str
+        the title of the plot
+    x_label: str
+        the label of the X-axis of the plot
+    concept_names: list[str]
+        the names of each feature on the plot
     """
     # Example data
     y_pred = y_pred.item()
@@ -134,9 +139,9 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     Parameters
     ----------
     config_list: list
-        List of experiment config files used to vary the lambda.
+        List of experiment configs files used to vary the lambda.
         If multiple seeds are used then this is a list of lists where the inner lists have a length
-        equal to the number of different seeds used and contain the corresponding config files.
+        equal to the number of different seeds used and contain the corresponding configs files.
     save_path: str
         Path to the location where the plot should be saved.
     num_seeds : int

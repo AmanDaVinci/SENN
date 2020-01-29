@@ -97,7 +97,7 @@ class DiSENN(nn.Module):
     ”β-VAE: Learning basic visual concepts with a constrained variational framework.” ICLR 2017. 
     
     """
-    
+
     def __init__(self, vae_conceptizer, parameterizer, aggregator):
         """Instantiates the SENDD with a variational conceptizer, parameterizer and aggregator
 
@@ -160,9 +160,9 @@ class DiSENN(nn.Module):
         predictions = self.aggregator(concept_mean, relevances)
         explanations = ((concept_mean, concept_logvar), relevances)
         return predictions, explanations, x_reconstruct
-    
-    def explain(self, x, num_prototypes=20, traversal_range=0.45, use_cdf=True, 
-                show=False, save_as=None, gridsize=(1,6), col_span=3, figure_size=(18,3)):
+
+    def explain(self, x, num_prototypes=20, traversal_range=0.45, use_cdf=True,
+                show=False, save_as=None, gridsize=(1, 6), col_span=3, figure_size=(18, 3)):
         """Explains the DiSENN predictions for input x
         
         DiSENN explanations consists of the Concepts, the corresponding Relevance 
@@ -209,47 +209,47 @@ class DiSENN(nn.Module):
             None
         """
         assert len(x.shape) == 3, \
-        "input x must be a rank 3 tensor of shape channel x width x height"
+            "input x must be a rank 3 tensor of shape channel x width x height"
 
         self.eval()
-        y_pred, explanations, x_reconstruct = self.forward(x.unsqueeze(0))
+        y_pred, explanations, _ = self.forward(x.unsqueeze(0))
         (x_posterior_mean, x_posterior_logvar), relevances = explanations
         x_posterior_mean = x_posterior_mean.squeeze(-1)
         x_posterior_logvar = x_posterior_logvar.squeeze(-1)
-        
+
         concepts = x_posterior_mean.cpu().detach().numpy()
         num_concepts = concepts.shape[1]
         concepts_sample = self.vae_conceptizer.sample(x_posterior_mean,
-                                                    x_posterior_logvar).detach()
+                                                      x_posterior_logvar).detach()
         # generate new concept vector for each prototype
         # by traversing independently in each dimension
         concepts_sample = concepts_sample.repeat(num_prototypes, 1)
         mean = x_posterior_mean.cpu().detach().numpy()
         std = torch.exp(x_posterior_logvar.detach() / 2).cpu().numpy()
         concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range,
-                               num_prototypes, mean[:, dim], std[:, dim], use_cdf) 
+                                             num_prototypes, mean[:, dim], std[:, dim], use_cdf)
                                for dim in range(num_concepts)]
         concepts_traversals = torch.cat(concepts_traversals, dim=0)
         prototypes = self.vae_conceptizer.decoder(concepts_traversals)
         prototype_imgs = prototypes.view(-1, x.shape[0], x.shape[1], x.shape[2])
-        
+
         # nrow is number of images in a row which must be the number of prototypes
         prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).cpu().detach().numpy()
-        
+
         # prepare to plot
         relevances = relevances.squeeze(0).cpu().detach().numpy()
-        relevances = relevances[:,y_pred.argmax(1)]
+        relevances = relevances[:, y_pred.argmax(1)]
         concepts = concepts.squeeze(0)
         relevances_colors = ['g' if r > 0 else 'r' for r in relevances]
         concepts_colors = ['g' if c > 0 else 'r' for c in concepts]
-        
+
         # plot input image, relevances, concepts, prototypes side by side
         plt.style.use('seaborn-paper')
         fig = plt.figure(figsize=figure_size)
-        ax1 = plt.subplot2grid(gridsize, (0,0))
-        ax2 = plt.subplot2grid(gridsize, (0,1))
-        ax3 = plt.subplot2grid(gridsize, (0,2))
-        ax4 = plt.subplot2grid(gridsize, (0,3), colspan=col_span)
+        ax1 = plt.subplot2grid(gridsize, (0, 0))
+        ax2 = plt.subplot2grid(gridsize, (0, 1))
+        ax3 = plt.subplot2grid(gridsize, (0, 2))
+        ax4 = plt.subplot2grid(gridsize, (0, 3), colspan=col_span)
 
         ax1.imshow(x.cpu().numpy().squeeze(), cmap='gray')
         ax1.set_axis_off()
@@ -267,7 +267,7 @@ class DiSENN(nn.Module):
         ax3.tick_params(axis='x', which='major', labelsize=12)
         ax3.set_yticks([])
 
-        ax4.imshow(prototype_grid_img.transpose(1,2,0))
+        ax4.imshow(prototype_grid_img.transpose(1, 2, 0))
         ax4.set_title('Prototypes', fontsize=18)
         ax4.set_axis_off()
 
@@ -276,10 +276,28 @@ class DiSENN(nn.Module):
         if save_as is not None: fig.savefig(save_as)
         if show: plt.show()
         plt.close()
-    
+
     def traverse(self, matrix, dim, traversal_range, steps,
                  mean=None, std=None, use_cdf=True):
-        """Linearly traverses through one dimension of a matrix independently"""
+        """Linearly traverses through one dimension of a matrix independently
+        
+        Parameters
+        ----------
+        matrix: torch.tensor
+            matrix whose dimensions will be traversed independently
+        dim: int
+            dimension of the matrix to be traversed
+        traversal_range: int
+            maximum value of the traversal range, if use_cdf is true this should be less than 0.5
+        steps: int
+            number of steps in the traversal range
+        mean: float
+            mean of the distribution for traversal using cdf
+        std: float
+            std of the distribution for traversal using cdf
+        use_cdf: bool
+            whether to use cdf traversal
+        """
 
         if use_cdf:
             assert traversal_range < 0.5, \
@@ -289,10 +307,10 @@ class DiSENN(nn.Module):
             prob_traversal = (1 - 2 * traversal_range) / 2  # from 0.45 to 0.05
             prob_traversal = stats.norm.ppf(prob_traversal, loc=mean, scale=std)[0]  # from 0.05 to -1.645
             traversal = torch.linspace(-1 * prob_traversal, prob_traversal, steps)
-            matrix_traversal = matrix.clone() # to avoid changing the matrix
+            matrix_traversal = matrix.clone()  # to avoid changing the matrix
             matrix_traversal[:, dim] = traversal
         else:
             traversal = torch.linspace(-1 * traversal_range, traversal_range, steps)
-            matrix_traversal = matrix.clone() # to avoid changing the matrix
+            matrix_traversal = matrix.clone()  # to avoid changing the matrix
             matrix_traversal[:, dim] = traversal
-        return matrix_traversal        
+        return matrix_traversal

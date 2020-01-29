@@ -14,12 +14,12 @@ from pathlib import Path
 
 
 def get_dataloader(config):
-    """Dispatcher that calls dataloader function depending on the config.
+    """Dispatcher that calls dataloader function depending on the configs.
 
     Parameters
     ----------
     config : SimpleNameSpace
-        Contains config values. Needs to at least have a `dataloader` field.
+        Contains configs values. Needs to at least have a `dataloader` field.
     
     Returns
     -------

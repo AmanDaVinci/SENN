@@ -1,9 +1,10 @@
 from models.senn import SENN, DiSENN
-from models.conceptizer import *
-from models.parameterizer import *
-from models.aggregator import *
-from datasets.dataloaders import get_dataloader
 from models.losses import *
+from models.aggregators import *
+from models.parameterizers import *
+from models.conceptizers import *
+
+from datasets.dataloaders import get_dataloader
 from utils.concept_representations import *
 from utils.plot_utils import *
 
@@ -14,7 +15,6 @@ import csv
 import json
 from pprint import pprint
 from types import SimpleNamespace
-from functools import partial
 
 import torch
 import torch.nn.functional as F
@@ -23,7 +23,6 @@ from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import matplotlib.pyplot as plt
-import importlib
 
 plt.style.use('seaborn-talk')
 
@@ -34,6 +33,21 @@ BEST_MODEL_FILENAME = "best_model.pt"
 
 
 def init_trainer(config_file, best_model=False):
+    """Instantiate the Trainer class based on the config parameters
+
+    Parameters
+    ----------
+    config_file: str
+        filename of the json config with all experiment parameters
+
+    best_model: bool
+        whether to load the previously trained best model
+
+    Returns
+    -------
+    trainer: Trainer
+        Trainer for SENN or DiSENNTrainer for DiSENN
+    """
     with open(config_file, 'r') as f:
         config = json.load(f)
 
@@ -58,12 +72,12 @@ class Trainer():
         """Base Trainer class containing functions to be overloaded by a specific Trainer agent.
         
         A trainer instantiates a model to be trained. It contains logic for training, validating,
-        and checkpointing the model. All the specific parameters that control the program behavior
-        are contained in the config parameter.
+        checkpointing, etc. All the specific parameters that control the experiment behaviour
+        are contained in the configs json.
 
         The models we consider here are all Self Explaining Neural Networks (SENNs).
 
-        If `load_checkpoint` is specified in config and the model has a checkpoint, the checkpoint
+        If `load_checkpoint` is specified in configs and the model has a checkpoint, the checkpoint
         will be loaded.
         
         Parameters
@@ -73,7 +87,7 @@ class Trainer():
         """
         self.config = config
         print(f"Using device {config.device}")
-        
+
         # Load data
         print("Loading data ...")
         self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
@@ -136,7 +150,7 @@ class Trainer():
             print("CTRL+C pressed... Waiting to finalize.")
 
     def train(self):
-        """Main training loop."""
+        """Main training loop. Saves a model checkpoint after every epoch."""
         for epoch in range(self.current_epoch, self.config.epochs):
             self.current_epoch = epoch
             self.train_one_epoch(self.current_epoch)
@@ -161,11 +175,10 @@ class Trainer():
 
             # run x through SENN
             y_pred, (concepts, relevances), x_reconstructed = self.model(x)
-            
+
             classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
             concept_loss = self.concept_loss(x, x_reconstructed, concepts, self.config.sparsity_reg)
-
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -230,18 +243,18 @@ class Trainer():
 
         self.model.eval()
         with torch.no_grad():
-            for i, (x, labels) in enumerate(dl):
+            for x, labels in dl:
                 x = x.float().to(self.config.device)
                 labels = labels.long().to(self.config.device)
 
                 # run x through SENN
-                y_pred, (concepts, relevances), x_reconstructed = self.model(x)
+                y_pred, (concepts, _), x_reconstructed = self.model(x)
 
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-                robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
+                robustness_loss = torch.tensor(0.0)  # jacobian cannot be computed with no_grad enabled
                 concept_loss = self.concept_loss(x, x_reconstructed, concepts, self.config.sparsity_reg)
-                
+
                 total_loss = classification_loss + \
                              self.config.robust_reg * robustness_loss + \
                              self.config.concept_reg * concept_loss
@@ -284,7 +297,6 @@ class Trainer():
                 self.save_checkpoint(BEST_MODEL_FILENAME)
 
         return accuracy
-
 
     def accuracy(self, y_pred, y):
         """Return accuracy of predictions with respect to ground truth.
@@ -332,14 +344,14 @@ class Trainer():
 
             print(f"Checkpoint loaded successfully from '{file_name}'\n")
 
-        except OSError as e:
+        except OSError:
             print(f"No checkpoint exists @ {self.checkpoint_dir}")
             print("**Training for the first time**")
 
     def save_checkpoint(self, file_name=None):
         """Save checkpoint in the checkpoint directory.
 
-        Checkpoint dir and checkpoint_file need to be specified in the config.
+        Checkpoint dir and checkpoint_file need to be specified in the configs.
         """
         if file_name is None:
             file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
@@ -394,7 +406,7 @@ class Trainer():
                                  'Loss': total_loss, 'Step': self.current_iter})
 
     def visualize(self, save_dir):
-        """Generates some plots to visualize the explanations.
+        """Generates plots to visualize the explanations.
 
         Parameters
         ----------
@@ -404,7 +416,7 @@ class Trainer():
         self.model.eval()
 
         # select test example
-        (test_batch, test_labels) = next(iter(self.test_loader))
+        (test_batch, _) = next(iter(self.test_loader))
         test_batch = test_batch.float().to(self.config.device)
 
         # feed test batch to model to obtain explanation
@@ -457,7 +469,6 @@ class Trainer():
             save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
             plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
 
-
     def finalize(self):
         """Finalize all necessary operations before exiting training.
         
@@ -483,19 +494,25 @@ class DiSENNTrainer(Trainer):
     """Extends general Trainer to train a DiSENN model"""
 
     def __init__(self, config):
+        """Instantiates a trainer for DiSENN
+
+        Parameters
+        ----------
+        config : types.SimpleNamespace
+            Contains all (hyper)parameters that define the behavior of the program.
+        """
         super().__init__(config)
 
         print("Reinstantiating for DiSENN ...")
-        # get appropriate models from global namespace and instantiate them
         try:
             conceptizer = eval(config.conceptizer)(**config.__dict__)
             parameterizer = eval(config.parameterizer)(**config.__dict__)
             aggregator = eval(config.aggregator)(**config.__dict__)
-        except:
+        except Exception:
             print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
             exit(-1)
 
-        # Define losses
+        # Define DiSENN losses
         self.classification_loss = F.nll_loss
         self.concept_loss = eval(config.concept_loss)
         self.robustness_loss = eval(config.robustness_loss)
@@ -514,7 +531,16 @@ class DiSENNTrainer(Trainer):
             self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer, self.config.pre_beta)
 
     def pretrain(self, conceptizer, beta=0.):
-        """Pre-trains conceptizer on the training data to optimize the concept loss"""
+        """Pre-trains conceptizer on the training data to optimize the concept loss
+        
+        Parameters:
+        ----------
+        conceptizer : VaeConceptizer
+            object of class VaeConceptizer to be pre-trained
+        
+        beta : int
+            beta value during the pre-training of the beta-VAE
+        """
 
         optimizer = opt.Adam(conceptizer.parameters())
         conceptizer.to(self.config.device)
@@ -555,7 +581,7 @@ class DiSENNTrainer(Trainer):
             # track all operations on x for jacobian calculation
             x.requires_grad_(True)
             y_pred, (concepts_dist, relevances), x_reconstructed = self.model(x)
-            
+
             concept_mean, concept_logvar = concepts_dist
             concepts = concept_mean
 
@@ -563,7 +589,7 @@ class DiSENNTrainer(Trainer):
             robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
             recon_loss, kl_div = self.concept_loss(x, x_reconstructed,
                                                    concept_mean, concept_logvar)
-            concept_loss = recon_loss + self.config.beta * kl_div 
+            concept_loss = recon_loss + self.config.beta * kl_div
 
             total_loss = classification_loss + \
                          self.config.robust_reg * robustness_loss + \
@@ -589,8 +615,8 @@ class DiSENNTrainer(Trainer):
                                           classification_loss=classification_loss.item(),
                                           robustness_loss=robustness_loss.item(),
                                           concept_loss=concept_loss.item(),
-                                          recon_loss = recon_loss.item(),
-                                          kl_div = kl_div.item(),
+                                          recon_loss=recon_loss.item(),
+                                          kl_div=kl_div.item(),
                                           accuracy=accuracy)
 
             if self.current_iter % self.config.eval_freq == 0:
@@ -610,17 +636,15 @@ class DiSENNTrainer(Trainer):
 
         self.model.eval()
         with torch.no_grad():
-            for i, (x, labels) in enumerate(self.val_loader):
+            for x, labels in self.val_loader:
                 x = x.float().to(self.config.device)
                 labels = labels.long().to(self.config.device)
 
-                y_pred, (concepts_dist, relevances), x_reconstructed = self.model(x)                
+                y_pred, (concepts_dist, _), x_reconstructed = self.model(x)
                 concept_mean, concept_logvar = concepts_dist
-                concepts = concept_mean
 
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
-                # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
-                robustness_loss = torch.tensor(0.0) # jacobian cannot be computed with no_grad enabled
+                robustness_loss = torch.tensor(0.0)  # jacobian cannot be computed with no_grad enabled
                 recon_loss, kl_div = self.concept_loss(x, x_reconstructed,
                                                        concept_mean, concept_logvar)
                 concept_loss = recon_loss + self.config.beta * kl_div
@@ -657,34 +681,36 @@ class DiSENNTrainer(Trainer):
                                       classification_loss=classification_loss,
                                       robustness_loss=robustness_loss,
                                       concept_loss=concept_loss,
-                                      recon_loss = recon_loss.item(),
-                                      kl_div = kl_div.item(),
+                                      recon_loss=recon_loss.item(),
+                                      kl_div=kl_div.item(),
                                       accuracy=accuracy)
             print("----------------------------\033[0m")
-            
+
             if accuracy > self.best_accuracy:
                 print("\033[92mCongratulations! Saving a new best model...\033[00m")
                 self.best_accuracy = accuracy
                 self.save_checkpoint(BEST_MODEL_FILENAME)
-            
+
             # TODO: organize this block
             self.visualize("dummy.png")
             print("Saving model ...")
             self.save_checkpoint()
-    
-    # TODO: fix this
+
     def visualize(self, save_dir, num=3):
         """Generates some plots to visualize the explanations.
 
         Parameters
         ----------
         save_dir : str
-            Directory where the figures are saved
+            A placeholder to work with the Base Trainer class which calls visualize.
+            Needs refactoring.
+        num: int
+            Number of examples
         """
         self.model.eval()
 
         # select test example
-        (test_batch, test_labels) = next(iter(self.test_loader))
+        (test_batch, _) = next(iter(self.test_loader))
         for i in range(num):
             file_path = Path("results")
             file_name = file_path / self.config.exp_name / "explanations.png"
@@ -694,7 +720,35 @@ class DiSENNTrainer(Trainer):
     def print_n_save_metrics(self, filename, total_loss,
                              classification_loss, robustness_loss,
                              concept_loss, recon_loss, kl_div, accuracy):
-        
+        """Prints the losses to the console and saves them in a csv file
+
+        Parameters
+        ----------
+        filename: str
+            Name of the csv file.
+       
+        total_loss: float
+            The value of the total loss
+       
+        classification_loss: float
+            The value of the classification loss
+       
+        robustness_loss: float
+            The value of the robustness loss
+       
+        concept_loss: float
+            The value of the concept loss
+       
+        recon_loss: float
+            Reconstruction loss of the VAE Conceptizer
+
+        kl_div : float
+            KL Divergence loss of VAE Conceptizer
+
+        accuracy: float
+            The value of the accuracy
+        """
+
         report = (f"Total Loss:{total_loss:.3f} "
                   f"Accuracy:{accuracy:.3f} "
                   f"Classification Loss:{classification_loss:.3f} "
