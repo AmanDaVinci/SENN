@@ -20,5 +20,6 @@
   "batch_size" : 200,
   "experiment_dir" : "compas_lambda0_1",
   "sparsity_reg": 1e-3,
-  "eval_freq" : 30
+  "eval_freq" : 30,
+  "robustness_loss": "compas_robustness_loss"
 }

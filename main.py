@@ -7,7 +7,7 @@ from trainer import init_trainer
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default="configs/compas_config.json", help='experiment config file')
+    parser.add_argument('--config', default="configs/mnist_config.json", help='experiment config file')
     args = parser.parse_args()
 
     trainer = init_trainer(args.config)

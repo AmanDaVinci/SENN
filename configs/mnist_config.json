@@ -24,6 +24,7 @@
   "data_path": "datasets/data/mnist_data",
   "batch_size" : 16,
   "sparsity_reg" : 2e-5,
-  "eval_freq" : 100
+  "eval_freq" : 100,
+  "robustness_loss" : "mnist_robustness_loss"
 }
 

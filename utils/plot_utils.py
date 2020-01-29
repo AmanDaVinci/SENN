@@ -191,7 +191,9 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
 
     return fig
 
-def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None, **kwargs):
+
+def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None,
+                       **kwargs):
     """Generates some explanations of model predictions.
 
     Parameters
@@ -224,7 +226,7 @@ def show_explainations(model, test_loader, dataset, num_explanations=2, save_pat
     concept_lim = abs(concepts_min) if abs(concepts_min) > abs(concepts_max) else abs(concepts_max)
 
     plt.style.use('seaborn-paper')
-    batch_idx = np.random.randint(0,batch_size-1,num_explanations)
+    batch_idx = np.random.randint(0, batch_size - 1, num_explanations)
     for i in range(num_explanations):
         if concept_names is not None:
             gridsize = (1, 2)
