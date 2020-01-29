@@ -27,7 +27,6 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
         Robustness loss as frobenius norm of (batch_size x num_classes x num_features)
     """
     batch_size = x.size(0)
-    num_features = x.size(1)
     num_classes = aggregates.size(1)
 
     grad_tensor = torch.ones(batch_size, num_classes).to(x.device)

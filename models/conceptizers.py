@@ -343,7 +343,7 @@ class ScalarMapping(nn.Module):
         self.num_filters, self.filter_height, self.filter_width = conv_block_size
 
         self.layers = nn.ModuleList()
-        for i in range(self.num_filters):
+        for _ in range(self.num_filters):
             self.layers.append(nn.Linear(self.filter_height*self.filter_width, 1))
 
     def forward(self, x):

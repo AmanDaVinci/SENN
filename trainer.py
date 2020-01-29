@@ -232,7 +232,7 @@ class Trainer():
 
         self.model.eval()
         with torch.no_grad():
-            for i, (x, labels) in enumerate(dl):
+            for x, labels in dl:
                 x = x.float().to(self.config.device)
                 labels = labels.long().to(self.config.device)
 
@@ -334,7 +334,7 @@ class Trainer():
 
             print(f"Checkpoint loaded successfully from '{file_name}'\n")
 
-        except OSError as e:
+        except OSError:
             print(f"No checkpoint exists @ {self.checkpoint_dir}")
             print("**Training for the first time**")
 
