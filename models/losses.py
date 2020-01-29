@@ -126,7 +126,7 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
     -------
     loss : torch.tensor
         loss as a rank-0 tensor calculated as:
-        reconstruction_loss + beta * KL_divergence_loss 
+        reconstruction_loss + beta * KL_divergence_loss
 
     References
     ----------
@@ -174,3 +174,7 @@ def kl_div(mean, logvar):
     batch_loss = 0.5 * (mean.pow(2) + logvar.exp() - logvar - 1).mean(dim=0)
     loss = batch_loss.sum()
     return loss
+
+  
+def zero_loss(*args, **kwargs):
+    return torch.tensor(0)
