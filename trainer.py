@@ -437,7 +437,7 @@ class DiSENNTrainer(Trainer):
         # Pretrain Conceptizer if required
         if self.config.pretrain_epochs > 0:
             print("Pre-training the Conceptizer... ")
-            self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer, self.config.beta)
+            self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer, self.config.pre_beta)
 
     def pretrain(self, conceptizer, beta=0.):
         """Pre-trains conceptizer on the training data to optimize the concept loss"""
@@ -599,7 +599,7 @@ class DiSENNTrainer(Trainer):
             self.save_checkpoint()
     
     # TODO: fix this
-    def visualize(self, fname, num=3):
+    def visualize(self, save_dir, num=3):
         """Generates some plots to visualize the explanations.
 
         Parameters
@@ -614,7 +614,8 @@ class DiSENNTrainer(Trainer):
         for i in range(num):
             file_path = Path("results")
             file_name = file_path / self.config.exp_name / "explanations.png"
-            self.model.explain(test_batch[i], save_as=file_name)
+            x = test_batch[i].float().to(self.config.device)
+            self.model.explain(x, save_as=file_name)
 
     def print_n_save_metrics(self, filename, total_loss,
                              classification_loss, robustness_loss,
