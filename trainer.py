@@ -1,6 +1,9 @@
 from models.senn import SENN
-from datasets.dataloaders import get_dataloader
+from models.aggregators import *
+from models.parameterizers import *
+from models.conceptizers import *
 from models.losses import *
+from datasets.dataloaders import get_dataloader
 from utils.concept_representations import *
 from utils.plot_utils import *
 
@@ -32,6 +35,21 @@ BEST_MODEL_FILENAME = "best_model.pt"
 
 
 def init_trainer(config_file, best_model=False):
+    """Instantiate the Trainer class based on the config parameters
+
+    Parameters
+    ----------
+    config_file: str
+        filename of the json config with all experiment parameters
+
+    best_model: bool
+        whether to load the previously trained best model
+
+    Returns
+    -------
+    trainer: Trainer
+        Trainer for SENN or DiSENNTrainer for DiSENN
+    """
     with open(config_file, 'r') as f:
         config = json.load(f)
 
@@ -53,8 +71,8 @@ class Trainer():
         """Base Trainer class containing functions to be overloaded by a specific Trainer agent.
         
         A trainer instantiates a model to be trained. It contains logic for training, validating,
-        and checkpointing the model. All the specific parameters that control the program behavior
-        are contained in the configs parameter.
+        checkpointing, etc. All the specific parameters that control the experiment behaviour
+        are contained in the configs json.
 
         The models we consider here are all Self Explaining Neural Networks (SENNs).
 
@@ -73,9 +91,9 @@ class Trainer():
 
         # get appropriate models from global namespace and instantiate them
         try:
-            conceptizer = getattr(importlib.import_module("models.conceptizers"), config.conceptizer)(**config.__dict__)
-            parameterizer = getattr(importlib.import_module("models.parameterizers"), config.parameterizer)(**config.__dict__)
-            aggregator = getattr(importlib.import_module("models.aggregators"), config.aggregator)(**config.__dict__)
+            conceptizer = eval(config.conceptizer)(**config.__dict__)
+            parameterizer = eval(config.parameterizer)(**config.__dict__)
+            aggregator = eval(config.aggregator)(**config.__dict__)
         except:
             print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
             exit(-1)

@@ -6,7 +6,6 @@ from trainer import init_trainer
 
 
 def main():
-    # get experiment configuration
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', default="configs/compas_config.json", help='experiment config file')
     args = parser.parse_args()
