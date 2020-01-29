@@ -15,6 +15,7 @@ RESULTS_FILENAME = 'accuracies_losses_valid.csv'
 
 plt.style.use('seaborn-paper')
 
+
 def get_comparison_plot(images, model):
     """Creates a plot that shows similar prototypes with their relevance scores and concept values.
 
@@ -53,7 +54,7 @@ def get_comparison_plot(images, model):
 
     for i in range(len(images)):
         prediction_index = y_pred[i].item()
-        concept_names = [f'C{i+1}' for i in range(concepts.shape[1] - 1, -1, -1)]
+        concept_names = [f'C{i + 1}' for i in range(concepts.shape[1] - 1, -1, -1)]
 
         # plot the input image
         axes[PROTOTYPE_ROW, i].imshow(images[i].permute(1, 2, 0).squeeze(), cmap='gray')
@@ -90,7 +91,8 @@ def get_comparison_plot(images, model):
     return fig
 
 
-def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='',save_path='results/relevances.png', concept_names=None, **kwargs):
+def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='', save_path='results/relevances.png',
+                   concept_names=None, **kwargs):
     """Creates a bar plot of relevances.
 
     Parameters
@@ -153,7 +155,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     for config_file in config_list:
         seed_accuracies = []
         for seed in range(num_seeds):
-            config_path = path/config_file if num_seeds == 1 else path/config_file[seed]
+            config_path = path / config_file if num_seeds == 1 else path / config_file[seed]
             # if test mode: instanciate trainer that evaluates model on the test set
             if not valid:
                 t = trainer.init_trainer(config_path, best_model=True)
@@ -166,7 +168,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
                     results_csv = result_dir / config["exp_name"] / RESULTS_FILENAME
                     seed_accuracies.append(pd.read_csv(results_csv, header=0)['Accuracy'].max())
         lambdas.append(config["robust_reg"])
-        accuracies.append(sum(seed_accuracies)/num_seeds)
+        accuracies.append(sum(seed_accuracies) / num_seeds)
 
     plt.style.use('seaborn-talk')
     fig, ax = plt.subplots()
@@ -184,7 +186,9 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
 
     return fig
 
-def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None, **kwargs):
+
+def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None,
+                       **kwargs):
     """Generates some explanations of model predictions.
 
     Parameters
@@ -217,7 +221,7 @@ def show_explainations(model, test_loader, dataset, num_explanations=2, save_pat
     concept_lim = abs(concepts_min) if abs(concepts_min) > abs(concepts_max) else abs(concepts_max)
 
     plt.style.use('seaborn-paper')
-    batch_idx = np.random.randint(0,batch_size-1,num_explanations)
+    batch_idx = np.random.randint(0, batch_size - 1, num_explanations)
     for i in range(num_explanations):
         if concept_names is not None:
             gridsize = (1, 2)
