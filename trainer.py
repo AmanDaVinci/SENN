@@ -43,7 +43,7 @@ def init_trainer(config_file, best_model=False):
     print("==================================================")
     pprint(config)
     config = SimpleNamespace(**config)
-    # create the trainer class and init with config
+    # create the trainer class and init with configs
     trainer = Trainer(config)
     return trainer
 
@@ -54,11 +54,11 @@ class Trainer():
         
         A trainer instantiates a model to be trained. It contains logic for training, validating,
         and checkpointing the model. All the specific parameters that control the program behavior
-        are contained in the config parameter.
+        are contained in the configs parameter.
 
         The models we consider here are all Self Explaining Neural Networks (SENNs).
 
-        If `load_checkpoint` is specified in config and the model has a checkpoint, the checkpoint
+        If `load_checkpoint` is specified in configs and the model has a checkpoint, the checkpoint
         will be loaded.
         
         Parameters
@@ -73,9 +73,9 @@ class Trainer():
 
         # get appropriate models from global namespace and instantiate them
         try:
-            conceptizer = getattr(importlib.import_module("models.conceptizer"), config.conceptizer)(**config.__dict__)
-            parameterizer = getattr(importlib.import_module("models.parameterizer"), config.parameterizer)(**config.__dict__)
-            aggregator = getattr(importlib.import_module("models.aggregator"), config.aggregator)(**config.__dict__)
+            conceptizer = getattr(importlib.import_module("models.conceptizers"), config.conceptizer)(**config.__dict__)
+            parameterizer = getattr(importlib.import_module("models.parameterizers"), config.parameterizer)(**config.__dict__)
+            aggregator = getattr(importlib.import_module("models.aggregators"), config.aggregator)(**config.__dict__)
         except:
             print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
             exit(-1)
@@ -341,7 +341,7 @@ class Trainer():
     def save_checkpoint(self, file_name=None):
         """Save checkpoint in the checkpoint directory.
 
-        Checkpoint dir and checkpoint_file need to be specified in the config.
+        Checkpoint dir and checkpoint_file need to be specified in the configs.
         """
         if file_name is None:
             file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"

@@ -8,7 +8,7 @@ import torch
 import trainer
 
 RESULTS_DIR = 'results'
-CONFIG_DIR = 'config'
+CONFIG_DIR = 'configs'
 RESULTS_FILENAME = 'accuracies_losses_valid.csv'
 
 plt.style.use('seaborn-paper')
@@ -130,9 +130,9 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     Parameters
     ----------
     config_list: list
-        List of experiment config files used to vary the lambda.
+        List of experiment configs files used to vary the lambda.
         If multiple seeds are used then this is a list of lists where the inner lists have a length
-        equal to the number of different seeds used and contain the corresponding config files.
+        equal to the number of different seeds used and contain the corresponding configs files.
     save_path: str
         Path to the location where the plot should be saved.
     num_seeds : int
