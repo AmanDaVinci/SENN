@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 
-MODEL_FILENAME = "../pretrained/autoencoder.pt"
+MODEL_FILENAME = "./MNIST_autoencoder_pretrained.pt"
 
 
 # TODO: Needs Docstrings
