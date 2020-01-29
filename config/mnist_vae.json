@@ -2,7 +2,7 @@
   "model_class": "DiSENN",
   "conceptizer": "VaeConceptizer",
   "pretrain_epochs": 1,
-  "beta": 1.0,
+  "beta": 4.0,
   "concept_loss": "BVAE_loss",
   "robustness_loss": "mnist_robustness_loss",
   "train": true,
