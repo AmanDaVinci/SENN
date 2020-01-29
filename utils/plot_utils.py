@@ -3,6 +3,8 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from utils.concept_representations import highest_activations, highest_contrast, filter_concepts
+from os import path
 
 import trainer
 
@@ -90,15 +92,117 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
         lambdas.append(config["robust_reg"])
         accuracies.append(sum(seed_accuracies)/num_seeds)
 
-    plt.style.use('seaborn')
+    plt.style.use('seaborn-talk')
     fig, ax = plt.subplots()
     ax.plot(np.arange(len(lambdas)), accuracies, "r.-")
     ax.set_xticks(np.arange(len(lambdas)))
     ax.set_xticklabels(lambdas)
     ax.set_xlabel('Robustness Regularization Strength')
     ax.set_ylabel('Prediction Accuracy')
+    ax.grid()
     
     if save_path is not None:
         plt.savefig(save_path)
+    else:
+        plt.show()
 
     return fig
+
+def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None, **kwargs):
+    """Generates some explanations of model predictions.
+
+    Parameters
+    ----------
+    model : torch nn.Module
+        model to visualize
+    test_loader: Dataloader object
+        Test set dataloader to iterate over test set.
+    dataset : str
+        Name of the dataset used.
+    save_path : str
+        Directory where the figures are saved. If None a figure is showed instead.
+    batch_size : int
+        batch_size of test loader
+    """
+    device = 'cuda:0' if next(model.parameters()).is_cuda else 'cpu'
+    model.eval()
+
+    # select test example
+    (test_batch, test_labels) = next(iter(test_loader))
+    test_batch = test_batch.float().to(device)
+
+    # feed test batch to model to obtain explanation
+    y_pred, (concepts, relevances), _ = model(test_batch)
+    if len(y_pred.size()) > 1:
+        y_pred = y_pred.argmax(1)
+
+    concepts_min = concepts.min().item()
+    concepts_max = concepts.max().item()
+    concept_lim = abs(concepts_min) if abs(concepts_min) > abs(concepts_max) else abs(concepts_max)
+
+    plt.style.use('seaborn-paper')
+    batch_idx = np.random.randint(0,batch_size-1,num_explanations)
+    for i in range(num_explanations):
+        if concept_names is not None:
+            gridsize = (1, 2)
+            fig = plt.figure(figsize=(6, 2))
+            ax1 = plt.subplot2grid(gridsize, (0, 0))
+            ax2 = plt.subplot2grid(gridsize, (0, 1))
+
+            create_barplot(ax1, relevances[batch_idx[i]], y_pred[batch_idx[i]], x_label='Relevances (theta)',
+                           concept_names=concept_names, **kwargs)
+            ax1.xaxis.set_label_position('top')
+            ax1.tick_params(which='major', labelsize=12)
+
+            create_barplot(ax2, concepts[batch_idx[i]], y_pred[batch_idx[i]], x_lim=concept_lim,
+                           x_label='Concept activations (h)', concept_names=concept_names, **kwargs)
+            ax2.xaxis.set_label_position('top')
+            ax2.tick_params(which='major', labelsize=12)
+
+        else:
+            gridsize = (1, 3)
+            fig = plt.figure(figsize=(9, 3))
+            ax1 = plt.subplot2grid(gridsize, (0, 0))
+            ax2 = plt.subplot2grid(gridsize, (0, 1))
+            ax3 = plt.subplot2grid(gridsize, (0, 2))
+
+            # figure of example image
+            ax1.imshow(test_batch[batch_idx[i]].squeeze().cpu(), cmap='gray')
+            ax1.set_axis_off()
+            ax1.set_title(f'Input Prediction: {y_pred[batch_idx[i]].item()}', fontsize=18)
+
+            create_barplot(ax2, relevances[batch_idx[i]], y_pred[batch_idx[i]], x_label='Relevances (theta)', **kwargs)
+            ax2.xaxis.set_label_position('top')
+            ax2.tick_params(which='major', labelsize=12)
+
+            create_barplot(ax3, concepts[batch_idx[i]], y_pred[batch_idx[i]], x_lim=concept_lim,
+                           x_label='Concept activations (h)', **kwargs)
+            ax3.xaxis.set_label_position('top')
+            ax3.tick_params(which='major', labelsize=12)
+
+        plt.tight_layout()
+
+        plt.show() if save_path is None else plt.savefig(path.join(save_path, 'explanation_{}.png'.format(i)))
+        plt.close('all')
+
+
+def show_concepts(model, test_loader, representation_type='activation', save_path=None, **kwargs):
+    """Generates a concept representation.
+
+    Parameters
+    ----------
+    model : torch nn.Module
+        model to visualize
+    test_loader: Dataloader object
+        Test set dataloader to iterate over test set.
+    representation_type : str
+        Name of the representation type used.
+    save_path : str
+        Directory where the figures are saved. If None a figure is showed instead.
+    """
+    if representation_type == 'activation':
+        highest_activations(model, test_loader, save_path=save_path)
+    elif representation_type == 'contrast':
+        highest_contrast(model, test_loader, save_path=save_path)
+    elif representation_type == 'filter':
+        filter_concepts(model, save_path=save_path)

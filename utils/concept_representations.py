@@ -3,7 +3,7 @@ from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 import numpy as np
 
-def highest_activations(model, test_loader, num_concepts=5, num_prototypes=9, save_path="results/concepts.png"):
+def highest_activations(model, test_loader, num_concepts=5, num_prototypes=9, save_path=None):
     """Creates concept representation via highest activation.
 
     The concepts are represented by the most prototypical data samples.
@@ -49,10 +49,10 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=9, sa
     plt.xticks([])
     ax.set_xlabel('{} most prototypical data examples per concept'.format(num_prototypes))
     ax.set_title('Basis concepts: ')
-    save(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
+    save_or_show(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
     plt.rcdefaults()
 
-def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=9, save_path="results/concepts.png"):
+def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=9, save_path=None):
     """Creates concept representation via highest contrast.
 
     The concepts are represented by the most data samples that are most specific to a concept.
@@ -104,10 +104,10 @@ def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=9, save_
     plt.xticks([])
     ax.set_xlabel('{} data examples with highest contrast per concept'.format(num_prototypes))
     ax.set_title('Basis concepts: ')
-    save(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
+    save_or_show(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
     plt.rcdefaults()
 
-def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path="results/concepts.png"):
+def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path=None):
     """Creates concept representation via filter visualization.
 
     The concepts are represented by the filters of the last layer of the concept encoder.
@@ -141,25 +141,31 @@ def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path="results
     plt.xticks([])
     ax.set_xlabel('{} dimensions of concept filters'.format(num_prototypes))
     ax.set_title('Basis concepts: ')
-
-    save(make_grid(imgs, nrow=num_prototypes, normalize=True, padding=1, pad_value=1), save_path)
+    save_or_show(make_grid(imgs, nrow=num_prototypes, normalize=True, padding=1, pad_value=1), save_path)
     plt.rcdefaults()
 
-def save(img, save_path):
-    """Saves an image.
+def save_or_show(img, save_path):
+    """Saves an image or displays it.
     
     Parameters
     ----------
     img: torch.Tensor
         Tensor containing the image data that should be saved.
     save_path: str
-        Path to the location where the bar plot should be saved.
+        Path to the location where the bar plot should be saved. If None is passed image is showed instead.
     """
     img = img.clone().squeeze()
     npimg = img.cpu().numpy()
     if len(npimg.shape) == 2:
-        plt.imsave(save_path, npimg, cmap='Greys')
+        if save_path is None:
+            plt.imshow(npimg, cmap='Greys')
+            plt.show()
+        else:
+            plt.imsave(save_path, npimg, cmap='Greys')
     else:
         plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
-        plt.savefig(save_path)
+        if save_path is None:
+            plt.show()
+        else:
+            plt.savefig(save_path)
     plt.clf()
