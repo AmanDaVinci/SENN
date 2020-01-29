@@ -77,6 +77,128 @@ class IdentityConceptizer(Conceptizer):
         """
         return z.squeeze(-1)
 
+
+class VaeConceptizer(nn.Module):
+    """Variational Auto Encoder to generate basis concepts
+
+    Concepts should be independently sensitive to single generative factors,
+    which will lead to better interpretability and fulfill the "diversity" 
+    desiderata for basis concepts in a Self-Explaining Neural Network.
+    VAE can be used to learn disentangled representations of the basis concepts 
+    by emphasizing the discovery of latent factors which are disentangled. 
+    """
+
+    def __init__(self, image_size, num_concepts, **kwargs):
+        """Initialize Variational Auto Encoder
+
+        Parameters
+        ----------
+        image_size : int
+            size of the width or height of an image, assumes square image
+        num_concepts : int
+            number of basis concepts to learn in the latent distribution space
+        """
+        super().__init__()
+        self.in_dim = image_size*image_size
+        self.z_dim = num_concepts
+        self.encoder = VaeEncoder(self.in_dim, self.z_dim)
+        self.decoder = VaeDecoder(self.in_dim, self.z_dim)
+
+    def forward(self, x):
+        """Forward pass through the encoding, sampling and decoding step
+
+        Parameters
+        ----------
+        x : torch.tensor 
+            input of shape [batch_size x ... ], which will be flattened
+
+        Returns
+        -------
+        concept_mean : torch.tensor
+            mean of the latent distribution induced by the posterior input x
+        x_reconstruct : torch.tensor
+            reconstruction of the input in the same shape
+        """
+        concept_mean, concept_logvar = self.encoder(x)
+        concept_sample = self.sample(concept_mean, concept_logvar)
+        x_reconstruct = self.decoder(concept_sample)
+        return (concept_mean.unsqueeze(-1),
+                concept_logvar.unsqueeze(-1),
+                x_reconstruct.view_as(x))
+    
+    def sample(self, mean, logvar):
+        """Samples from the latent distribution using reparameterization trick
+
+        Reparameterization trick: z = mu + sigma * epsilon
+        where epsilon is drawn from a standard normal distribution
+        
+        Parameters
+        ----------
+        mean : torch.tensor
+            mean of the latent distribution of shape [batch_size x z_dim]
+        log_var : torch.tensor
+            diagonal log variance of the latent distribution of shape [batch_size x z_dim]
+        
+        Returns
+        -------
+        z : torch.tensor
+            sample latent tensor of shape [batch_size x z_dim]
+        """
+        if self.training:
+            std = torch.exp(0.5 * logvar)
+            epsilon = torch.randn_like(std)
+            z = mean + std * epsilon
+        else:
+            z = mean
+        return z
+
+
+class VaeEncoder(nn.Module):
+
+    def __init__(self, in_dim, z_dim):
+        super().__init__()
+        self.in_dim = in_dim
+        self.z_dim = z_dim
+        self.FC = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(in_dim, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 100),
+            nn.ReLU()
+        )
+        self.mean_layer = nn.Linear(100, z_dim)
+        self.logvar_layer = nn.Linear(100, z_dim)
+    
+    def forward(self, x):
+        x = self.FC(x)
+        mean = self.mean_layer(x)
+        logvar = self.logvar_layer(x)
+        return mean, logvar
+
+
+class VaeDecoder(nn.Module):
+
+    def __init__(self, in_dim, z_dim):
+        super().__init__()
+        self.in_dim = in_dim
+        self.z_dim = z_dim
+        self.FC = nn.Sequential(
+            nn.Linear(z_dim, 100),
+            nn.ReLU(),
+            nn.Linear(100, 256),
+            nn.ReLU(),
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Linear(512, in_dim)
+        )
+    
+    def forward(self, x):
+        x_reconstruct = torch.sigmoid(self.FC(x))
+        return x_reconstruct
+
+
 class ConvConceptizer(Conceptizer):
     def __init__(self, image_size, num_concepts, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
