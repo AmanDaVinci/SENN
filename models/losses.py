@@ -138,7 +138,7 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
     return recon_loss, kl_loss
 
 def weighted_mse(x, x_hat, sparsity_reg):
-    return sparsity_reg * F.mse_loss(x,x_hat)
+    return sparsity_reg * F.mse_loss(x_hat,x)
 
 def mse_kl_sparsity(x, x_hat, concepts, sparsity_reg):
     return F.mse_loss(x_hat, x.detach()) + F.kl_div(sparsity_reg*torch.ones_like(concepts), concepts)
