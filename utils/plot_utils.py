@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 
 import trainer
 
@@ -11,6 +12,81 @@ CONFIG_DIR = 'config'
 RESULTS_FILENAME = 'accuracies_losses_valid.csv'
 
 plt.style.use('seaborn-paper')
+
+def get_comparison_plot(images, model):
+    """Creates a plot that shows similar prototypes with their relevance scores and concept values.
+
+    Parameters
+    ----------
+    images: torch.Tensor
+       An array with the images to be compared
+    model: models.senn
+       A senn model to be used for the visualizations
+
+    Returns
+    ----------
+    fig: matplotlib.pyplot
+        The figure that contains the plots
+    """
+
+    def get_colors(values):
+        colors = ['b' if v > 0 else 'r' for v in values]
+        colors.reverse()
+        return colors
+
+    model.eval()
+    with torch.no_grad():
+        y_pred, (concepts, relevances), _ = model(images)
+    y_pred = y_pred.argmax(1)
+
+    fig, axes = plt.subplots(nrows=3, ncols=len(images))
+
+    PROTOTYPE_ROW = 0
+    RELEVANCE_ROW = 1
+    CONCEPT_ROW = 2
+
+    concepts_min = concepts.min().item()
+    concepts_max = concepts.max().item()
+    concept_lim = -concepts_min if -concepts_min > concepts_max else concepts_max
+
+    for i in range(len(images)):
+        prediction_index = y_pred[i].item()
+        concept_names = [f'C{i+1}' for i in range(concepts.shape[1] - 1, -1, -1)]
+
+        # plot the input image
+        axes[PROTOTYPE_ROW, i].imshow(images[i].permute(1, 2, 0).squeeze(), cmap='gray')
+        axes[PROTOTYPE_ROW, i].set_title(f"Prediction: {prediction_index}")
+        axes[PROTOTYPE_ROW, i].axis('off')
+
+        # plot the relevance scores
+        rs = relevances[i, :, prediction_index]
+        colors_r = get_colors(rs)
+        axes[RELEVANCE_ROW, i].barh(np.arange(len(rs)),
+                                    np.flip(rs.detach().numpy()),
+                                    align='center', color=colors_r)
+
+        axes[RELEVANCE_ROW, i].set_yticks(np.arange(len(concept_names)))
+        axes[RELEVANCE_ROW, i].set_yticklabels(concept_names)
+        axes[RELEVANCE_ROW, i].set_xlim(-1.1, 1.1)
+
+        # plot the concept values
+        cs = concepts[i].flatten()
+        colors_c = get_colors(cs)
+        axes[CONCEPT_ROW, i].barh(np.arange(len(cs)),
+                                  np.flip(cs.detach().numpy()),
+                                  align='center', color=colors_c)
+
+        axes[CONCEPT_ROW, i].set_yticks(np.arange(len(concept_names)))
+        axes[CONCEPT_ROW, i].set_yticklabels(concept_names)
+        axes[CONCEPT_ROW, i].set_xlim(-concept_lim - 0.2, concept_lim + 0.2)
+
+        # Only show titles for the leftmost plots
+        if i == 0:
+            axes[CONCEPT_ROW, i].set_ylabel("Concepts scores")
+            axes[RELEVANCE_ROW, i].set_ylabel("Relevance scores")
+
+    return fig
+
 
 def create_barplot(ax, relevances, y_pred, x_lim=1.1, title='', x_label='',save_path='results/relevances.png', concept_names=None, **kwargs):
     """Creates a bar plot of relevances.
