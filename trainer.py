@@ -151,7 +151,7 @@ class Trainer():
             print("CTRL+C pressed... Waiting to finalize.")
 
     def train(self):
-        """Main training loop."""
+        """Main training loop. Saves a model checkpoint after every epoch."""
         for epoch in range(self.current_epoch, self.config.epochs):
             self.current_epoch = epoch
             self.train_one_epoch(self.current_epoch)
@@ -409,7 +409,7 @@ class Trainer():
                                  'Loss': total_loss, 'Step': self.current_iter})
 
     def visualize(self, save_dir):
-        """Generates some plots to visualize the explanations.
+        """Generates plots to visualize the explanations.
 
         Parameters
         ----------
@@ -498,10 +498,16 @@ class DiSENNTrainer(Trainer):
     """Extends general Trainer to train a DiSENN model"""
 
     def __init__(self, config):
+        """Instantiates a trainer for DiSENN
+
+        Parameters
+        ----------
+        config : types.SimpleNamespace
+            Contains all (hyper)parameters that define the behavior of the program.
+        """
         super().__init__(config)
 
         print("Reinstantiating for DiSENN ...")
-        # get appropriate models from global namespace and instantiate them
         try:
             conceptizer = eval(config.conceptizer)(**config.__dict__)
             parameterizer = eval(config.parameterizer)(**config.__dict__)
@@ -510,7 +516,7 @@ class DiSENNTrainer(Trainer):
             print("Please make sure you specify the correct Conceptizer, Parameterizer and Aggregator classes")
             exit(-1)
 
-        # Define losses
+        # Define DiSENN losses
         self.classification_loss = F.nll_loss
         self.concept_loss = eval(config.concept_loss)
         self.robustness_loss = eval(config.robustness_loss)
@@ -529,7 +535,16 @@ class DiSENNTrainer(Trainer):
             self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer, self.config.pre_beta)
 
     def pretrain(self, conceptizer, beta=0.):
-        """Pre-trains conceptizer on the training data to optimize the concept loss"""
+        """Pre-trains conceptizer on the training data to optimize the concept loss
+        
+        Parameters:
+        ----------
+        conceptizer : VaeConceptizer
+            object of class VaeConceptizer to be pre-trained
+        
+        beta : int
+            beta value during the pre-training of the beta-VAE
+        """
 
         optimizer = opt.Adam(conceptizer.parameters())
         conceptizer.to(self.config.device)
@@ -687,14 +702,14 @@ class DiSENNTrainer(Trainer):
             print("Saving model ...")
             self.save_checkpoint()
     
-    # TODO: fix this
     def visualize(self, save_dir, num=3):
         """Generates some plots to visualize the explanations.
 
         Parameters
         ----------
         save_dir : str
-            Directory where the figures are saved
+            A placeholder to work with the Base Trainer class which calls visualize.
+            Needs refactoring.
         """
         self.model.eval()
 
@@ -709,6 +724,34 @@ class DiSENNTrainer(Trainer):
     def print_n_save_metrics(self, filename, total_loss,
                              classification_loss, robustness_loss,
                              concept_loss, recon_loss, kl_div, accuracy):
+        """Prints the losses to the console and saves them in a csv file
+
+        Parameters
+        ----------
+        filename: str
+            Name of the csv file.
+       
+        total_loss: float
+            The value of the total loss
+       
+        classification_loss: float
+            The value of the classification loss
+       
+        robustness_loss: float
+            The value of the robustness loss
+       
+        concept_loss: float
+            The value of the concept loss
+       
+        recon_loss: float
+            Reconstruction loss of the VAE Conceptizer
+
+        kl_div : float
+            KL Divergence loss of VAE Conceptizer
+
+        accuracy: float
+            The value of the accuracy
+        """
         
         report = (f"Total Loss:{total_loss:.3f} "
                   f"Accuracy:{accuracy:.3f} "
