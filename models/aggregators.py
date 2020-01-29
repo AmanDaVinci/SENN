@@ -33,7 +33,7 @@ class SumAggregator(nn.Module):
             shape (if binary): (BATCH)
             shape (if multi-class): (BATCH, NUM_CLASSES)
             
-        TODO add assertions for matching dimensions, maybe?
         """
+        #TODO: add assertions for matching dimensions
         aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
         return F.log_softmax(aggregated, dim=1)

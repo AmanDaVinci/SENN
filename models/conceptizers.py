@@ -154,8 +154,18 @@ class VaeConceptizer(nn.Module):
 
 
 class VaeEncoder(nn.Module):
+    """Encoder of a VAE"""
 
     def __init__(self, in_dim, z_dim):
+        """Instantiate a multilayer perceptron
+
+        Parameters
+        ----------
+        in_dim: int
+            dimension of the input data
+        z_dim: int
+            latent dimension of the encoder output
+        """
         super().__init__()
         self.in_dim = in_dim
         self.z_dim = z_dim
@@ -172,6 +182,8 @@ class VaeEncoder(nn.Module):
         self.logvar_layer = nn.Linear(100, z_dim)
     
     def forward(self, x):
+        """Forward pass of the encoder
+        """
         x = self.FC(x)
         mean = self.mean_layer(x)
         logvar = self.logvar_layer(x)
@@ -179,8 +191,18 @@ class VaeEncoder(nn.Module):
 
 
 class VaeDecoder(nn.Module):
+    """Decoder of a VAE"""
 
     def __init__(self, in_dim, z_dim):
+        """Instantiate a multilayer perceptron
+
+        Parameters
+        ----------
+        in_dim: int
+            dimension of the input data
+        z_dim: int
+            latent dimension of the encoder output
+        """
         super().__init__()
         self.in_dim = in_dim
         self.z_dim = z_dim
@@ -195,6 +217,7 @@ class VaeDecoder(nn.Module):
         )
     
     def forward(self, x):
+        """Forward pass of a decoder"""
         x_reconstruct = torch.sigmoid(self.FC(x))
         return x_reconstruct
 

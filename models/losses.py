@@ -137,12 +137,15 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
     return recon_loss, kl_loss
 
 def weighted_mse(x, x_hat, sparsity_reg):
+    """Mean Squared Error weighted by sparsity regularization parameter"""
     return sparsity_reg * F.mse_loss(x_hat,x)
 
 def mse_kl_sparsity(x, x_hat, concepts, sparsity_reg):
+    """Sum of Mean Squared Error and KL Divergence loss weighted by sparsity regularization parameter"""
     return F.mse_loss(x_hat, x.detach()) + F.kl_div(sparsity_reg*torch.ones_like(concepts), concepts)
 
 def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
+    """Mean Squared Error weighted and L1 norm by sparsity regularization parameter"""
     return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()
 
 def kl_div(mean, logvar):

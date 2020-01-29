@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 
 MODEL_FILENAME = "../pretrained/autoencoder.pt"
 
-
+#TODO: Needs Docstrings
 class AutoEncoder(nn.Module):
     def __init__(self):
         super().__init__()

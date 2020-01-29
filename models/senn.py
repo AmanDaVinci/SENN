@@ -279,7 +279,25 @@ class DiSENN(nn.Module):
     
     def traverse(self, matrix, dim, traversal_range, steps,
                  mean=None, std=None, use_cdf=True):
-        """Linearly traverses through one dimension of a matrix independently"""
+        """Linearly traverses through one dimension of a matrix independently
+        
+        Parameters
+        ----------
+        matrix: torch.tensor
+            matrix whose dimensions will be traversed independently
+        dim: int
+            dimension of the matrix to be traversed
+        traversal_range: int
+            maximum value of the traversal range, if use_cdf is true this should be less than 0.5
+        steps: int
+            number of steps in the traversal range
+        mean: float
+            mean of the distribution for traversal using cdf
+        std: float
+            std of the distribution for traversal using cdf
+        use_cdf: bool
+            whether to use cdf traversal
+        """
 
         if use_cdf:
             assert traversal_range < 0.5, \
