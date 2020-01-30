@@ -271,8 +271,8 @@ def show_explainations(model, test_loader, dataset, num_explanations=2, save_pat
         plt.close('all')
 
 
-def show_concepts(model, test_loader, representation_type='activation', save_path=None, **kwargs):
-    """Generates a concept representation.
+def show_prototypes(model, test_loader, representation_type='activation', save_path=None, **kwargs):
+    """Generates prototypes for concept representation.
 
     Parameters
     ----------
