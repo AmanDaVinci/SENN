@@ -8,7 +8,8 @@ TODO: Description
 ## Project Structure
 ---
 
-TODO: Diagram
+![SENN-UML](images/UML-SENN.png)
+
 The project is organized as follows:
 1. **models**: classes defining model architecture
 2. **configs**: experiment configurations
@@ -25,6 +26,7 @@ The project is organized as follows:
 
 ## How to run?
 ---
+
 
 ## Data
 ---
