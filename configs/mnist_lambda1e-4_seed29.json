@@ -17,7 +17,7 @@
   "robust_reg": 1e-4,
   "concept_reg": 1,
   "print_freq": 100,
-  "exp_name": "m_l4_s29",
+  "exp_name": "mnist_lambda1e-4_seed29",
   "dataloader": "mnist",
   "data_path": "datasets/data/mnist_data",
   "batch_size" : 200,
