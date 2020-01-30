@@ -191,7 +191,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     return fig
 
 
-def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None,
+def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=128, concept_names=None,
                        **kwargs):
     """Generates some explanations of model predictions.
 

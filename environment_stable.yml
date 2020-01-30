@@ -15,5 +15,7 @@ dependencies:
   - tensorboard
   - matplotlib
   - pandas
-
+  - jupyter
+  - scipy
+  - scikit-learn
 
