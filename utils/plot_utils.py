@@ -175,7 +175,6 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
         lambdas.append(config["robust_reg"])
         accuracies.append(sum(seed_accuracies) / num_seeds)
 
-    plt.style.use('seaborn-talk')
     fig, ax = plt.subplots()
     ax.plot(np.arange(len(lambdas)), accuracies, "r.-")
     ax.set_xticks(np.arange(len(lambdas)))
