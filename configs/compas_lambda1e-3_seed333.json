@@ -21,14 +21,13 @@
   "device": "cuda:0",
   "lr": 2e-4,
   "epochs": 100,
-  "robust_reg": 1e-4,
+  "robust_reg": 1e-3,
   "concept_reg": 0,
   "print_freq": 100,
-  "exp_name": "compass_l4_s111",
+  "exp_name": "compas_lambda1e-3_seed333",
   "dataloader": "compas",
   "batch_size" : 200,
   "sparsity_reg": 2e-5,
   "eval_freq" : 30,
-  "accuracy_vs_lambda": ["cl_4_s111.json","cl_3_s111.json","cl_2_s111.json","cl_1_s111.json","cl_0_s111.json"],
-  "manual_seed": 111
+  "manual_seed": 333
 }

@@ -21,13 +21,13 @@
   "device": "cuda:0",
   "lr": 2e-4,
   "epochs": 100,
-  "robust_reg": 1e-2,
+  "robust_reg": 1e-0,
   "concept_reg": 0,
   "print_freq": 100,
-  "exp_name": "compass_l2_s333",
+  "exp_name": "compas_lambda1e-0_seed555",
   "dataloader": "compas",
   "batch_size" : 200,
   "sparsity_reg": 2e-5,
   "eval_freq" : 30,
-  "manual_seed": 333
+  "manual_seed": 555
 }

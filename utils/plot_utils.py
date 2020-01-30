@@ -155,6 +155,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     assert type(num_seeds) is int and num_seeds > 0, "num_seeds must be an integer > 0 but is {}".format(num_seeds)
     lambdas = []
     accuracies = []
+    std_seeds = []
 
     path = Path(CONFIG_DIR)
     for config_file in config_list:
@@ -173,14 +174,16 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
                     results_csv = result_dir / config["exp_name"] / RESULTS_FILENAME
                     seed_accuracies.append(pd.read_csv(results_csv, header=0)['Accuracy'].max())
         lambdas.append(config["robust_reg"])
+        std_seeds.append(np.std(seed_accuracies))
         accuracies.append(sum(seed_accuracies) / num_seeds)
 
-    fig, ax = plt.subplots()
-    ax.plot(np.arange(len(lambdas)), accuracies, "r.-")
+    fig, ax = plt.subplots(figsize=(6,5))
+    ax.errorbar(np.arange(len(lambdas)), accuracies, std_seeds, color='r', marker='o')
     ax.set_xticks(np.arange(len(lambdas)))
-    ax.set_xticklabels(lambdas)
-    ax.set_xlabel('Robustness Regularization Strength')
-    ax.set_ylabel('Prediction Accuracy')
+    ax.tick_params(labelsize=12)
+    ax.set_xticklabels(lambdas, fontsize=12)
+    ax.set_xlabel('Robustness Regularization Strength', fontsize=18)
+    ax.set_ylabel('Prediction Accuracy', fontsize=18)
     ax.grid()
 
     if save_path is not None:
@@ -191,7 +194,7 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
     return fig
 
 
-def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=200, concept_names=None,
+def show_explainations(model, test_loader, dataset, num_explanations=2, save_path=None, batch_size=128, concept_names=None,
                        **kwargs):
     """Generates some explanations of model predictions.
 
