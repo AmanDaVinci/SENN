@@ -49,7 +49,7 @@ def highest_activations(model, test_loader, num_concepts=5, num_prototypes=9, sa
     ax.set_yticklabels(concept_names)
     plt.xticks([])
     ax.set_xlabel('{} most prototypical data examples per concept'.format(num_prototypes))
-    ax.set_title('Basis concepts: ')
+    ax.set_title('Concept Prototypes: ')
     save_or_show(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
     plt.rcdefaults()
 
@@ -105,7 +105,7 @@ def highest_contrast(model, test_loader, num_concepts=5, num_prototypes=9, save_
     ax.set_yticklabels(concept_names)
     plt.xticks([])
     ax.set_xlabel('{} data examples with highest contrast per concept'.format(num_prototypes))
-    ax.set_title('Basis concepts: ')
+    ax.set_title('Concept Prototypes: ')
     save_or_show(make_grid(top_examples, nrow=num_prototypes, pad_value=1), save_path)
     plt.rcdefaults()
 
@@ -143,7 +143,7 @@ def filter_concepts(model, num_concepts=5, num_prototypes=10, save_path=None):
     ax.set_yticklabels(concept_names)
     plt.xticks([])
     ax.set_xlabel('{} dimensions of concept filters'.format(num_prototypes))
-    ax.set_title('Basis concepts: ')
+    ax.set_title('Concept Prototypes: ')
     save_or_show(make_grid(imgs, nrow=num_prototypes, normalize=True, padding=1, pad_value=1), save_path)
     plt.rcdefaults()
 
