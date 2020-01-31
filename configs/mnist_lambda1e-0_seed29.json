@@ -14,6 +14,7 @@
   "device": "cuda:0",
   "lr": 2e-4,
   "epochs": 5,
+  "robustness_loss": "mnist_robustness_loss",
   "robust_reg": 1e-0,
   "concept_reg": 1,
   "print_freq": 100,
