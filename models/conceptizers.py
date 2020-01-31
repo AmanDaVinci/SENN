@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from abc import ABC, abstractmethod
 
 
 class Conceptizer(nn.Module):
@@ -35,6 +36,29 @@ class Conceptizer(nn.Module):
         decoded = self.decode(encoded)
         return encoded, decoded.view_as(x)
 
+    @abstractmethod
+    def encode(self, x):
+        """
+        Abstract encode function to be overridden.
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input data tensor of shape (BATCH, *). Only restriction on the shape is that
+            the first dimension should correspond to the batch size.
+        """
+        pass
+
+    @abstractmethod
+    def decode(self, encoded):
+        """
+        Abstract decode function to be overridden.
+        Parameters
+        ----------
+        encoded : torch.Tensor
+            Latent representation of the data
+        """
+        pass
+
 
 class IdentityConceptizer(Conceptizer):
     def __init__(self, **kwargs):
@@ -64,7 +88,7 @@ class IdentityConceptizer(Conceptizer):
     def decode(self, z):
         """Decoder of Identity Conceptizer.
 
-        Simmulates reconstrucron of the original input x by undoing the reshaping of the encoder.
+        Simulates reconstruction of the original input x by undoing the reshaping of the encoder.
         The 'reconstruction' is identical to the input of the conceptizer.
 
         Parameters
@@ -228,7 +252,7 @@ class ConvConceptizer(Conceptizer):
     def __init__(self, image_size, num_concepts, concept_dim, image_channels=1, encoder_channels=(10,),
                  decoder_channels=(16, 8), kernel_size_conv=5, kernel_size_upsample=(5, 5, 2),
                  stride_conv=1, stride_pool=2, stride_upsample=(2, 1, 2),
-                 padding_conv=0, padding_upsample=(0, 0, 1), concept_visualization='', **kwargs):
+                 padding_conv=0, padding_upsample=(0, 0, 1), **kwargs):
         """
         CNN Autoencoder used to learn the concepts, present in an input image
 
@@ -260,11 +284,6 @@ class ConvConceptizer(Conceptizer):
             the padding to be used by the convolutional layers
         padding_upsample : int, tuple[int]
             the padding to be used by the upsampling layers
-        concept_visualization : str
-            If this value is 'filter' each filter is mapped to one (scalar) concept directly
-            (separate linear layers per filter)
-            Otherwise all filters are flattened to one vector and then the concepts are computed
-            from that with one big linear layer
         """
         super(ConvConceptizer, self).__init__()
         self.num_concepts = num_concepts
@@ -328,7 +347,7 @@ class ConvConceptizer(Conceptizer):
         ----------
         x : Image (batch_size, channels, width, height)
 
-         Returns
+        Returns
         -------
         encoded : torch.Tensor (batch_size, concept_number, concept_dimension)
             the concepts representing an image
@@ -425,7 +444,6 @@ class ConvConceptizer(Conceptizer):
                                kernel_size=kernel_size,
                                stride=stride_deconv,
                                padding=padding),
-            # nn.ReLU(inplace=True)
         )
 
 

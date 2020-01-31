@@ -177,4 +177,5 @@ def kl_div(mean, logvar):
 
   
 def zero_loss(*args, **kwargs):
+    """Utility function to return a zero-valued loss"""
     return torch.tensor(0)

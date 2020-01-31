@@ -25,9 +25,7 @@ class SumAggregator(nn.Module):
         Returns
         -------
         class_predictions : torch.Tensor
-            Predictions for each class
-            shape (if binary): (BATCH)
-            shape (if multi-class): (BATCH, NUM_CLASSES)
+            Predictions for each class. Shape - (BATCH, NUM_CLASSES)
             
         """
         aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)

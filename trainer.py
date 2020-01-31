@@ -39,13 +39,12 @@ def init_trainer(config_file, best_model=False):
     ----------
     config_file: str
         filename of the json config with all experiment parameters
-
     best_model: bool
         whether to load the previously trained best model
 
     Returns
     -------
-    trainer: Trainer
+    trainer: SENN_Trainer
         Trainer for SENN or DiSENNTrainer for DiSENN
     """
     with open(config_file, 'r') as f:
@@ -61,15 +60,15 @@ def init_trainer(config_file, best_model=False):
     config = SimpleNamespace(**config)
     # create the trainer class and init with config
     if hasattr(config, 'model_class') and config.model_class == 'DiSENN':
-        trainer = DiSENNTrainer(config)
+        trainer = DiSENN_Trainer(config)
     else:
-        trainer = Trainer(config)
+        trainer = SENN_Trainer(config)
     return trainer
 
 
-class Trainer():
+class SENN_Trainer:
     def __init__(self, config):
-        """Base Trainer class containing functions to be overloaded by a specific Trainer agent.
+        """Base SENN Trainer class.
         
         A trainer instantiates a model to be trained. It contains logic for training, validating,
         checkpointing, etc. All the specific parameters that control the experiment behaviour
@@ -115,7 +114,7 @@ class Trainer():
         self.summarize()
 
         # Init optimizer
-        self.opt = opt.Adam(self.model.parameters())
+        self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
 
         # Init trackers
         self.current_iter = 0
@@ -223,7 +222,7 @@ class Trainer():
         """Get the metrics for a validation/test set
 
         If the validation flag is on, the function tests the model
-        with the validation dataset  instead of the testing one.
+        with the validation dataset instead of the testing one.
 
         Model performance is validated by computing loss and accuracy measures, storing them,
         and reporting them.
@@ -324,6 +323,7 @@ class Trainer():
             - current epoch
             - current iteration
             - model state
+            - best accuracy achieved so far
             - optimizer state
 
         Parameters
@@ -352,6 +352,11 @@ class Trainer():
         """Save checkpoint in the checkpoint directory.
 
         Checkpoint dir and checkpoint_file need to be specified in the configs.
+
+        Parameters
+        ----------
+        file_name: str
+            Name of the checkpoint file.
         """
         if file_name is None:
             file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
@@ -479,20 +484,16 @@ class Trainer():
 
     def summarize(self):
         """Print summary of given model.
-
-        Parameters
-        ----------
-        model :
-            A Pytorch model containing parameters.
         """
         print(self.model)
         train_params = sum(p.numel() for p in self.model.parameters())
         print(f"Trainable Parameters: {train_params}\n")
 
 
-class DiSENNTrainer(Trainer):
+class DiSENN_Trainer(SENN_Trainer):
     """Extends general Trainer to train a DiSENN model"""
 
+    # TODO: Refactor the inheritance code
     def __init__(self, config):
         """Instantiates a trainer for DiSENN
 
@@ -537,8 +538,7 @@ class DiSENNTrainer(Trainer):
         ----------
         conceptizer : VaeConceptizer
             object of class VaeConceptizer to be pre-trained
-        
-        beta : int
+        beta : float
             beta value during the pre-training of the beta-VAE
         """
 
