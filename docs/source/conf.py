@@ -13,6 +13,8 @@
 import os
 import sys
 # add modules to be imported to path
+
+sys.path.insert(0, os.path.abspath(os.path.join('..', '..', 'senn')))
 sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
 
 
