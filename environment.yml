@@ -8,15 +8,13 @@ channels:
   - defaults
 dependencies:
   - python=3.7
-  - blas
-  - cuda100
-  - cudatoolkit=10.1
-  - torchvision
-  - pytorch
-  - tensorboard
   - matplotlib
-  - pandas
-  - jupyter
+  - pytorch
+  - cpuonly
+  - torchvision
+  - tensorboard
   - scipy
+  - pandas
   - scikit-learn
+  - jupyter
 
