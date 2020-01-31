@@ -1,6 +1,6 @@
 # Self-Explaining Neural Networks: A review with extensions
 
-TODO: Description
+For many applications, understanding why a predictive model makes a certain prediction can be of crucial importance. In the paper ``Towards Robust Interpretability with Self-Explaining Neural Networks''[1] propose a model that takes interpretability into account by design. We study the reproducibilty and validity of the proposed framework. Several weaknesses of the approach are identified. Most notably, we find that the model rarely generates good explanations, and that performance is compromised more than reported by the authors when enforcing explanations to be stable.  We put forward improvements to the framework that address these weaknesses in a principled way, and show them to enhance the interpretability of generated explanations.
 
 ## Table of Contents
 ---
