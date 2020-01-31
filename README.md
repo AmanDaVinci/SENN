@@ -58,6 +58,7 @@ Where *config.json* is prepared according to the template below:
   "sparsity_reg": 2e-5,                         (float, the sparsity regularization hyperparameter)
   "manual_seed": 42                             (int, the seed to be used for reproducibility)
   "accuracy_vs_lambda": ['c1.json','c2.json']   (list of str or list of lists where the inner lists need to have the same lengths, containing the name of the config files for the accuracy vs lambda plots)
+  "num_seeds": 1                                (int, number of seeds used for the accuracy_vs_lambda plot, needs to be equal to the lengths of the inner lists passed in accuracy_vs_lambda, default = 1)
 } **
 ```
 ** Note that it is also possible to specify the architectures of the parameterizer and conceptizer classes using *config* parameters. However, to keep it neat, these are not shown here. For more information, please refer to the docstrings of the specific classes and the parameters they can take.
