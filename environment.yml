@@ -18,4 +18,5 @@ dependencies:
   - jupyter
   - scipy
   - scikit-learn
+  - cudatoolkit=10.1
 
