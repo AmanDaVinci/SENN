@@ -3,7 +3,6 @@
   "conceptizer": "ConvConceptizer",
   "image_size": 28,
   "concept_dim": 1,
-  "concept_visualization": "activation",
   "parameterizer": "ConvParameterizer",
   "cl_sizes": [1, 10, 20],
   "hidden_sizes": [320, 50],
