@@ -3,16 +3,16 @@
 For many applications, understanding why a predictive model makes a certain prediction can be of crucial importance. In the paper ``Towards Robust Interpretability with Self-Explaining Neural Networks''[1] propose a model that takes interpretability into account by design. We study the reproducibilty and validity of the proposed framework. Several weaknesses of the approach are identified. Most notably, we find that the model rarely generates good explanations, and that performance is compromised more than reported by the authors when enforcing explanations to be stable.  We put forward improvements to the framework that address these weaknesses in a principled way, and show them to enhance the interpretability of generated explanations.
 
 ## Table of Contents
----
-1. [Project Structure](#project-structure)
-2. [Results](#results)
-3. [How to run](#how-to-run)
-4. [Documentation](#documentation)
-5. [References](#references)
+- [Self-Explaining Neural Networks: A review with extensions](#self-explaining-neural-networks-a-review-with-extensions)
+  - [Table of Contents](#table-of-contents)
+  - [Project Structure](#project-structure)
+  - [Results](#results)
+  - [How to run?](#how-to-run)
+  - [Documentation](#documentation)
+  - [Authors](#authors)
+  - [References](#references)
 
 ## Project Structure
----
-
 ![SENN-UML](images/UML-SENN.png)
 
 The project is organized as follows:
@@ -27,10 +27,8 @@ The project is organized as follows:
 9. *report.ipynb*: notebook reporting final results
 
 ## Results
----
 
 ## How to run?
----
 ```
 cd senn
 conda env create -f "environment.yml
@@ -74,21 +72,18 @@ Where *config.json* is prepared according to the template below:
 
 
 ## Documentation
----
 
 
 ## Authors
----
-Aman Hussain (aman.hussain@student.uva.nl) ID: 12667447  
-Omar Elbaghdadi (omarelb@gmail.com) ID: 12660256  
-Christoph Hoenes (christoph.hoenes@gmail.com) ID: 12861944    
-Ivan Bardarov (ivan.bardarov@student.uva.nl)  ID: 12579572  
+* Aman Hussain (aman.hussain@student.uva.nl) ID: 12667447  
+* Omar Elbaghdadi (omarelb@gmail.com) ID: 12660256  
+* Christoph Hoenes (christoph.hoenes@gmail.com) ID: 12861944    
+* Ivan Bardarov (ivan.bardarov@student.uva.nl)  ID: 12579572  
 
 Supervisor:  
 Simon Passenheim
 
 ## References
----
 [1] David Alvarez Melis, Tommi S. Jaakkola  
 "Towards Robust Interpretability with Self-Explaining Neural Networks" NIPS 2018  
 [2] Irina Higgins, et al.  
