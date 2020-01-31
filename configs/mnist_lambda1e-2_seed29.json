@@ -10,7 +10,7 @@
   "num_classes": 10,
   "dropout": 0.5,
   "aggregator": "SumAggregator",
-  "device": "cuda:0",
+  "device": "cpu",
   "lr": 2e-4,
   "epochs": 5,
   "robustness_loss": "mnist_robustness_loss",
