@@ -3,17 +3,16 @@
 TODO: Description
 
 ## Table of Contents
-  - [Self-Explaining Neural Networks: A review with extensions](#self-explaining-neural-networks-a-review-with-extensions)
-  - [Table of Contents](#table-of-contents)
-  - [Project Structure](#project-structure)
-  - [How to run?](#how-to-run)
-  - [Results](#results)
-  - [Extensions](#extensions)
-  - [Documentation](#documentation)
-  - [Authors](#authors)
-  - [References](#references)
+---
+1. [Project Structure](#project-structure)
+2. [Results](#results)
+3. [How to run](#how-to-run)
+4. [Documentation](#documentation)
+5. [References](#references)
 
 ## Project Structure
+---
+
 ![SENN-UML](images/UML-SENN.png)
 
 The project is organized as follows:
@@ -27,12 +26,20 @@ The project is organized as follows:
 8. **senn/results/checkpoints**: saved model weights
 9. *report.ipynb*: notebook reporting final results
 
-## How to run?
-
 ## Results
+---
 
 ## How to run?
 ---
+```
+cd senn
+conda env create -f "environment.yml
+conda activate senn
+python main.py --config "./config.json"
+```
+
+Where *config.json* is prepared according to the template below:
+
 ```
 {
   "exp_name": "exp001",                   (str, the name of the experiment, used to save the checkpoints and csv results)
@@ -81,6 +88,7 @@ Supervisor:
 Simon Passenheim
 
 ## References
+---
 [1] David Alvarez Melis, Tommi S. Jaakkola  
 "Towards Robust Interpretability with Self-Explaining Neural Networks" NIPS 2018  
 [2] Irina Higgins, et al.  
