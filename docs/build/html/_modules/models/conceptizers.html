@@ -1,0 +1,723 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>models.conceptizers &mdash; SENN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SENN
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">SENN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">The SENN API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SENN</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>models.conceptizers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for models.conceptizers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+
+<div class="viewcode-block" id="Conceptizer"><a class="viewcode-back" href="../../api.html#models.conceptizers.Conceptizer">[docs]</a><span class="k">class</span> <span class="nc">Conceptizer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A general Conceptizer meta-class. Children of the Conceptizer class</span>
+<span class="sd">        should implement encode() and decode() functions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Conceptizer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Conceptizer.forward"><a class="viewcode-back" href="../../api.html#models.conceptizers.Conceptizer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the general conceptizer.</span>
+
+<span class="sd">        Computes concepts present in the input.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape (BATCH, *). Only restriction on the shape is that</span>
+<span class="sd">            the first dimension should correspond to the batch size.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        encoded : torch.Tensor</span>
+<span class="sd">            Encoded concepts (batch_size, concept_number, concept_dimension)</span>
+<span class="sd">        decoded : torch.Tensor</span>
+<span class="sd">            Reconstructed input (batch_size, *)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">decoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoded</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encoded</span><span class="p">,</span> <span class="n">decoded</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Conceptizer.encode"><a class="viewcode-back" href="../../api.html#models.conceptizers.Conceptizer.encode">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract encode function to be overridden.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape (BATCH, *). Only restriction on the shape is that</span>
+<span class="sd">            the first dimension should correspond to the batch size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Conceptizer.decode"><a class="viewcode-back" href="../../api.html#models.conceptizers.Conceptizer.decode">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoded</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract decode function to be overridden.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        encoded : torch.Tensor</span>
+<span class="sd">            Latent representation of the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="IdentityConceptizer"><a class="viewcode-back" href="../../api.html#models.conceptizers.IdentityConceptizer">[docs]</a><span class="k">class</span> <span class="nc">IdentityConceptizer</span><span class="p">(</span><span class="n">Conceptizer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Basic Identity Conceptizer that returns the unchanged input features.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="IdentityConceptizer.encode"><a class="viewcode-back" href="../../api.html#models.conceptizers.IdentityConceptizer.encode">[docs]</a>    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Encoder of Identity Conceptizer.</span>
+
+<span class="sd">        Leaves the input features unchanged  but reshapes them to three dimensions</span>
+<span class="sd">        and returns them as concepts (use of raw features -&gt; no concept computation)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape (BATCH, INPUT_FEATURES).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        concepts : torch.Tensor</span>
+<span class="sd">            Unchanged input features but with extra dimension (BATCH, INPUT_FEATURES, 1).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IdentityConceptizer.decode"><a class="viewcode-back" href="../../api.html#models.conceptizers.IdentityConceptizer.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decoder of Identity Conceptizer.</span>
+
+<span class="sd">        Simulates reconstruction of the original input x by undoing the reshaping of the encoder.</span>
+<span class="sd">        The &#39;reconstruction&#39; is identical to the input of the conceptizer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : torch.Tensor</span>
+<span class="sd">            Output of encoder (input x reshaped to three dimensions), size: (BATCH, INPUT_FEATURES, 1).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        reconst : torch.Tensor</span>
+<span class="sd">            Unchanged input features (identical to x)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">z</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VaeConceptizer"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeConceptizer">[docs]</a><span class="k">class</span> <span class="nc">VaeConceptizer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Variational Auto Encoder to generate basis concepts</span>
+
+<span class="sd">    Concepts should be independently sensitive to single generative factors,</span>
+<span class="sd">    which will lead to better interpretability and fulfill the &quot;diversity&quot; </span>
+<span class="sd">    desiderata for basis concepts in a Self-Explaining Neural Network.</span>
+<span class="sd">    VAE can be used to learn disentangled representations of the basis concepts </span>
+<span class="sd">    by emphasizing the discovery of latent factors which are disentangled. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">num_concepts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize Variational Auto Encoder</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image_size : int</span>
+<span class="sd">            size of the width or height of an image, assumes square image</span>
+<span class="sd">        num_concepts : int</span>
+<span class="sd">            number of basis concepts to learn in the latent distribution space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_dim</span> <span class="o">=</span> <span class="n">image_size</span> <span class="o">*</span> <span class="n">image_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span> <span class="o">=</span> <span class="n">num_concepts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">VaeEncoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">VaeDecoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VaeConceptizer.forward"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeConceptizer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forward pass through the encoding, sampling and decoding step</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.tensor </span>
+<span class="sd">            input of shape [batch_size x ... ], which will be flattened</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        concept_mean : torch.tensor</span>
+<span class="sd">            mean of the latent distribution induced by the posterior input x</span>
+<span class="sd">        x_reconstruct : torch.tensor</span>
+<span class="sd">            reconstruction of the input in the same shape</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">concept_mean</span><span class="p">,</span> <span class="n">concept_logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">concept_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">concept_mean</span><span class="p">,</span> <span class="n">concept_logvar</span><span class="p">)</span>
+        <span class="n">x_reconstruct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">concept_sample</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">concept_mean</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">concept_logvar</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">x_reconstruct</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VaeConceptizer.sample"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeConceptizer.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Samples from the latent distribution using reparameterization trick</span>
+
+<span class="sd">        Reparameterization trick: z = mu + sigma * epsilon</span>
+<span class="sd">        where epsilon is drawn from a standard normal distribution</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mean : torch.tensor</span>
+<span class="sd">            mean of the latent distribution of shape [batch_size x z_dim]</span>
+<span class="sd">        log_var : torch.tensor</span>
+<span class="sd">            diagonal log variance of the latent distribution of shape [batch_size x z_dim]</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        z : torch.tensor</span>
+<span class="sd">            sample latent tensor of shape [batch_size x z_dim]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">logvar</span><span class="p">)</span>
+            <span class="n">epsilon</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">std</span> <span class="o">*</span> <span class="n">epsilon</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="k">return</span> <span class="n">z</span></div></div>
+
+
+<div class="viewcode-block" id="VaeEncoder"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeEncoder">[docs]</a><span class="k">class</span> <span class="nc">VaeEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Encoder of a VAE&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_dim</span><span class="p">,</span> <span class="n">z_dim</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate a multilayer perceptron</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_dim: int</span>
+<span class="sd">            dimension of the input data</span>
+<span class="sd">        z_dim: int</span>
+<span class="sd">            latent dimension of the encoder output</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_dim</span> <span class="o">=</span> <span class="n">in_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span> <span class="o">=</span> <span class="n">z_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FC</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">z_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logvar_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">z_dim</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VaeEncoder.forward"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeEncoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forward pass of the encoder</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FC</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logvar_layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">logvar</span></div></div>
+
+
+<div class="viewcode-block" id="VaeDecoder"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeDecoder">[docs]</a><span class="k">class</span> <span class="nc">VaeDecoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decoder of a VAE&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_dim</span><span class="p">,</span> <span class="n">z_dim</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiate a multilayer perceptron</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_dim: int</span>
+<span class="sd">            dimension of the input data</span>
+<span class="sd">        z_dim: int</span>
+<span class="sd">            latent dimension of the encoder output</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_dim</span> <span class="o">=</span> <span class="n">in_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span> <span class="o">=</span> <span class="n">z_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FC</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">z_dim</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="n">in_dim</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="VaeDecoder.forward"><a class="viewcode-back" href="../../api.html#models.conceptizers.VaeDecoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forward pass of a decoder&quot;&quot;&quot;</span>
+        <span class="n">x_reconstruct</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">FC</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x_reconstruct</span></div></div>
+
+
+<div class="viewcode-block" id="ConvConceptizer"><a class="viewcode-back" href="../../api.html#models.conceptizers.ConvConceptizer">[docs]</a><span class="k">class</span> <span class="nc">ConvConceptizer</span><span class="p">(</span><span class="n">Conceptizer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">num_concepts</span><span class="p">,</span> <span class="n">concept_dim</span><span class="p">,</span> <span class="n">image_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">encoder_channels</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,),</span>
+                 <span class="n">decoder_channels</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">kernel_size_conv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">kernel_size_upsample</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                 <span class="n">stride_conv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride_pool</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride_upsample</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                 <span class="n">padding_conv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding_upsample</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CNN Autoencoder used to learn the concepts, present in an input image</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image_size : int</span>
+<span class="sd">            the width of the input image</span>
+<span class="sd">        num_concepts : int</span>
+<span class="sd">            the number of concepts</span>
+<span class="sd">        concept_dim : int</span>
+<span class="sd">            the dimension of each concept to be learned</span>
+<span class="sd">        image_channels : int</span>
+<span class="sd">            the number of channels of the input images</span>
+<span class="sd">        encoder_channels : tuple[int]</span>
+<span class="sd">            a list with the number of channels for the hidden convolutional layers</span>
+<span class="sd">        decoder_channels : tuple[int]</span>
+<span class="sd">            a list with the number of channels for the hidden upsampling layers</span>
+<span class="sd">        kernel_size_conv : int, tuple[int]</span>
+<span class="sd">            the size of the kernels to be used for convolution</span>
+<span class="sd">        kernel_size_upsample : int, tuple[int]</span>
+<span class="sd">            the size of the kernels to be used for upsampling</span>
+<span class="sd">        stride_conv : int, tuple[int]</span>
+<span class="sd">            the stride of the convolutional layers</span>
+<span class="sd">        stride_pool : int, tuple[int]</span>
+<span class="sd">            the stride of the pooling layers</span>
+<span class="sd">        stride_upsample : int, tuple[int]</span>
+<span class="sd">            the stride of the upsampling layers</span>
+<span class="sd">        padding_conv : int, tuple[int]</span>
+<span class="sd">            the padding to be used by the convolutional layers</span>
+<span class="sd">        padding_upsample : int, tuple[int]</span>
+<span class="sd">            the padding to be used by the upsampling layers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvConceptizer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_concepts</span> <span class="o">=</span> <span class="n">num_concepts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter</span> <span class="o">=</span> <span class="nb">filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dout</span> <span class="o">=</span> <span class="n">image_size</span>
+
+        <span class="c1"># Encoder params</span>
+        <span class="n">encoder_channels</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_channels</span><span class="p">,)</span> <span class="o">+</span> <span class="n">encoder_channels</span>
+        <span class="n">kernel_size_conv</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">kernel_size_conv</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoder_channels</span><span class="p">))</span>
+        <span class="n">stride_conv</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">stride_conv</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoder_channels</span><span class="p">))</span>
+        <span class="n">stride_pool</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">stride_pool</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoder_channels</span><span class="p">))</span>
+        <span class="n">padding_conv</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">padding_conv</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoder_channels</span><span class="p">))</span>
+        <span class="n">encoder_channels</span> <span class="o">+=</span> <span class="p">(</span><span class="n">num_concepts</span><span class="p">,)</span>
+
+        <span class="c1"># Decoder params</span>
+        <span class="n">decoder_channels</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_concepts</span><span class="p">,)</span> <span class="o">+</span> <span class="n">decoder_channels</span>
+        <span class="n">kernel_size_upsample</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">kernel_size_upsample</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">decoder_channels</span><span class="p">))</span>
+        <span class="n">stride_upsample</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">stride_upsample</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">decoder_channels</span><span class="p">))</span>
+        <span class="n">padding_upsample</span> <span class="o">=</span> <span class="n">handle_integer_input</span><span class="p">(</span><span class="n">padding_upsample</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">decoder_channels</span><span class="p">))</span>
+        <span class="n">decoder_channels</span> <span class="o">+=</span> <span class="p">(</span><span class="n">image_channels</span><span class="p">,)</span>
+
+        <span class="c1"># Encoder implementation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">encoder_channels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_block</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">encoder_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                                <span class="n">out_channels</span><span class="o">=</span><span class="n">encoder_channels</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                                                <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size_conv</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                                <span class="n">stride_conv</span><span class="o">=</span><span class="n">stride_conv</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                                <span class="n">stride_pool</span><span class="o">=</span><span class="n">stride_pool</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                                <span class="n">padding</span><span class="o">=</span><span class="n">padding_conv</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dout</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dout</span> <span class="o">-</span> <span class="n">kernel_size_conv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">padding_conv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">stride_conv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">stride_pool</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">//</span> <span class="p">(</span>
+                    <span class="n">stride_conv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">stride_pool</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span> <span class="ow">and</span> <span class="n">concept_dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ScalarMapping</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">num_concepts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dout</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dout</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">concept_dim</span><span class="p">))</span>
+
+        <span class="c1"># Decoder implementation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unlinear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">concept_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dout</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="n">decoder</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">decoder_channels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upsample_block</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">decoder_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                               <span class="n">out_channels</span><span class="o">=</span><span class="n">decoder_channels</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                                               <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size_upsample</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                               <span class="n">stride_deconv</span><span class="o">=</span><span class="n">stride_upsample</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                               <span class="n">padding</span><span class="o">=</span><span class="n">padding_upsample</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">decoder</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">decoder</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConvConceptizer.encode"><a class="viewcode-back" href="../../api.html#models.conceptizers.ConvConceptizer.encode">[docs]</a>    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The encoder part of the autoencoder which takes an Image as an input</span>
+<span class="sd">        and learns its hidden representations (concepts)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : Image (batch_size, channels, width, height)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        encoded : torch.Tensor (batch_size, concept_number, concept_dimension)</span>
+<span class="sd">            the concepts representing an image</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">encoded</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">:</span>
+            <span class="n">encoded</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="n">encoded</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encoded</span></div>
+
+<div class="viewcode-block" id="ConvConceptizer.decode"><a class="viewcode-back" href="../../api.html#models.conceptizers.ConvConceptizer.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The decoder part of the autoencoder which takes a hidden representation as an input</span>
+<span class="sd">        and tries to reconstruct the original image</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        z : torch.Tensor (batch_size, channels, width, height)</span>
+<span class="sd">            the concepts in an image</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        reconst : torch.Tensor (batch_size, channels, width, height)</span>
+<span class="sd">            the reconstructed image</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reconst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unlinear</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">reconst</span> <span class="o">=</span> <span class="n">reconst</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_concepts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dout</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">:</span>
+            <span class="n">reconst</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="n">reconst</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reconst</span></div>
+
+<div class="viewcode-block" id="ConvConceptizer.conv_block"><a class="viewcode-back" href="../../api.html#models.conceptizers.ConvConceptizer.conv_block">[docs]</a>    <span class="k">def</span> <span class="nf">conv_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride_conv</span><span class="p">,</span> <span class="n">stride_pool</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A helper function that constructs a convolution block with pooling and activation</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_channels : int</span>
+<span class="sd">            the number of input channels</span>
+<span class="sd">        out_channels : int</span>
+<span class="sd">            the number of output channels</span>
+<span class="sd">        kernel_size : int</span>
+<span class="sd">            the size of the convolutional kernel</span>
+<span class="sd">        stride_conv : int</span>
+<span class="sd">            the stride of the deconvolution</span>
+<span class="sd">        stride_pool : int</span>
+<span class="sd">            the stride of the pooling layer</span>
+<span class="sd">        padding : int</span>
+<span class="sd">            the size of padding</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sequence : nn.Sequence</span>
+<span class="sd">            a sequence of convolutional, pooling and activation modules</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+                      <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+                      <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+                      <span class="n">stride</span><span class="o">=</span><span class="n">stride_conv</span><span class="p">,</span>
+                      <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">),</span>
+            <span class="c1"># nn.BatchNorm2d(out_channels),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">stride_pool</span><span class="p">,</span>
+                         <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ConvConceptizer.upsample_block"><a class="viewcode-back" href="../../api.html#models.conceptizers.ConvConceptizer.upsample_block">[docs]</a>    <span class="k">def</span> <span class="nf">upsample_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride_deconv</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A helper function that constructs an upsampling block with activations</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_channels : int</span>
+<span class="sd">            the number of input channels</span>
+<span class="sd">        out_channels : int</span>
+<span class="sd">            the number of output channels</span>
+<span class="sd">        kernel_size : int</span>
+<span class="sd">            the size of the convolutional kernel</span>
+<span class="sd">        stride_deconv : int</span>
+<span class="sd">            the stride of the deconvolution</span>
+<span class="sd">        padding : int</span>
+<span class="sd">            the size of padding</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sequence : nn.Sequence</span>
+<span class="sd">            a sequence of deconvolutional and activation modules</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+                               <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+                               <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+                               <span class="n">stride</span><span class="o">=</span><span class="n">stride_deconv</span><span class="p">,</span>
+                               <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Flatten"><a class="viewcode-back" href="../../api.html#models.conceptizers.Flatten">[docs]</a><span class="k">class</span> <span class="nc">Flatten</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="Flatten.forward"><a class="viewcode-back" href="../../api.html#models.conceptizers.Flatten.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flattens the inputs to only 3 dimensions, preserving the sizes of the 1st and 2nd.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape (dim1, dim2, *).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        flattened : torch.Tensor</span>
+<span class="sd">            Flattened input (dim1, dim2, dim3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="handle_integer_input"><a class="viewcode-back" href="../../api.html#models.conceptizers.handle_integer_input">[docs]</a><span class="k">def</span> <span class="nf">handle_integer_input</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">desired_len</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if the input is an integer or a list.</span>
+<span class="sd">    If an integer, it is replicated the number of  desired times</span>
+<span class="sd">    If a tuple, the tuple is returned as it is</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input : int, tuple</span>
+<span class="sd">        The input can be either a tuple of parameters or a single parameter to be replicated</span>
+<span class="sd">    desired_len : int</span>
+<span class="sd">        The length of the desired list</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    input : tuple[int]</span>
+<span class="sd">        a tuple of parameters which has the proper length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">input</span><span class="p">,)</span> <span class="o">*</span> <span class="n">desired_len</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="o">!=</span> <span class="n">desired_len</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;The sizes of the parameters for the CNN conceptizer do not match.&quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;Expected &#39;</span><span class="si">{desired_len}</span><span class="s2">&#39;, but got &#39;{len(input)}&#39;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">input</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrong type of the parameters. Expected tuple or int but got &#39;{type(input)}&#39;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ScalarMapping"><a class="viewcode-back" href="../../api.html#models.conceptizers.ScalarMapping">[docs]</a><span class="k">class</span> <span class="nc">ScalarMapping</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conv_block_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Module that maps each filter of a convolutional block to a scalar value</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conv_block_size : tuple (int iterable)</span>
+<span class="sd">            Specifies the size of the input convolutional block: (NUM_CHANNELS, FILTER_HEIGHT, FILTER_WIDTH)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_filters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_width</span> <span class="o">=</span> <span class="n">conv_block_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_filters</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_width</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ScalarMapping.forward"><a class="viewcode-back" href="../../api.html#models.conceptizers.ScalarMapping.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reduces a 3D convolutional block to a 1D vector by mapping each 2D filter to a scalar value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape (BATCH, CHANNELS, HEIGHT, WIDTH).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mapped : torch.Tensor</span>
+<span class="sd">            Reduced input (BATCH, CHANNELS, 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_filters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_width</span><span class="p">)</span>
+        <span class="n">mappings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
+            <span class="n">mappings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="p">[</span><span class="n">f</span><span class="p">],</span> <span class="p">:]))</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">mappings</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Aman Hussain, Chris Hoenes, Omar Elbaghdadi, Ivan Bardarov
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

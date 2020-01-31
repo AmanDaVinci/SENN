@@ -1,0 +1,1443 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>The SENN API reference &mdash; SENN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="SENN Tutorial" href="tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SENN
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">SENN Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The SENN API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-senn.trainer">The trainer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-models-subpackage">The models subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.senn">The senn module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.conceptizers">The conceptizer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.parameterizers">The parameterizer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-models.aggregators">The aggregator module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-utils-subpackage">The utils subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-utils.jacobian">The jacobian module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-datasets-subpackage">The datasets subpackage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-datasets.dataloaders">The dataloaders module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SENN</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>The SENN API reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="the-senn-api-reference">
+<h1>The SENN API reference<a class="headerlink" href="#the-senn-api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-senn.trainer">
+<span id="the-trainer-module"></span><h2>The trainer module<a class="headerlink" href="#module-senn.trainer" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="senn.trainer.init_trainer">
+<code class="sig-prename descclassname">senn.trainer.</code><code class="sig-name descname">init_trainer</code><span class="sig-paren">(</span><em class="sig-param">config_file</em>, <em class="sig-param">best_model=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#init_trainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.init_trainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate the Trainer class based on the config parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_file</strong> (<em>str</em>) – filename of the json config with all experiment parameters</p></li>
+<li><p><strong>best_model</strong> (<em>bool</em>) – whether to load the previously trained best model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>trainer</strong> – Trainer for SENN or DiSENNTrainer for DiSENN</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#senn.trainer.SENN_Trainer" title="senn.trainer.SENN_Trainer">SENN_Trainer</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="senn.trainer.SENN_Trainer">
+<em class="property">class </em><code class="sig-prename descclassname">senn.trainer.</code><code class="sig-name descname">SENN_Trainer</code><span class="sig-paren">(</span><em class="sig-param">config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.accuracy" title="senn.trainer.SENN_Trainer.accuracy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">accuracy</span></code></a>(self, y_pred, y)</p></td>
+<td><p>Return accuracy of predictions with respect to ground truth.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.finalize" title="senn.trainer.SENN_Trainer.finalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize</span></code></a>(self)</p></td>
+<td><p>Finalize all necessary operations before exiting training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.get_metrics" title="senn.trainer.SENN_Trainer.get_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_metrics</span></code></a>(self[, validate])</p></td>
+<td><p>Get the metrics for a validation/test set</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.load_checkpoint" title="senn.trainer.SENN_Trainer.load_checkpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_checkpoint</span></code></a>(self, file_name)</p></td>
+<td><p>Load most recent checkpoint.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.print_n_save_metrics" title="senn.trainer.SENN_Trainer.print_n_save_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_n_save_metrics</span></code></a>(self, filename, …)</p></td>
+<td><p>Prints the losses to the console and saves them in a csv file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.run" title="senn.trainer.SENN_Trainer.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(self)</p></td>
+<td><p>Run the training loop.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.save_checkpoint" title="senn.trainer.SENN_Trainer.save_checkpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_checkpoint</span></code></a>(self[, file_name])</p></td>
+<td><p>Save checkpoint in the checkpoint directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.summarize" title="senn.trainer.SENN_Trainer.summarize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarize</span></code></a>(self)</p></td>
+<td><p>Print summary of given model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.test" title="senn.trainer.SENN_Trainer.test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test</span></code></a>(self)</p></td>
+<td><p>Get the metrics for the test set</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.train" title="senn.trainer.SENN_Trainer.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(self)</p></td>
+<td><p>Main training loop.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.train_one_epoch" title="senn.trainer.SENN_Trainer.train_one_epoch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_one_epoch</span></code></a>(self, epoch)</p></td>
+<td><p>Run one epoch of training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.validate" title="senn.trainer.SENN_Trainer.validate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate</span></code></a>(self)</p></td>
+<td><p>Get the metrics for the validation set</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.SENN_Trainer.visualize" title="senn.trainer.SENN_Trainer.visualize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize</span></code></a>(self, save_dir)</p></td>
+<td><p>Generates plots to visualize the explanations.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the training loop.</p>
+<p>If the loop is interrupted manually, finalization will still be executed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.train">
+<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main training loop. Saves a model checkpoint after every epoch.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.train_one_epoch">
+<code class="sig-name descname">train_one_epoch</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">epoch</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.train_one_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.train_one_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run one epoch of training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – Current epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the metrics for the validation set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.test">
+<code class="sig-name descname">test</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the metrics for the test set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.get_metrics">
+<code class="sig-name descname">get_metrics</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">validate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.get_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.get_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the metrics for a validation/test set</p>
+<p>If the validation flag is on, the function tests the model
+with the validation dataset instead of the testing one.</p>
+<p>Model performance is validated by computing loss and accuracy measures, storing them,
+and reporting them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>validate</strong> (<em>bool</em>) – Indicates whether to use the validation or test dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.accuracy">
+<code class="sig-name descname">accuracy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return accuracy of predictions with respect to ground truth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> (<em>torch.Tensor</em><em>, </em><em>shape</em><em> (</em><em>BATCH</em><em>,</em><em>)</em>) – Predictions of ground truth.</p></li>
+<li><p><strong>y</strong> (<em>torch.Tensor</em><em>, </em><em>shape</em><em> (</em><em>BATCH</em><em>,</em><em>)</em>) – Ground truth.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>accuracy of predictions</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.load_checkpoint">
+<code class="sig-name descname">load_checkpoint</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.load_checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.load_checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load most recent checkpoint.</p>
+<p>If no checkpoint exists, doesn’t do anything.</p>
+<dl class="simple">
+<dt>Checkpoint contains:</dt><dd><ul class="simple">
+<li><p>current epoch</p></li>
+<li><p>current iteration</p></li>
+<li><p>model state</p></li>
+<li><p>best accuracy achieved so far</p></li>
+<li><p>optimizer state</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<em>str</em>) – Name of the checkpoint file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.save_checkpoint">
+<code class="sig-name descname">save_checkpoint</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">file_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.save_checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.save_checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save checkpoint in the checkpoint directory.</p>
+<p>Checkpoint dir and checkpoint_file need to be specified in the configs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<em>str</em>) – Name of the checkpoint file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.print_n_save_metrics">
+<code class="sig-name descname">print_n_save_metrics</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">total_loss</em>, <em class="sig-param">classification_loss</em>, <em class="sig-param">robustness_loss</em>, <em class="sig-param">concept_loss</em>, <em class="sig-param">accuracy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.print_n_save_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.print_n_save_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the losses to the console and saves them in a csv file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the csv file.</p></li>
+<li><p><strong>classification_loss</strong> (<em>float</em>) – The value of the classification loss</p></li>
+<li><p><strong>robustness_loss</strong> (<em>float</em>) – The value of the robustness loss</p></li>
+<li><p><strong>total_loss</strong> (<em>float</em>) – The value of the total loss</p></li>
+<li><p><strong>concept_loss</strong> (<em>float</em>) – The value of the concept loss</p></li>
+<li><p><strong>accuracy</strong> (<em>float</em>) – The value of the accuracy</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.visualize">
+<code class="sig-name descname">visualize</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">save_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates plots to visualize the explanations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>save_dir</strong> (<em>str</em>) – Directory where the figures are saved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.finalize">
+<code class="sig-name descname">finalize</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalize all necessary operations before exiting training.</p>
+<p>Saves checkpoint.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.SENN_Trainer.summarize">
+<code class="sig-name descname">summarize</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#SENN_Trainer.summarize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.SENN_Trainer.summarize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print summary of given model.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="senn.trainer.DiSENN_Trainer">
+<em class="property">class </em><code class="sig-prename descclassname">senn.trainer.</code><code class="sig-name descname">DiSENN_Trainer</code><span class="sig-paren">(</span><em class="sig-param">config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#DiSENN_Trainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.DiSENN_Trainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#senn.trainer.SENN_Trainer" title="senn.trainer.SENN_Trainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">senn.trainer.SENN_Trainer</span></code></a></p>
+<p>Extends general Trainer to train a DiSENN model</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.DiSENN_Trainer.pretrain" title="senn.trainer.DiSENN_Trainer.pretrain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pretrain</span></code></a>(self, conceptizer[, beta])</p></td>
+<td><p>Pre-trains conceptizer on the training data to optimize the concept loss</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.DiSENN_Trainer.print_n_save_metrics" title="senn.trainer.DiSENN_Trainer.print_n_save_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_n_save_metrics</span></code></a>(self, filename, …)</p></td>
+<td><p>Prints the losses to the console and saves them in a csv file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.DiSENN_Trainer.train_one_epoch" title="senn.trainer.DiSENN_Trainer.train_one_epoch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_one_epoch</span></code></a>(self, epoch)</p></td>
+<td><p>Run one epoch of training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#senn.trainer.DiSENN_Trainer.validate" title="senn.trainer.DiSENN_Trainer.validate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate</span></code></a>(self)</p></td>
+<td><p>Validate model performance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#senn.trainer.DiSENN_Trainer.visualize" title="senn.trainer.DiSENN_Trainer.visualize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize</span></code></a>(self, save_dir[, num])</p></td>
+<td><p>Generates some plots to visualize the explanations.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="senn.trainer.DiSENN_Trainer.pretrain">
+<code class="sig-name descname">pretrain</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">conceptizer</em>, <em class="sig-param">beta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#DiSENN_Trainer.pretrain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.DiSENN_Trainer.pretrain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pre-trains conceptizer on the training data to optimize the concept loss</p>
+<dl class="simple">
+<dt>conceptizer<span class="classifier">VaeConceptizer</span></dt><dd><p>object of class VaeConceptizer to be pre-trained</p>
+</dd>
+<dt>beta<span class="classifier">float</span></dt><dd><p>beta value during the pre-training of the beta-VAE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.DiSENN_Trainer.train_one_epoch">
+<code class="sig-name descname">train_one_epoch</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">epoch</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#DiSENN_Trainer.train_one_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.DiSENN_Trainer.train_one_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run one epoch of training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – Current epoch</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.DiSENN_Trainer.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#DiSENN_Trainer.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.DiSENN_Trainer.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate model performance.</p>
+<p>Model performance is validated by computing loss and accuracy measures, storing them,
+and reporting them.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.DiSENN_Trainer.visualize">
+<code class="sig-name descname">visualize</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">save_dir</em>, <em class="sig-param">num=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#DiSENN_Trainer.visualize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.DiSENN_Trainer.visualize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates some plots to visualize the explanations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>str</em>) – A placeholder to work with the Base Trainer class which calls visualize.
+Needs refactoring.</p></li>
+<li><p><strong>num</strong> (<em>int</em>) – Number of examples</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="senn.trainer.DiSENN_Trainer.print_n_save_metrics">
+<code class="sig-name descname">print_n_save_metrics</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">filename</em>, <em class="sig-param">total_loss</em>, <em class="sig-param">classification_loss</em>, <em class="sig-param">robustness_loss</em>, <em class="sig-param">concept_loss</em>, <em class="sig-param">recon_loss</em>, <em class="sig-param">kl_div</em>, <em class="sig-param">accuracy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/senn/trainer.html#DiSENN_Trainer.print_n_save_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#senn.trainer.DiSENN_Trainer.print_n_save_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints the losses to the console and saves them in a csv file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the csv file.</p></li>
+<li><p><strong>total_loss</strong> (<em>float</em>) – The value of the total loss</p></li>
+<li><p><strong>classification_loss</strong> (<em>float</em>) – The value of the classification loss</p></li>
+<li><p><strong>robustness_loss</strong> (<em>float</em>) – The value of the robustness loss</p></li>
+<li><p><strong>concept_loss</strong> (<em>float</em>) – The value of the concept loss</p></li>
+<li><p><strong>recon_loss</strong> (<em>float</em>) – Reconstruction loss of the VAE Conceptizer</p></li>
+<li><p><strong>kl_div</strong> (<em>float</em>) – KL Divergence loss of VAE Conceptizer</p></li>
+<li><p><strong>accuracy</strong> (<em>float</em>) – The value of the accuracy</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="the-models-subpackage">
+<h2>The models subpackage<a class="headerlink" href="#the-models-subpackage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-models.senn">
+<span id="the-senn-module"></span><h3>The senn module<a class="headerlink" href="#module-models.senn" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="models.senn.SENN">
+<em class="property">class </em><code class="sig-prename descclassname">models.senn.</code><code class="sig-name descname">SENN</code><span class="sig-paren">(</span><em class="sig-param">conceptizer</em>, <em class="sig-param">parameterizer</em>, <em class="sig-param">aggregator</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/senn.html#SENN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.senn.SENN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.senn.SENN.forward" title="models.senn.SENN.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of SENN module.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.senn.SENN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/senn.html#SENN.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.senn.SENN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of SENN module.</p>
+<p>In the forward pass, concepts and their reconstructions are created from the input x.
+The relevance parameters theta are also computed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (BATCH, <a href="#id1"><span class="problematic" id="id2">*</span></a>). Only restriction on the shape is that
+the first dimension should correspond to the batch size.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>predictions</strong> (<em>torch.Tensor</em>) – Predictions generated by model. Of shape (BATCH, <a href="#id3"><span class="problematic" id="id4">*</span></a>).</p></li>
+<li><p><strong>explanations</strong> (<em>tuple</em>) – Model explanations given by a tuple (concepts, relevances).</p>
+<dl class="simple">
+<dt>concepts<span class="classifier">torch.Tensor</span></dt><dd><p>Interpretable feature representations of input. Of shape (NUM_CONCEPTS, <a href="#id5"><span class="problematic" id="id6">*</span></a>).</p>
+</dd>
+<dt>parameters<span class="classifier">torch.Tensor</span></dt><dd><p>Relevance scores associated with concepts. Of shape (NUM_CONCEPTS, <a href="#id7"><span class="problematic" id="id8">*</span></a>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.senn.DiSENN">
+<em class="property">class </em><code class="sig-prename descclassname">models.senn.</code><code class="sig-name descname">DiSENN</code><span class="sig-paren">(</span><em class="sig-param">vae_conceptizer</em>, <em class="sig-param">parameterizer</em>, <em class="sig-param">aggregator</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/senn.html#DiSENN"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.senn.DiSENN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Self-Explaining Neural Network with Disentanglement</p>
+<p>DiSENN is an extension of the Self-Explaining Neural Network proposed by [1]</p>
+<p>DiSENN incorporates a constrained variational inference framework on a
+SENN Concept Encoder to learn disentangled representations of the
+basis concepts as in [2]. The basis concepts are then independently
+sensitive to single generative factors leading to better interpretability
+and lesser overlap with other basis concepts. Such a strong constraint
+better fulfills the “diversity” desiderata for basis concepts
+in a Self-Explaining Neural Network.</p>
+<p class="rubric">References</p>
+<p>[1] Alvarez Melis, et al.
+“Towards Robust Interpretability with Self-Explaining Neural Networks” NIPS 2018
+[2] Irina Higgins, et al.
+”β-VAE: Learning basic visual concepts with a constrained variational framework.” ICLR 2017.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.senn.DiSENN.explain" title="models.senn.DiSENN.explain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">explain</span></code></a>(self, x, contrast_class[, …])</p></td>
+<td><p>Explains the DiSENN predictions for input x</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#models.senn.DiSENN.forward" title="models.senn.DiSENN.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of a DiSENN model</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.senn.DiSENN.traverse" title="models.senn.DiSENN.traverse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">traverse</span></code></a>(self, matrix, dim, traversal_range, …)</p></td>
+<td><p>Linearly traverses through one dimension of a matrix independently</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.senn.DiSENN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/senn.html#DiSENN.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.senn.DiSENN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of a DiSENN model</p>
+<p>The forward pass computes a distribution over basis concepts
+and the corresponding relevance scores. The mean concepts
+and relevance scores are aggregated to generate a prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape [batch_size, …]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>predictions</strong> (<em>torch.Tensor</em>) – Predictions generated by the DiSENN model of shape [batch_size, …]</p></li>
+<li><p><strong>explanations</strong> (<em>tuple</em>) – Explanation give by the model as a nested tuple of
+relevance scores and concept distribution as mean and log variance:
+((concept_mean, concept_log_variance), relevance_score)</p>
+<dl class="simple">
+<dt>concept_mean<span class="classifier">torch.Tensor</span></dt><dd><p>Mean of the disentangled concept distribution of shape
+[batch_size, num_concepts, concept_dim]</p>
+</dd>
+<dt>concept_log_varance<span class="classifier">torch.Tensor</span></dt><dd><p>Log Variance of the disentangled concept distribution of shape
+[batch_size, num_concepts, concept_dim]</p>
+</dd>
+<dt>relevance_score<span class="classifier">torch.Tensor</span></dt><dd><p>Relevance scores (for each concept and class) of shape
+[batch_size, num_concepts, num_classes]</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.senn.DiSENN.explain">
+<code class="sig-name descname">explain</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em>, <em class="sig-param">contrast_class</em>, <em class="sig-param">num_prototypes=20</em>, <em class="sig-param">traversal_range=0.45</em>, <em class="sig-param">use_cdf=True</em>, <em class="sig-param">show=False</em>, <em class="sig-param">save_as=None</em>, <em class="sig-param">gridsize=(1</em>, <em class="sig-param">6)</em>, <em class="sig-param">col_span=3</em>, <em class="sig-param">figure_size=(18</em>, <em class="sig-param">3)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/senn.html#DiSENN.explain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.senn.DiSENN.explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explains the DiSENN predictions for input x</p>
+<p>DiSENN explanations consists of the Concepts, the corresponding Relevance
+Scores, and the Prototypes associated with variations in every single Concept.
+The VAE Conceptizer generates the Prototypes by inducing the prior distribution
+on the latent space given the input posterior. The mean of this latent
+prior distribution serves as the Basis Concept vector to be shown.
+The latent distribution so induced is then sampled from. The sampled
+Concept vector is traversed independently for each dimension and passed
+through the decoder of the VAE Conceptizer.Each independent traversal
+of a single dimension produces one prototype. Finally, we end up with an
+array of changing prototypes for each Concept dimension. The Parameterizer
+on the other hand produces the corresponding Relevance Scores.
+The Relevance Scores and Concepts are shown as bar plots side by side.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.tensor</em>) – input data of shape (channel x width x height)</p></li>
+<li><p><strong>contrast_class</strong> (<em>int</em>) – index of the class to compare the predicted class against</p></li>
+<li><p><strong>num_prototypes</strong> (<em>int</em>) – number of prototypes to generate for each concept dimension</p></li>
+<li><p><strong>traversal_range</strong> (<em>int</em>) – Range of traversal in each concept dimension from -traversal_range to +traversal_range</p></li>
+<li><p><strong>show</strong> (<em>bool</em>) – whether to show the figure or not</p></li>
+<li><p><strong>save_as</strong> (<em>string</em>) – file name of the explanation to be saved as, not saved by default</p></li>
+<li><p><strong>gridsize</strong> (<em>(</em><em>int</em><em>, </em><em>int</em><em>)</em>) – shape of the figure in terms of rows and columns</p></li>
+<li><p><strong>col_span</strong> (<em>int</em>) – number of columns for the Prototypes</p></li>
+<li><p><strong>figure_size</strong> (<em>(</em><em>float</em><em>, </em><em>float</em><em>)</em>) – size of the figure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.senn.DiSENN.traverse">
+<code class="sig-name descname">traverse</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">matrix</em>, <em class="sig-param">dim</em>, <em class="sig-param">traversal_range</em>, <em class="sig-param">steps</em>, <em class="sig-param">mean=None</em>, <em class="sig-param">std=None</em>, <em class="sig-param">use_cdf=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/senn.html#DiSENN.traverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.senn.DiSENN.traverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linearly traverses through one dimension of a matrix independently</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix</strong> (<em>torch.tensor</em>) – matrix whose dimensions will be traversed independently</p></li>
+<li><p><strong>dim</strong> (<em>int</em>) – dimension of the matrix to be traversed</p></li>
+<li><p><strong>traversal_range</strong> (<em>int</em>) – maximum value of the traversal range, if use_cdf is true this should be less than 0.5</p></li>
+<li><p><strong>steps</strong> (<em>int</em>) – number of steps in the traversal range</p></li>
+<li><p><strong>mean</strong> (<em>float</em>) – mean of the distribution for traversal using cdf</p></li>
+<li><p><strong>std</strong> (<em>float</em>) – std of the distribution for traversal using cdf</p></li>
+<li><p><strong>use_cdf</strong> (<em>bool</em>) – whether to use cdf traversal</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-models.conceptizers">
+<span id="the-conceptizer-module"></span><h3>The conceptizer module<a class="headerlink" href="#module-models.conceptizers" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="models.conceptizers.Conceptizer">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">Conceptizer</code><a class="reference internal" href="_modules/models/conceptizers.html#Conceptizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.Conceptizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.Conceptizer.decode" title="models.conceptizers.Conceptizer.decode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode</span></code></a>(self, encoded)</p></td>
+<td><p>Abstract decode function to be overridden.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#models.conceptizers.Conceptizer.encode" title="models.conceptizers.Conceptizer.encode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode</span></code></a>(self, x)</p></td>
+<td><p>Abstract encode function to be overridden.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.Conceptizer.forward" title="models.conceptizers.Conceptizer.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of the general conceptizer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.Conceptizer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#Conceptizer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.Conceptizer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of the general conceptizer.</p>
+<p>Computes concepts present in the input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (BATCH, <a href="#id9"><span class="problematic" id="id10">*</span></a>). Only restriction on the shape is that
+the first dimension should correspond to the batch size.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>encoded</strong> (<em>torch.Tensor</em>) – Encoded concepts (batch_size, concept_number, concept_dimension)</p></li>
+<li><p><strong>decoded</strong> (<em>torch.Tensor</em>) – Reconstructed input (batch_size, <a href="#id11"><span class="problematic" id="id12">*</span></a>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.Conceptizer.encode">
+<em class="property">abstract </em><code class="sig-name descname">encode</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#Conceptizer.encode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.Conceptizer.encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract encode function to be overridden.
+:param x: Input data tensor of shape (BATCH, <a href="#id13"><span class="problematic" id="id14">*</span></a>). Only restriction on the shape is that</p>
+<blockquote>
+<div><p>the first dimension should correspond to the batch size.</p>
+</div></blockquote>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.Conceptizer.decode">
+<em class="property">abstract </em><code class="sig-name descname">decode</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">encoded</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#Conceptizer.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.Conceptizer.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract decode function to be overridden.
+:param encoded: Latent representation of the data
+:type encoded: torch.Tensor</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.IdentityConceptizer">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">IdentityConceptizer</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#IdentityConceptizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.IdentityConceptizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.conceptizers.Conceptizer" title="models.conceptizers.Conceptizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">models.conceptizers.Conceptizer</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.IdentityConceptizer.decode" title="models.conceptizers.IdentityConceptizer.decode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode</span></code></a>(self, z)</p></td>
+<td><p>Decoder of Identity Conceptizer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#models.conceptizers.IdentityConceptizer.encode" title="models.conceptizers.IdentityConceptizer.encode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode</span></code></a>(self, x)</p></td>
+<td><p>Encoder of Identity Conceptizer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.IdentityConceptizer.encode">
+<code class="sig-name descname">encode</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#IdentityConceptizer.encode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.IdentityConceptizer.encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encoder of Identity Conceptizer.</p>
+<p>Leaves the input features unchanged  but reshapes them to three dimensions
+and returns them as concepts (use of raw features -&gt; no concept computation)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (BATCH, INPUT_FEATURES).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>concepts</strong> – Unchanged input features but with extra dimension (BATCH, INPUT_FEATURES, 1).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.IdentityConceptizer.decode">
+<code class="sig-name descname">decode</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">z</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#IdentityConceptizer.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.IdentityConceptizer.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decoder of Identity Conceptizer.</p>
+<p>Simulates reconstruction of the original input x by undoing the reshaping of the encoder.
+The ‘reconstruction’ is identical to the input of the conceptizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>torch.Tensor</em>) – Output of encoder (input x reshaped to three dimensions), size: (BATCH, INPUT_FEATURES, 1).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>reconst</strong> – Unchanged input features (identical to x)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.VaeConceptizer">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">VaeConceptizer</code><span class="sig-paren">(</span><em class="sig-param">image_size</em>, <em class="sig-param">num_concepts</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeConceptizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeConceptizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Variational Auto Encoder to generate basis concepts</p>
+<p>Concepts should be independently sensitive to single generative factors,
+which will lead to better interpretability and fulfill the “diversity”
+desiderata for basis concepts in a Self-Explaining Neural Network.
+VAE can be used to learn disentangled representations of the basis concepts
+by emphasizing the discovery of latent factors which are disentangled.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.VaeConceptizer.forward" title="models.conceptizers.VaeConceptizer.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass through the encoding, sampling and decoding step</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#models.conceptizers.VaeConceptizer.sample" title="models.conceptizers.VaeConceptizer.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a>(self, mean, logvar)</p></td>
+<td><p>Samples from the latent distribution using reparameterization trick</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.VaeConceptizer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeConceptizer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeConceptizer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass through the encoding, sampling and decoding step</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.tensor</em>) – input of shape [batch_size x … ], which will be flattened</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>concept_mean</strong> (<em>torch.tensor</em>) – mean of the latent distribution induced by the posterior input x</p></li>
+<li><p><strong>x_reconstruct</strong> (<em>torch.tensor</em>) – reconstruction of the input in the same shape</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.VaeConceptizer.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">mean</em>, <em class="sig-param">logvar</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeConceptizer.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeConceptizer.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Samples from the latent distribution using reparameterization trick</p>
+<p>Reparameterization trick: z = mu + sigma * epsilon
+where epsilon is drawn from a standard normal distribution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> (<em>torch.tensor</em>) – mean of the latent distribution of shape [batch_size x z_dim]</p></li>
+<li><p><strong>log_var</strong> (<em>torch.tensor</em>) – diagonal log variance of the latent distribution of shape [batch_size x z_dim]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>z</strong> – sample latent tensor of shape [batch_size x z_dim]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.VaeEncoder">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">VaeEncoder</code><span class="sig-paren">(</span><em class="sig-param">in_dim</em>, <em class="sig-param">z_dim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeEncoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeEncoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Encoder of a VAE</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.VaeEncoder.forward" title="models.conceptizers.VaeEncoder.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of the encoder</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.VaeEncoder.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeEncoder.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeEncoder.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of the encoder</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.VaeDecoder">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">VaeDecoder</code><span class="sig-paren">(</span><em class="sig-param">in_dim</em>, <em class="sig-param">z_dim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeDecoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeDecoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p>Decoder of a VAE</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.VaeDecoder.forward" title="models.conceptizers.VaeDecoder.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of a decoder</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.VaeDecoder.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#VaeDecoder.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.VaeDecoder.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of a decoder</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.ConvConceptizer">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">ConvConceptizer</code><span class="sig-paren">(</span><em class="sig-param">image_size</em>, <em class="sig-param">num_concepts</em>, <em class="sig-param">concept_dim</em>, <em class="sig-param">image_channels=1</em>, <em class="sig-param">encoder_channels=(10</em>, <em class="sig-param">)</em>, <em class="sig-param">decoder_channels=(16</em>, <em class="sig-param">8)</em>, <em class="sig-param">kernel_size_conv=5</em>, <em class="sig-param">kernel_size_upsample=(5</em>, <em class="sig-param">5</em>, <em class="sig-param">2)</em>, <em class="sig-param">stride_conv=1</em>, <em class="sig-param">stride_pool=2</em>, <em class="sig-param">stride_upsample=(2</em>, <em class="sig-param">1</em>, <em class="sig-param">2)</em>, <em class="sig-param">padding_conv=0</em>, <em class="sig-param">padding_upsample=(0</em>, <em class="sig-param">0</em>, <em class="sig-param">1)</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ConvConceptizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ConvConceptizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.conceptizers.Conceptizer" title="models.conceptizers.Conceptizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">models.conceptizers.Conceptizer</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.ConvConceptizer.conv_block" title="models.conceptizers.ConvConceptizer.conv_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">conv_block</span></code></a>(self, in_channels, out_channels, …)</p></td>
+<td><p>A helper function that constructs a convolution block with pooling and activation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#models.conceptizers.ConvConceptizer.decode" title="models.conceptizers.ConvConceptizer.decode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decode</span></code></a>(self, z)</p></td>
+<td><p>The decoder part of the autoencoder which takes a hidden representation as an input and tries to reconstruct the original image</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.ConvConceptizer.encode" title="models.conceptizers.ConvConceptizer.encode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode</span></code></a>(self, x)</p></td>
+<td><p>The encoder part of the autoencoder which takes an Image as an input and learns its hidden representations (concepts)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#models.conceptizers.ConvConceptizer.upsample_block" title="models.conceptizers.ConvConceptizer.upsample_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upsample_block</span></code></a>(self, in_channels, …)</p></td>
+<td><p>A helper function that constructs an upsampling block with activations</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.ConvConceptizer.encode">
+<code class="sig-name descname">encode</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ConvConceptizer.encode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ConvConceptizer.encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The encoder part of the autoencoder which takes an Image as an input
+and learns its hidden representations (concepts)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Image</em><em> (</em><em>batch_size</em><em>, </em><em>channels</em><em>, </em><em>width</em><em>, </em><em>height</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>encoded</strong> – the concepts representing an image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor (batch_size, concept_number, concept_dimension)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.ConvConceptizer.decode">
+<code class="sig-name descname">decode</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">z</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ConvConceptizer.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ConvConceptizer.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The decoder part of the autoencoder which takes a hidden representation as an input
+and tries to reconstruct the original image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>torch.Tensor</em><em> (</em><em>batch_size</em><em>, </em><em>channels</em><em>, </em><em>width</em><em>, </em><em>height</em><em>)</em>) – the concepts in an image</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>reconst</strong> – the reconstructed image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor (batch_size, channels, width, height)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.ConvConceptizer.conv_block">
+<code class="sig-name descname">conv_block</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_channels</em>, <em class="sig-param">out_channels</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride_conv</em>, <em class="sig-param">stride_pool</em>, <em class="sig-param">padding</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ConvConceptizer.conv_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ConvConceptizer.conv_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function that constructs a convolution block with pooling and activation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – the number of input channels</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – the number of output channels</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – the size of the convolutional kernel</p></li>
+<li><p><strong>stride_conv</strong> (<em>int</em>) – the stride of the deconvolution</p></li>
+<li><p><strong>stride_pool</strong> (<em>int</em>) – the stride of the pooling layer</p></li>
+<li><p><strong>padding</strong> (<em>int</em>) – the size of padding</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sequence</strong> – a sequence of convolutional, pooling and activation modules</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nn.Sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="models.conceptizers.ConvConceptizer.upsample_block">
+<code class="sig-name descname">upsample_block</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_channels</em>, <em class="sig-param">out_channels</em>, <em class="sig-param">kernel_size</em>, <em class="sig-param">stride_deconv</em>, <em class="sig-param">padding</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ConvConceptizer.upsample_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ConvConceptizer.upsample_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function that constructs an upsampling block with activations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – the number of input channels</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – the number of output channels</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – the size of the convolutional kernel</p></li>
+<li><p><strong>stride_deconv</strong> (<em>int</em>) – the stride of the deconvolution</p></li>
+<li><p><strong>padding</strong> (<em>int</em>) – the size of padding</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sequence</strong> – a sequence of deconvolutional and activation modules</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nn.Sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.Flatten">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">Flatten</code><a class="reference internal" href="_modules/models/conceptizers.html#Flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.Flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.Flatten.forward" title="models.conceptizers.Flatten.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Flattens the inputs to only 3 dimensions, preserving the sizes of the 1st and 2nd.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.Flatten.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#Flatten.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.Flatten.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flattens the inputs to only 3 dimensions, preserving the sizes of the 1st and 2nd.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (dim1, dim2, <a href="#id15"><span class="problematic" id="id16">*</span></a>).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>flattened</strong> – Flattened input (dim1, dim2, dim3)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="models.conceptizers.handle_integer_input">
+<code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">handle_integer_input</code><span class="sig-paren">(</span><em class="sig-param">input</em>, <em class="sig-param">desired_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#handle_integer_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.handle_integer_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the input is an integer or a list.
+If an integer, it is replicated the number of  desired times
+If a tuple, the tuple is returned as it is</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>int</em><em>, </em><em>tuple</em>) – The input can be either a tuple of parameters or a single parameter to be replicated</p></li>
+<li><p><strong>desired_len</strong> (<em>int</em>) – The length of the desired list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>input</strong> – a tuple of parameters which has the proper length.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="models.conceptizers.ScalarMapping">
+<em class="property">class </em><code class="sig-prename descclassname">models.conceptizers.</code><code class="sig-name descname">ScalarMapping</code><span class="sig-paren">(</span><em class="sig-param">conv_block_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ScalarMapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ScalarMapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.conceptizers.ScalarMapping.forward" title="models.conceptizers.ScalarMapping.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Reduces a 3D convolutional block to a 1D vector by mapping each 2D filter to a scalar value.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.conceptizers.ScalarMapping.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/conceptizers.html#ScalarMapping.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.conceptizers.ScalarMapping.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduces a 3D convolutional block to a 1D vector by mapping each 2D filter to a scalar value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (BATCH, CHANNELS, HEIGHT, WIDTH).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mapped</strong> – Reduced input (BATCH, CHANNELS, 1)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-models.parameterizers">
+<span id="the-parameterizer-module"></span><h3>The parameterizer module<a class="headerlink" href="#module-models.parameterizers" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="models.parameterizers.LinearParameterizer">
+<em class="property">class </em><code class="sig-prename descclassname">models.parameterizers.</code><code class="sig-name descname">LinearParameterizer</code><span class="sig-paren">(</span><em class="sig-param">num_concepts</em>, <em class="sig-param">num_classes</em>, <em class="sig-param">hidden_sizes=(10</em>, <em class="sig-param">5</em>, <em class="sig-param">5</em>, <em class="sig-param">10)</em>, <em class="sig-param">dropout=0.5</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/parameterizers.html#LinearParameterizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.parameterizers.LinearParameterizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.parameterizers.LinearParameterizer.forward" title="models.parameterizers.LinearParameterizer.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of compas parameterizer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.parameterizers.LinearParameterizer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/parameterizers.html#LinearParameterizer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.parameterizers.LinearParameterizer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of compas parameterizer.</p>
+<p>Computes relevance parameters theta.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (BATCH, <a href="#id17"><span class="problematic" id="id18">*</span></a>). Only restriction on the shape is that
+the first dimension should correspond to the batch size.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>parameters</strong> – Relevance scores associated with concepts. Of shape (BATCH, NUM_CONCEPTS, NUM_CLASSES)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="models.parameterizers.ConvParameterizer">
+<em class="property">class </em><code class="sig-prename descclassname">models.parameterizers.</code><code class="sig-name descname">ConvParameterizer</code><span class="sig-paren">(</span><em class="sig-param">num_concepts</em>, <em class="sig-param">num_classes</em>, <em class="sig-param">cl_sizes=(1</em>, <em class="sig-param">10</em>, <em class="sig-param">20)</em>, <em class="sig-param">kernel_size=5</em>, <em class="sig-param">hidden_sizes=(10</em>, <em class="sig-param">5</em>, <em class="sig-param">5</em>, <em class="sig-param">10)</em>, <em class="sig-param">dropout=0.5</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/parameterizers.html#ConvParameterizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.parameterizers.ConvParameterizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.parameterizers.ConvParameterizer.forward" title="models.parameterizers.ConvParameterizer.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, x)</p></td>
+<td><p>Forward pass of MNIST parameterizer.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.parameterizers.ConvParameterizer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/parameterizers.html#ConvParameterizer.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.parameterizers.ConvParameterizer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of MNIST parameterizer.</p>
+<p>Computes relevance parameters theta.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input data tensor of shape (BATCH, <a href="#id19"><span class="problematic" id="id20">*</span></a>). Only restriction on the shape is that
+the first dimension should correspond to the batch size.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>parameters</strong> – Relevance scores associated with concepts. Of shape (BATCH, NUM_CONCEPTS, NUM_CLASSES)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-models.aggregators">
+<span id="the-aggregator-module"></span><h3>The aggregator module<a class="headerlink" href="#module-models.aggregators" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="models.aggregators.SumAggregator">
+<em class="property">class </em><code class="sig-prename descclassname">models.aggregators.</code><code class="sig-name descname">SumAggregator</code><span class="sig-paren">(</span><em class="sig-param">num_classes</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/aggregators.html#SumAggregator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.aggregators.SumAggregator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#models.aggregators.SumAggregator.forward" title="models.aggregators.SumAggregator.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(self, concepts, relevances)</p></td>
+<td><p>Forward pass of Sum Aggregator.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="models.aggregators.SumAggregator.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">concepts</em>, <em class="sig-param">relevances</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/aggregators.html#SumAggregator.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#models.aggregators.SumAggregator.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass of Sum Aggregator.</p>
+<p>Aggregates concepts and relevances and returns the predictions for each class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>concepts</strong> (<em>torch.Tensor</em>) – Contains the output of the conceptizer with shape (BATCH, NUM_CONCEPTS, DIM_CONCEPT=1).</p></li>
+<li><p><strong>relevances</strong> (<em>torch.Tensor</em>) – Contains the output of the parameterizer with shape (BATCH, NUM_CONCEPTS, NUM_CLASSES).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>class_predictions</strong> – Predictions for each class. Shape - (BATCH, NUM_CLASSES)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="the-utils-subpackage">
+<h2>The utils subpackage<a class="headerlink" href="#the-utils-subpackage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-utils.jacobian">
+<span id="the-jacobian-module"></span><h3>The jacobian module<a class="headerlink" href="#module-utils.jacobian" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="utils.jacobian.jacobian">
+<code class="sig-prename descclassname">utils.jacobian.</code><code class="sig-name descname">jacobian</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">x</em>, <em class="sig-param">out_dim</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/jacobian.html#jacobian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.jacobian.jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes Jacobian of a vector-valued function.</p>
+<p>Given f: batch_size x input_dim -&gt; batch_size x output_dim
+Computes Jacobian Matrix J: batch_size x output_dim x input_dim
+By passing a gradient matrix to the backward call of the output tensor</p>
+<p>NOTE:
+This implementation only works for two dimensional f and x
+If not true, it proceeds with the assumption that the third dimension is 1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>torch.nn.Module</em>) – Function as a pytorch module. Jacobian will be computed against this.</p></li>
+<li><p><strong>x</strong> (<em>torch.tensor</em>) – Input data tensor of shape (batch_size x input_dim).
+This object is not mutated and a clone is used for the forward pass.</p></li>
+<li><p><strong>out_dim</strong> (<em>int</em>) – outer dimension of the function f</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>jacobian_fx</strong> – jacobian as a tensor of shape (batch_size x output_dim x input_dim)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="the-datasets-subpackage">
+<h2>The datasets subpackage<a class="headerlink" href="#the-datasets-subpackage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-datasets.dataloaders">
+<span id="the-dataloaders-module"></span><h3>The dataloaders module<a class="headerlink" href="#module-datasets.dataloaders" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="datasets.dataloaders.get_dataloader">
+<code class="sig-prename descclassname">datasets.dataloaders.</code><code class="sig-name descname">get_dataloader</code><span class="sig-paren">(</span><em class="sig-param">config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/datasets/dataloaders.html#get_dataloader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#datasets.dataloaders.get_dataloader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatcher that calls dataloader function depending on the configs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>SimpleNameSpace</em>) – Contains configs values. Needs to at least have a <cite>dataloader</cite> field.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Corresponding dataloader.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="datasets.dataloaders.load_mnist">
+<code class="sig-prename descclassname">datasets.dataloaders.</code><code class="sig-name descname">load_mnist</code><span class="sig-paren">(</span><em class="sig-param">data_path</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">valid_size=0.1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/datasets/dataloaders.html#load_mnist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#datasets.dataloaders.load_mnist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load mnist data.</p>
+<dl class="simple">
+<dt>Loads mnist dataset and performs the following preprocessing operations:</dt><dd><ul class="simple">
+<li><p>converting to tensor</p></li>
+<li><p>standard mnist normalization so that values are in (0, 1)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_path</strong> (<em>str</em>) – Location of mnist data.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – Batch size.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – the number of  workers to be used by the Pytorch DataLoaders</p></li>
+<li><p><strong>valid_size</strong> (<em>float</em>) – a float between 0.0 and 1.0 for the percent of samples to be used for validation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>train_loader</em> – Dataloader for training set.</p></li>
+<li><p><em>valid_loader</em> – Dataloader for validation set.</p></li>
+<li><p><em>test_loader</em> – Dataloader for testing set.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="datasets.dataloaders.CompasDataset">
+<em class="property">class </em><code class="sig-prename descclassname">datasets.dataloaders.</code><code class="sig-name descname">CompasDataset</code><span class="sig-paren">(</span><em class="sig-param">data_path</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/datasets/dataloaders.html#CompasDataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#datasets.dataloaders.CompasDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.dataset.Dataset</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="datasets.dataloaders.load_compas">
+<code class="sig-prename descclassname">datasets.dataloaders.</code><code class="sig-name descname">load_compas</code><span class="sig-paren">(</span><em class="sig-param">data_path='senn/datasets/data/compas/compas.csv'</em>, <em class="sig-param">train_percent=0.8</em>, <em class="sig-param">batch_size=200</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">valid_size=0.1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/datasets/dataloaders.html#load_compas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#datasets.dataloaders.load_compas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return compas dataloaders.</p>
+<p>If compas data can not be found, will download preprocessed compas data: <cite>propublica_data_for_fairml.csv</cite>
+from fairml github repo.</p>
+<p>Source url: ‘<a class="reference external" href="https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv">https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv</a>’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_path</strong> (<em>str</em>) – Path of compas data.</p></li>
+<li><p><strong>train_percent</strong> (<em>float</em>) – What percentage of samples should be used as the training set. The rest is used
+for the test set.</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – Number of samples in minibatches.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>train_loader</em> – Dataloader for training set.</p></li>
+<li><p><em>valid_loader</em> – Dataloader for validation set.</p></li>
+<li><p><em>test_loader</em> – Dataloader for testing set.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="datasets.dataloaders.find_conflicting">
+<code class="sig-prename descclassname">datasets.dataloaders.</code><code class="sig-name descname">find_conflicting</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">labels</em>, <em class="sig-param">consensus_delta=0.2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/datasets/dataloaders.html#find_conflicting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#datasets.dataloaders.find_conflicting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find examples with same exact feature vector but different label.</p>
+<p>Finds pairs of examples in dataframe that differ only in a few feature values.</p>
+<p>From SENN authors’ code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.Dataframe</em>) – Containing compas data.</p></li>
+<li><p><strong>labels</strong> (<em>iterable</em>) – Containing ground truth labels</p></li>
+<li><p><strong>consensus_delta</strong> (<em>float</em>) – Decision rule parameter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>pruned_df</em> – dataframe with <cite>inconsistent samples</cite> removed.</p></li>
+<li><p><em>pruned_lab</em> – pruned labels</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="datasets.dataloaders.download_file">
+<code class="sig-prename descclassname">datasets.dataloaders.</code><code class="sig-name descname">download_file</code><span class="sig-paren">(</span><em class="sig-param">store_path</em>, <em class="sig-param">url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/datasets/dataloaders.html#download_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#datasets.dataloaders.download_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download a file from <cite>url</cite> and write it to a file <cite>store_path</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>store_path</strong> (<em>str</em>) – Data storage location.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="SENN Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Aman Hussain, Chris Hoenes, Omar Elbaghdadi, Ivan Bardarov
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

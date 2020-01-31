@@ -1,0 +1,512 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>models.senn &mdash; SENN 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SENN
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">SENN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">The SENN API reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SENN</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>models.senn</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for models.senn</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">make_grid</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+
+<div class="viewcode-block" id="SENN"><a class="viewcode-back" href="../../api.html#models.senn.SENN">[docs]</a><span class="k">class</span> <span class="nc">SENN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conceptizer</span><span class="p">,</span> <span class="n">parameterizer</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Represents a Self Explaining Neural Network (SENN).</span>
+<span class="sd">        (https://papers.nips.cc/paper/8003-towards-robust-interpretability-with-self-explaining-neural-networks)</span>
+
+<span class="sd">        A SENN model is a neural network made explainable by design. It is made out of several submodules:</span>
+<span class="sd">            - conceptizer</span>
+<span class="sd">                Model that encodes raw input into interpretable feature representations of</span>
+<span class="sd">                that input. These feature representations are called concepts.</span>
+<span class="sd">            - parameterizer</span>
+<span class="sd">                Model that computes the parameters theta from given the input. Each concept</span>
+<span class="sd">                has with it associated one theta, which acts as a ``relevance score&#39;&#39; for that concept.</span>
+<span class="sd">            - aggregator</span>
+<span class="sd">                Predictions are made with a function g(theta_1 * h_1, ..., theta_n * h_n), where</span>
+<span class="sd">                h_i represents concept i. The aggregator defines the function g, i.e. how each</span>
+<span class="sd">                concept with its relevance score is combined into a prediction.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conceptizer : Pytorch Module</span>
+<span class="sd">            Model that encodes raw input into interpretable feature representations of</span>
+<span class="sd">            that input. These feature representations are called concepts.</span>
+
+<span class="sd">        parameterizer : Pytorch Module</span>
+<span class="sd">            Model that computes the parameters theta from given the input. Each concept</span>
+<span class="sd">            has with it associated one theta, which acts as a ``relevance score&#39;&#39; for that concept.</span>
+
+<span class="sd">        aggregator : Pytorch Module</span>
+<span class="sd">            Predictions are made with a function g(theta_1 * h_1, ..., theta_n * h_n), where</span>
+<span class="sd">            h_i represents concept i. The aggregator defines the function g, i.e. how each</span>
+<span class="sd">            concept with its relevance score is combined into a prediction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conceptizer</span> <span class="o">=</span> <span class="n">conceptizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameterizer</span> <span class="o">=</span> <span class="n">parameterizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span> <span class="o">=</span> <span class="n">aggregator</span>
+
+<div class="viewcode-block" id="SENN.forward"><a class="viewcode-back" href="../../api.html#models.senn.SENN.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forward pass of SENN module.</span>
+<span class="sd">        </span>
+<span class="sd">        In the forward pass, concepts and their reconstructions are created from the input x.</span>
+<span class="sd">        The relevance parameters theta are also computed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape (BATCH, *). Only restriction on the shape is that</span>
+<span class="sd">            the first dimension should correspond to the batch size.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        predictions : torch.Tensor</span>
+<span class="sd">            Predictions generated by model. Of shape (BATCH, *).</span>
+<span class="sd">            </span>
+<span class="sd">        explanations : tuple</span>
+<span class="sd">            Model explanations given by a tuple (concepts, relevances).</span>
+
+<span class="sd">            concepts : torch.Tensor</span>
+<span class="sd">                Interpretable feature representations of input. Of shape (NUM_CONCEPTS, *).</span>
+
+<span class="sd">            parameters : torch.Tensor</span>
+<span class="sd">                Relevance scores associated with concepts. Of shape (NUM_CONCEPTS, *)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">concepts</span><span class="p">,</span> <span class="n">recon_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conceptizer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">relevances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterizer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">relevances</span><span class="p">)</span>
+        <span class="n">explanations</span> <span class="o">=</span> <span class="p">(</span><span class="n">concepts</span><span class="p">,</span> <span class="n">relevances</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">explanations</span><span class="p">,</span> <span class="n">recon_x</span></div></div>
+
+
+<div class="viewcode-block" id="DiSENN"><a class="viewcode-back" href="../../api.html#models.senn.DiSENN">[docs]</a><span class="k">class</span> <span class="nc">DiSENN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Self-Explaining Neural Network with Disentanglement </span>
+
+<span class="sd">    DiSENN is an extension of the Self-Explaining Neural Network proposed by [1]</span>
+<span class="sd">    </span>
+<span class="sd">    DiSENN incorporates a constrained variational inference framework on a </span>
+<span class="sd">    SENN Concept Encoder to learn disentangled representations of the </span>
+<span class="sd">    basis concepts as in [2]. The basis concepts are then independently</span>
+<span class="sd">    sensitive to single generative factors leading to better interpretability </span>
+<span class="sd">    and lesser overlap with other basis concepts. Such a strong constraint </span>
+<span class="sd">    better fulfills the &quot;diversity&quot; desiderata for basis concepts</span>
+<span class="sd">    in a Self-Explaining Neural Network.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Alvarez Melis, et al.</span>
+<span class="sd">    &quot;Towards Robust Interpretability with Self-Explaining Neural Networks&quot; NIPS 2018</span>
+<span class="sd">    [2] Irina Higgins, et al. </span>
+<span class="sd">    ”β-VAE: Learning basic visual concepts with a constrained variational framework.” ICLR 2017. </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vae_conceptizer</span><span class="p">,</span> <span class="n">parameterizer</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instantiates the SENDD with a variational conceptizer, parameterizer and aggregator</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vae_conceptizer : nn.Module</span>
+<span class="sd">            A variational inference model that learns a disentangled distribution over</span>
+<span class="sd">            the prior basis concepts given the input posterior.</span>
+
+<span class="sd">        parameterizer : nn.Module</span>
+<span class="sd">            Model that computes the parameters theta from given the input. Each concept</span>
+<span class="sd">            has with it associated one theta, which acts as a ``relevance score&#39;&#39; for that concept.</span>
+
+<span class="sd">        aggregator : nn.Module</span>
+<span class="sd">            Predictions are made with a function g(theta_1 * h_1, ..., theta_n * h_n), where</span>
+<span class="sd">            h_i represents concept i. The aggregator defines the function g, i.e. how each</span>
+<span class="sd">            concept with its relevance score is combined into a prediction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vae_conceptizer</span> <span class="o">=</span> <span class="n">vae_conceptizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameterizer</span> <span class="o">=</span> <span class="n">parameterizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span> <span class="o">=</span> <span class="n">aggregator</span>
+
+<div class="viewcode-block" id="DiSENN.forward"><a class="viewcode-back" href="../../api.html#models.senn.DiSENN.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Forward pass of a DiSENN model</span>
+<span class="sd">        </span>
+<span class="sd">        The forward pass computes a distribution over basis concepts</span>
+<span class="sd">        and the corresponding relevance scores. The mean concepts </span>
+<span class="sd">        and relevance scores are aggregated to generate a prediction.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input data tensor of shape [batch_size, ...]</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        predictions : torch.Tensor</span>
+<span class="sd">            Predictions generated by the DiSENN model of shape [batch_size, ...]</span>
+
+<span class="sd">        explanations : tuple</span>
+<span class="sd">            Explanation give by the model as a nested tuple of </span>
+<span class="sd">            relevance scores and concept distribution as mean and log variance:</span>
+<span class="sd">            ((concept_mean, concept_log_variance), relevance_score)</span>
+
+<span class="sd">            concept_mean : torch.Tensor</span>
+<span class="sd">                Mean of the disentangled concept distribution of shape</span>
+<span class="sd">                [batch_size, num_concepts, concept_dim]</span>
+
+<span class="sd">            concept_log_varance : torch.Tensor</span>
+<span class="sd">                Log Variance of the disentangled concept distribution of shape</span>
+<span class="sd">                [batch_size, num_concepts, concept_dim]</span>
+
+<span class="sd">            relevance_score : torch.Tensor</span>
+<span class="sd">                Relevance scores (for each concept and class) of shape </span>
+<span class="sd">                [batch_size, num_concepts, num_classes]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">concept_mean</span><span class="p">,</span> <span class="n">concept_logvar</span><span class="p">,</span> <span class="n">x_reconstruct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vae_conceptizer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">relevances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterizer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="p">(</span><span class="n">concept_mean</span><span class="p">,</span> <span class="n">relevances</span><span class="p">)</span>
+        <span class="n">explanations</span> <span class="o">=</span> <span class="p">((</span><span class="n">concept_mean</span><span class="p">,</span> <span class="n">concept_logvar</span><span class="p">),</span> <span class="n">relevances</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">explanations</span><span class="p">,</span> <span class="n">x_reconstruct</span></div>
+
+<div class="viewcode-block" id="DiSENN.explain"><a class="viewcode-back" href="../../api.html#models.senn.DiSENN.explain">[docs]</a>    <span class="k">def</span> <span class="nf">explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">contrast_class</span><span class="p">,</span> <span class="n">num_prototypes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">traversal_range</span><span class="o">=</span><span class="mf">0.45</span><span class="p">,</span> <span class="n">use_cdf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_as</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gridsize</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">col_span</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Explains the DiSENN predictions for input x</span>
+<span class="sd">        </span>
+<span class="sd">        DiSENN explanations consists of the Concepts, the corresponding Relevance </span>
+<span class="sd">        Scores, and the Prototypes associated with variations in every single Concept.</span>
+<span class="sd">        The VAE Conceptizer generates the Prototypes by inducing the prior distribution </span>
+<span class="sd">        on the latent space given the input posterior. The mean of this latent </span>
+<span class="sd">        prior distribution serves as the Basis Concept vector to be shown. </span>
+<span class="sd">        The latent distribution so induced is then sampled from. The sampled </span>
+<span class="sd">        Concept vector is traversed independently for each dimension and passed </span>
+<span class="sd">        through the decoder of the VAE Conceptizer.Each independent traversal </span>
+<span class="sd">        of a single dimension produces one prototype. Finally, we end up with an </span>
+<span class="sd">        array of changing prototypes for each Concept dimension. The Parameterizer </span>
+<span class="sd">        on the other hand produces the corresponding Relevance Scores. </span>
+<span class="sd">        The Relevance Scores and Concepts are shown as bar plots side by side.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.tensor</span>
+<span class="sd">            input data of shape (channel x width x height)</span>
+
+<span class="sd">        contrast_class: int</span>
+<span class="sd">            index of the class to compare the predicted class against</span>
+
+<span class="sd">        num_prototypes : int</span>
+<span class="sd">            number of prototypes to generate for each concept dimension</span>
+
+<span class="sd">        traversal_range : int</span>
+<span class="sd">            Range of traversal in each concept dimension from -traversal_range to +traversal_range</span>
+
+<span class="sd">        show: bool</span>
+<span class="sd">            whether to show the figure or not</span>
+
+<span class="sd">        save_as : string</span>
+<span class="sd">            file name of the explanation to be saved as, not saved by default</span>
+
+<span class="sd">        gridsize : (int, int)</span>
+<span class="sd">            shape of the figure in terms of rows and columns</span>
+
+<span class="sd">        col_span : int</span>
+<span class="sd">            number of columns for the Prototypes </span>
+
+<span class="sd">        figure_size : (float, float)</span>
+<span class="sd">            size of the figure</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> \
+            <span class="s2">&quot;input x must be a rank 3 tensor of shape channel x width x height&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">explanations</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="p">(</span><span class="n">x_posterior_mean</span><span class="p">,</span> <span class="n">x_posterior_logvar</span><span class="p">),</span> <span class="n">relevances</span> <span class="o">=</span> <span class="n">explanations</span>
+        <span class="n">x_posterior_mean</span> <span class="o">=</span> <span class="n">x_posterior_mean</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x_posterior_logvar</span> <span class="o">=</span> <span class="n">x_posterior_logvar</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">concepts</span> <span class="o">=</span> <span class="n">x_posterior_mean</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">num_concepts</span> <span class="o">=</span> <span class="n">concepts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">concepts_sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vae_conceptizer</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">x_posterior_mean</span><span class="p">,</span>
+                                                      <span class="n">x_posterior_logvar</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="c1"># generate new concept vector for each prototype</span>
+        <span class="c1"># by traversing independently in each dimension</span>
+        <span class="n">concepts_sample</span> <span class="o">=</span> <span class="n">concepts_sample</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">num_prototypes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">x_posterior_mean</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x_posterior_logvar</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">concepts_traversals</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="n">concepts_sample</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">traversal_range</span><span class="p">,</span>
+                                             <span class="n">num_prototypes</span><span class="p">,</span> <span class="n">mean</span><span class="p">[:,</span> <span class="n">dim</span><span class="p">],</span> <span class="n">std</span><span class="p">[:,</span> <span class="n">dim</span><span class="p">],</span> <span class="n">use_cdf</span><span class="p">)</span>
+                               <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_concepts</span><span class="p">)]</span>
+        <span class="n">concepts_traversals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">concepts_traversals</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">prototypes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vae_conceptizer</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">concepts_traversals</span><span class="p">)</span>
+        <span class="n">prototype_imgs</span> <span class="o">=</span> <span class="n">prototypes</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="c1"># nrow is number of images in a row which must be the number of prototypes</span>
+        <span class="n">prototype_grid_img</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">prototype_imgs</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">num_prototypes</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+        <span class="c1"># prepare to plot</span>
+        <span class="n">relevances</span> <span class="o">=</span> <span class="n">relevances</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">predict_class</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">relevances_pred</span> <span class="o">=</span> <span class="n">relevances</span><span class="p">[:,</span> <span class="n">predict_class</span><span class="p">]</span>
+        <span class="n">relevances_contrast</span> <span class="o">=</span> <span class="n">relevances</span><span class="p">[:,</span> <span class="n">contrast_class</span><span class="p">]</span>
+        <span class="n">concepts</span> <span class="o">=</span> <span class="n">concepts</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">product_pred</span> <span class="o">=</span> <span class="n">concepts</span> <span class="o">*</span> <span class="n">relevances_pred</span>
+        <span class="n">product_contrast</span> <span class="o">=</span> <span class="n">concepts</span> <span class="o">*</span> <span class="n">relevances_contrast</span>
+        <span class="n">pred_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;g&#39;</span> <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;r&#39;</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">product_pred</span><span class="p">]</span>
+        <span class="n">contrast_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;g&#39;</span> <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;r&#39;</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">product_contrast</span><span class="p">]</span>
+
+        <span class="c1"># plot input image, relevances, concepts, prototypes side by side</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;seaborn-paper&#39;</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figure_size</span><span class="p">)</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">(</span><span class="n">gridsize</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">(</span><span class="n">gridsize</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">(</span><span class="n">gridsize</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot2grid</span><span class="p">(</span><span class="n">gridsize</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">colspan</span><span class="o">=</span><span class="n">col_span</span><span class="p">)</span>
+
+        <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input Prediction: {y_pred.argmax(1).item()}&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+
+        <span class="n">ax2</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_concepts</span><span class="p">),</span> <span class="n">product_pred</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">pred_colors</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class:</span><span class="si">{predict_class}</span><span class="s2"> Contribution&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_label_position</span><span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="n">ax3</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_concepts</span><span class="p">),</span> <span class="n">product_contrast</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">contrast_colors</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class:</span><span class="si">{contrast_class}</span><span class="s2"> Contribution&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_label_position</span><span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="n">ax4</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">prototype_grid_img</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Prototypes&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="n">ax4</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">save_as</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_as</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DiSENN.traverse"><a class="viewcode-back" href="../../api.html#models.senn.DiSENN.traverse">[docs]</a>    <span class="k">def</span> <span class="nf">traverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">traversal_range</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span>
+                 <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_cdf</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Linearly traverses through one dimension of a matrix independently</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        matrix: torch.tensor</span>
+<span class="sd">            matrix whose dimensions will be traversed independently</span>
+<span class="sd">        dim: int</span>
+<span class="sd">            dimension of the matrix to be traversed</span>
+<span class="sd">        traversal_range: int</span>
+<span class="sd">            maximum value of the traversal range, if use_cdf is true this should be less than 0.5</span>
+<span class="sd">        steps: int</span>
+<span class="sd">            number of steps in the traversal range</span>
+<span class="sd">        mean: float</span>
+<span class="sd">            mean of the distribution for traversal using cdf</span>
+<span class="sd">        std: float</span>
+<span class="sd">            std of the distribution for traversal using cdf</span>
+<span class="sd">        use_cdf: bool</span>
+<span class="sd">            whether to use cdf traversal</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">use_cdf</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">traversal_range</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">,</span> \
+                <span class="s2">&quot;If CDF is to be used, the traversal range must represent probability range of -0.5 &lt; p &lt; +0.5&quot;</span>
+            <span class="k">assert</span> <span class="n">mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">std</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> \
+                <span class="s2">&quot;If CDF is to be used, mean and std has to be defined&quot;</span>
+            <span class="n">prob_traversal</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">traversal_range</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># from 0.45 to 0.05</span>
+            <span class="n">prob_traversal</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">prob_traversal</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">std</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># from 0.05 to -1.645</span>
+            <span class="n">traversal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">prob_traversal</span><span class="p">,</span> <span class="n">prob_traversal</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+            <span class="n">matrix_traversal</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>  <span class="c1"># to avoid changing the matrix</span>
+            <span class="n">matrix_traversal</span><span class="p">[:,</span> <span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">traversal</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">traversal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">traversal_range</span><span class="p">,</span> <span class="n">traversal_range</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+            <span class="n">matrix_traversal</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>  <span class="c1"># to avoid changing the matrix</span>
+            <span class="n">matrix_traversal</span><span class="p">[:,</span> <span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">traversal</span>
+        <span class="k">return</span> <span class="n">matrix_traversal</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Aman Hussain, Chris Hoenes, Omar Elbaghdadi, Ivan Bardarov
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
