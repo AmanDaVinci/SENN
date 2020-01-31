@@ -1,6 +1,6 @@
 # Self-Explaining Neural Networks: A review with extensions
 
-This repository contains the code for reproducing the paper ``Towards Robust Interpretability with Self-Explaining Neural Networks''[1] and extending it. The authors propose a framework called: "Self-Explaining Neural Network" which is transparent by design. We study the reproducibilty and validity of the proposed framework. Several weaknesses of the approach are identified. Most notably, we find that the model rarely generates good explanations, and that performance is compromised more than reported by the authors when enforcing explanations to be stable.  We put forward improvements to the framework that address these weaknesses in a principled way, and show them to enhance the interpretability of generated explanations.
+This repository contains the code for reproducing the paper ``Towards Robust Interpretability with Self-Explaining Neural Networks''[1] and extending it. The authors propose a framework called SENN (Self-Explaining Neural Network) which is transparent by design. We study the reproducibilty and validity of the proposed framework. Several weaknesses of the approach are identified. Most notably, we find that the model rarely generates good explanations, and that performance is compromised more than reported by the authors when enforcing explanations to be stable.  We put forward improvements to the framework that address these weaknesses in a principled way, and show them to enhance the interpretability of generated explanations.
 
 ## Table of Contents
   1. [Project Structure](#project-structure)
@@ -11,9 +11,11 @@ This repository contains the code for reproducing the paper ``Towards Robust Int
   6. [References](#references)
 
 ## Project Structure
-<img src="images/UML-SENN.png" alt="Project Structure" width="480" height="480">
+<img src="images/UML-SENN.png" alt="Project Structure" width="720">
 
 ## How to run?
+
+1. Clone and activate our conda environment
 ```
  git clone https://github.com/AmanDaVinci/SENN
  cd senn
@@ -21,8 +23,14 @@ This repository contains the code for reproducing the paper ``Towards Robust Int
  conda activate senn
 ```
 
-To reproduce our results using trained models, run the [Report Notebook](report.ipynb).  
-To train a new model or perform a new experiment:
+2. To reproduce our results using trained models, run the [Report Notebook](report.ipynb).  
+
+3. To train a model using one of our experiment parameters:
+```
+  python main.py --config "configs/compas_lambda1e-4_seed555.json"
+```
+
+4. To train a new model or perform a new experiment:
 ```
  python main.py --config "./config.json"
 ```
@@ -59,9 +67,9 @@ Where *config.json* is prepared according to the template below:
   "manual_seed": 42                             (int, the seed to be used for reproducibility)
   "accuracy_vs_lambda": ['c1.json','c2.json']   (list of str or list of lists where the inner lists need to have the same lengths, containing the name of the config files for the accuracy vs lambda plots)
   "num_seeds": 1                                (int, number of seeds used for the accuracy_vs_lambda plot, needs to be equal to the lengths of the inner lists passed in accuracy_vs_lambda, default = 1)
-} **
+}
 ```
-** Note that it is also possible to specify the architectures of the parameterizer and conceptizer classes using *config* parameters. However, to keep it neat, these are not shown here. For more information, please refer to the docstrings of the specific classes and the parameters they can take.
+Note: It is also possible to specify the architectures of the parameterizer and conceptizer classes using *config* parameters. However, to keep it neat, these are not shown here. For more information, please refer to the docstrings of the specific classes and the parameters they can take.
 
 
 ## Results
