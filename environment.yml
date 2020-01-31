@@ -9,8 +9,9 @@ channels:
 dependencies:
   - python=3.7
   - blas
-  - torchvision
   - cuda100
+  - cudatoolkit=10.1
+  - torchvision
   - pytorch
   - tensorboard
   - matplotlib
@@ -18,5 +19,4 @@ dependencies:
   - jupyter
   - scipy
   - scikit-learn
-  - cudatoolkit=10.1
 
