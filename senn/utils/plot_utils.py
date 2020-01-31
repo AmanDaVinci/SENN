@@ -178,12 +178,13 @@ def plot_lambda_accuracy(config_list, save_path=None, num_seeds=1, valid=False, 
         std_seeds.append(np.std(seed_accuracies))
         accuracies.append(sum(seed_accuracies) / num_seeds)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6,5))
     ax.errorbar(np.arange(len(lambdas)), accuracies, std_seeds, color='r', marker='o')
     ax.set_xticks(np.arange(len(lambdas)))
-    ax.set_xticklabels(lambdas)
-    ax.set_xlabel('Robustness Regularization Strength')
-    ax.set_ylabel('Prediction Accuracy')
+    ax.tick_params(labelsize=12)
+    ax.set_xticklabels(lambdas, fontsize=12)
+    ax.set_xlabel('Robustness Regularization Strength', fontsize=18)
+    ax.set_ylabel('Prediction Accuracy', fontsize=18)
     ax.grid()
 
     if save_path is not None:

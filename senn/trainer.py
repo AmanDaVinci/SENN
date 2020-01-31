@@ -24,7 +24,7 @@ from .datasets.dataloaders import get_dataloader
 
 plt.style.use('seaborn-talk')
 
-RESULTS_DIR = 'results'
+RESULTS_DIR = 'senn/results'
 CHECKPOINT_DIR = 'checkpoints'
 LOG_DIR = 'logs'
 BEST_MODEL_FILENAME = "best_model.pt"

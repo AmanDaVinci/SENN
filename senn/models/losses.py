@@ -138,19 +138,25 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
     kl_loss = kl_div(z_mean, z_logvar)
     return recon_loss, kl_loss
 
-
-def weighted_mse(x, x_hat, sparsity_reg):
-    """Mean Squared Error weighted by sparsity regularization parameter"""
-    return sparsity_reg * F.mse_loss(x_hat, x)
-
-
-def mse_kl_sparsity(x, x_hat, concepts, sparsity_reg):
-    """Sum of Mean Squared Error and KL Divergence loss weighted by sparsity regularization parameter"""
-    return F.mse_loss(x_hat, x.detach()) + F.kl_div(sparsity_reg * torch.ones_like(concepts), concepts)
-
-
 def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
-    """Mean Squared Error weighted and L1 norm by sparsity regularization parameter"""
+    """Sum of Mean Squared Error and L1 norm weighted by sparsity regularization parameter
+
+    Parameters
+    ----------
+    x : torch.tensor
+        Input data to the encoder.
+    x_hat : torch.tensor
+        Reconstructed input by the decoder.
+    concepts : torch.Tensor
+        Concept (latent code) activations.
+    sparsity_reg : float
+        Regularizer (xi) for the sparsity term.
+
+    Returns
+    -------
+    loss : torch.tensor
+        Concept loss
+    """
     return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()
 
 
@@ -168,7 +174,7 @@ def kl_div(mean, logvar):
 
     Returns
     -------
-    loss : float
+    loss : torch.tensor
         KL Divergence loss computed in a closed form solution
     """
     batch_loss = 0.5 * (mean.pow(2) + logvar.exp() - logvar - 1).mean(dim=0)
@@ -177,5 +183,18 @@ def kl_div(mean, logvar):
 
 
 def zero_loss(*args, **kwargs):
-    """Utility function to return a zero-valued loss"""
+    """Dummy loss that always returns zero.
+
+        Parameters
+        ----------
+        args : list
+            Can take any number of positional arguments (without using them).
+        kwargs : dict
+            Can take any number of keyword arguments (without using them).
+
+        Returns
+        -------
+        loss : torch.tensor
+            torch.tensor(0)
+        """
     return torch.tensor(0)
