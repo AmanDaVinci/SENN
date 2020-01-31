@@ -1,8 +1,9 @@
-import matplotlib.pyplot as plt
+from scipy import stats
 import torch
 import torch.nn as nn
-from scipy import stats
+import torch.nn.functional as F
 from torchvision.utils import make_grid
+import matplotlib.pyplot as plt
 
 
 class SENN(nn.Module):
@@ -160,7 +161,7 @@ class DiSENN(nn.Module):
         explanations = ((concept_mean, concept_logvar), relevances)
         return predictions, explanations, x_reconstruct
 
-    def explain(self, x, num_prototypes=20, traversal_range=0.45, use_cdf=True,
+    def explain(self, x, contrast_class, num_prototypes=20, traversal_range=0.45, use_cdf=True,
                 show=False, save_as=None, gridsize=(1, 6), col_span=3, figure_size=(18, 3)):
         """Explains the DiSENN predictions for input x
         
@@ -181,6 +182,9 @@ class DiSENN(nn.Module):
         ----------
         x : torch.tensor
             input data of shape (channel x width x height)
+
+        contrast_class: int
+            index of the class to compare the predicted class against
 
         num_prototypes : int
             number of prototypes to generate for each concept dimension
@@ -237,10 +241,14 @@ class DiSENN(nn.Module):
 
         # prepare to plot
         relevances = relevances.squeeze(0).cpu().detach().numpy()
-        relevances = relevances[:, y_pred.argmax(1)]
+        predict_class = y_pred.argmax(1).item()
+        relevances_pred = relevances[:, predict_class]
+        relevances_contrast = relevances[:, contrast_class]
         concepts = concepts.squeeze(0)
-        relevances_colors = ['g' if r > 0 else 'r' for r in relevances]
-        concepts_colors = ['g' if c > 0 else 'r' for c in concepts]
+        product_pred = concepts * relevances_pred
+        product_contrast = concepts * relevances_contrast
+        pred_colors = ['g' if r > 0 else 'r' for r in product_pred]
+        contrast_colors = ['g' if r > 0 else 'r' for r in product_contrast]
 
         # plot input image, relevances, concepts, prototypes side by side
         plt.style.use('seaborn-paper')
@@ -254,14 +262,14 @@ class DiSENN(nn.Module):
         ax1.set_axis_off()
         ax1.set_title(f'Input Prediction: {y_pred.argmax(1).item()}', fontsize=18)
 
-        ax2.barh(range(num_concepts), relevances, color=relevances_colors)
-        ax2.set_xlabel('Relevance Scores', fontsize=18)
+        ax2.barh(range(num_concepts), product_pred, color=pred_colors)
+        ax2.set_xlabel(f"Class:{predict_class} Contribution", fontsize=18)
         ax2.xaxis.set_label_position('top')
         ax2.tick_params(axis='x', which='major', labelsize=12)
         ax2.set_yticks([])
 
-        ax3.barh(range(num_concepts), concepts, color=concepts_colors)
-        ax3.set_xlabel('Concepts', fontsize=18)
+        ax3.barh(range(num_concepts), product_contrast, color=contrast_colors)
+        ax3.set_xlabel(f"Class:{contrast_class} Contribution", fontsize=18)
         ax3.xaxis.set_label_position('top')
         ax3.tick_params(axis='x', which='major', labelsize=12)
         ax3.set_yticks([])

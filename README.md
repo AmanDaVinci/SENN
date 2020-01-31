@@ -35,11 +35,10 @@ The project is organized as follows:
 
 ## Documentation
 ---
-## Contributors
+## Authors
 ---
-Authors:  
+Aman Hussain (aman.hussain@student.uva.nl)  ID: 12667447
 Omar Elbaghdadi (omarelb@gmail.com)  
-Aman Hussain (aman.hussain@student.uva.nl)  
 Christoph Hoenes (christoph.hoenes@gmail.com) ID: 128619444  
 Ivan Bardarov (ivan.bardarov@student.uva.nl)  
 
