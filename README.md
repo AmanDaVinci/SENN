@@ -1,39 +1,27 @@
 # Self-Explaining Neural Networks: A review with extensions
 
-For many applications, understanding why a predictive model makes a certain prediction can be of crucial importance. In the paper ``Towards Robust Interpretability with Self-Explaining Neural Networks''[1] propose a model that takes interpretability into account by design. We study the reproducibilty and validity of the proposed framework. Several weaknesses of the approach are identified. Most notably, we find that the model rarely generates good explanations, and that performance is compromised more than reported by the authors when enforcing explanations to be stable.  We put forward improvements to the framework that address these weaknesses in a principled way, and show them to enhance the interpretability of generated explanations.
+This repository contains the code for reproducing the paper ``Towards Robust Interpretability with Self-Explaining Neural Networks''[1] and extending it. The authors propose a framework called: "Self-Explaining Neural Network" which is transparent by design. We study the reproducibilty and validity of the proposed framework. Several weaknesses of the approach are identified. Most notably, we find that the model rarely generates good explanations, and that performance is compromised more than reported by the authors when enforcing explanations to be stable.  We put forward improvements to the framework that address these weaknesses in a principled way, and show them to enhance the interpretability of generated explanations.
 
 ## Table of Contents
-- [Self-Explaining Neural Networks: A review with extensions](#self-explaining-neural-networks-a-review-with-extensions)
-  - [Table of Contents](#table-of-contents)
-  - [Project Structure](#project-structure)
-  - [Results](#results)
-  - [How to run?](#how-to-run)
-  - [Documentation](#documentation)
-  - [Authors](#authors)
-  - [References](#references)
+  1. [Project Structure](#project-structure)
+  2. [Results](#results)
+  3. [How to run?](#how-to-run)
+  4. [Documentation](#documentation)
+  5. [Authors](#authors)
+  6. [References](#references)
 
 ## Project Structure
 ![SENN-UML](images/UML-SENN.png)
-
-The project is organized as follows:
-1. **configs**: experiment configurations
-2. **doc**: API documentation
-3. **senn/models**: classes defining model architecture
-4. **senn/datasets**: scripts for data loading
-5. **senn/utils**: utility functions
-6. **senn/trainers**: scripts for training
-7. **senn/notebooks**: development notebooks showing some of the APIs
-8. **senn/results/checkpoints**: saved model weights
-9. *report.ipynb*: notebook reporting final results
 
 ## Results
 
 ## How to run?
 ```
-cd senn
-conda env create -f "environment.yml
-conda activate senn
-python main.py --config "./config.json"
+$ git clone https://github.com/AmanDaVinci/SENN
+$ cd senn
+$ conda env create -f "environment.yml
+$ conda activate senn
+$ python main.py --config "./config.json"
 ```
 
 Where *config.json* is prepared according to the template below:
@@ -80,7 +68,7 @@ Where *config.json* is prepared according to the template below:
 * Christoph Hoenes (christoph.hoenes@gmail.com) ID: 12861944    
 * Ivan Bardarov (ivan.bardarov@student.uva.nl)  ID: 12579572  
 
-Supervisor:  
+**Supervisor:**  
 Simon Passenheim
 
 ## References
