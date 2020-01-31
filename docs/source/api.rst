@@ -4,7 +4,7 @@ The SENN API reference
 The trainer module
 ------------------
 
-.. automodule:: trainer
+.. automodule:: senn.trainer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,14 +23,14 @@ The senn module
 The conceptizer module
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: models.conceptizer
+.. automodule:: models.conceptizers
    :members:
    :undoc-members:
    :show-inheritance:
 
 The parameterizer module
 ~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: models.parameterizer
+.. automodule:: models.parameterizers
    :members:
    :undoc-members:
    :show-inheritance:
@@ -38,7 +38,7 @@ The parameterizer module
 The aggregator module
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: models.aggregator
+.. automodule:: models.aggregators
    :members:
    :undoc-members:
    :show-inheritance:
