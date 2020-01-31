@@ -35,10 +35,20 @@ The project is organized as follows:
 
 ## Documentation
 ---
+## Contributors
+---
+Authors:  
+Omar Elbaghdadi (omarelb@gmail.com)  
+Aman Hussain (aman.hussain@student.uva.nl)  
+Christoph Hoenes (christoph.hoenes@gmail.com) ID: 128619444  
+Ivan Bardarov (ivan.bardarov@student.uva.nl)  
+
+Supervisor:  
+Simon Passenheim
 
 ## References
 ---
-[1] Alvarez Melis, et al.  
+[1] David Alvarez Melis, Tommi S. Jaakkola  
 "Towards Robust Interpretability with Self-Explaining Neural Networks" NIPS 2018
 [2] Irina Higgins, et al.  
 ”β-VAE: Learning basic visual concepts with a constrained variational framework.” ICLR 2017. 
