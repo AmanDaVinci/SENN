@@ -80,7 +80,7 @@ The [Report Notebook](report.ipynb) reproduces all the results of our experiment
 4. SENN Prototypes: ![](images/senn_concept_prototypes.png)
 
 ## Documentation
-The documentation of our SENN package is available [here](docs/build/html/index.html)
+The documentation of our SENN package is available on https://senn.readthedocs.io/en/latest/
 
 ## Authors
 * Aman Hussain (aman.hussain@student.uva.nl) ID: 12667447  
