@@ -11,6 +11,7 @@ dependencies:
   - blas
   - torchvision
   - cuda100
+  - cudatoolkit=10.1
   - pytorch
   - tensorboard
   - matplotlib
@@ -18,5 +19,4 @@ dependencies:
   - jupyter
   - scipy
   - scikit-learn
-  - cudatoolkit=10.1
 
