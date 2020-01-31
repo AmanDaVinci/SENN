@@ -233,7 +233,7 @@ def show_explainations(model, test_loader, dataset, num_explanations=2, save_pat
     for i in range(num_explanations):
         if concept_names is not None:
             gridsize = (1, 2)
-            fig = plt.figure(figsize=(6, 2))
+            fig = plt.figure(figsize=(12, 6))
             ax1 = plt.subplot2grid(gridsize, (0, 0))
             ax2 = plt.subplot2grid(gridsize, (0, 1))
 
@@ -243,7 +243,7 @@ def show_explainations(model, test_loader, dataset, num_explanations=2, save_pat
             ax1.tick_params(which='major', labelsize=12)
 
             create_barplot(ax2, concepts[batch_idx[i]], y_pred[batch_idx[i]], x_lim=concept_lim,
-                           x_label='Concept activations (h)', concept_names=concept_names, **kwargs)
+                           x_label='Concepts/Raw Inputs', concept_names=concept_names, **kwargs)
             ax2.xaxis.set_label_position('top')
             ax2.tick_params(which='major', labelsize=12)
 
