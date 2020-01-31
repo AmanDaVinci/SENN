@@ -3,16 +3,17 @@
 TODO: Description
 
 ## Table of Contents
----
-1. [Project Structure](#project-structure)
-2. [Results](#results)
-3. [How to run](#how-to-run)
-4. [Documentation](#documentation)
-5. [References](#references)
+  - [Self-Explaining Neural Networks: A review with extensions](#self-explaining-neural-networks-a-review-with-extensions)
+  - [Table of Contents](#table-of-contents)
+  - [Project Structure](#project-structure)
+  - [How to run?](#how-to-run)
+  - [Results](#results)
+  - [Extensions](#extensions)
+  - [Documentation](#documentation)
+  - [Authors](#authors)
+  - [References](#references)
 
 ## Project Structure
----
-
 ![SENN-UML](images/UML-SENN.png)
 
 The project is organized as follows:
@@ -27,26 +28,27 @@ The project is organized as follows:
 9. **results/checkpoints**: saved model weights
 10. *report.ipynb*: notebook reporting final results
 
-## Results
----
-
 ## How to run?
----
+
+## Results
+
+## Extensions
+![](images/DiSENN.gif)
 
 ## Documentation
----
+
+
 ## Authors
----
-Aman Hussain (aman.hussain@student.uva.nl)  ID: 12667447
-Omar Elbaghdadi (omarelb@gmail.com)  
-Christoph Hoenes (christoph.hoenes@gmail.com) ID: 128619444  
-Ivan Bardarov (ivan.bardarov@student.uva.nl)  
+
+* Aman Hussain (aman.hussain@student.uva.nl)  ID: 12667447  
+* Omar Elbaghdadi (omarelb@gmail.com)   
+* Christoph Hoenes (christoph.hoenes@gmail.com) ID: 128619444   
+* Ivan Bardarov (ivan.bardarov@student.uva.nl)  
 
 Supervisor:  
 Simon Passenheim
 
 ## References
----
 [1] David Alvarez Melis, Tommi S. Jaakkola  
 "Towards Robust Interpretability with Self-Explaining Neural Networks" NIPS 2018
 [2] Irina Higgins, et al.  
