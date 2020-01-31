@@ -24,7 +24,7 @@ from .datasets.dataloaders import get_dataloader
 
 plt.style.use('seaborn-talk')
 
-RESULTS_DIR = 'senn/results'
+RESULTS_DIR = 'results'
 CHECKPOINT_DIR = 'checkpoints'
 LOG_DIR = 'logs'
 BEST_MODEL_FILENAME = "best_model.pt"
@@ -474,7 +474,7 @@ class DiSENN_Trainer(SENN_Trainer):
 
         # Define DiSENN losses
         self.classification_loss = F.nll_loss
-        self.concept_loss = eval(config.concept_loss)
+        self.concept_loss = BVAE_loss
         self.robustness_loss = eval(config.robustness_loss)
 
         # Init model
