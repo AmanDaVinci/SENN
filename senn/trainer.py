@@ -513,7 +513,7 @@ class DiSENN_Trainer(SENN_Trainer):
 
         # Define DiSENN losses
         self.classification_loss = F.nll_loss
-        self.concept_loss = eval(config.concept_loss)
+        self.concept_loss = BVAE_loss
         self.robustness_loss = eval(config.robustness_loss)
 
         # Init model
