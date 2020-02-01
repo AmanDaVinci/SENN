@@ -90,3 +90,15 @@ html_static_path = ['_static']
 autosummary_generate = True
 autodoc_member_order = 'bysource'
 numpydoc_show_inherited_class_members = False
+
+# Mock requirements to save resources during doc build machine setup
+autodoc_mock_imports = [
+    'torch',
+    'torchvision',
+    'matplotlib',
+    'scipy',
+    'numpy',
+    'pandas',
+    'sklearn',
+]
+
